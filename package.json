@@ -1,9 +1,12 @@
 {
   "name": "advpl-lint",
-  "version": "2.0.0",
+  "version": "7.0.3",
   "description": "Extension for Lint advpl laguage.",
   "types": "lib/src/index.d.ts",
   "main": "lib/src/index.js",
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/robsonrosilva/Lint-ADVPL.git"
@@ -14,7 +17,8 @@
   "homepage": "https://github.com/robsonrosilva/Lint-ADVPL",
   "scripts": {
     "compile": "tsc -p ./",
-    "prepare": "npm run compile && cpy 'locales/**' '../lib/' --cwd=src --parents"
+    "build": "npm run compile && rimraf lib/package.json && cpy 'src/locales/**' 'lib/locales'",
+    "prepare": "npm run build"
   },
   "keywords": [],
   "author": "Robson Rogério Silva",
@@ -32,6 +36,7 @@
     "cpy": "^12.0.1",
     "cpy-cli": "^6.0.0",
     "mocha": "^11.7.3",
+    "rimraf": "^6.0.1",
     "typescript": "^5.9.3"
   }
 }

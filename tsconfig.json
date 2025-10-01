@@ -19,6 +19,6 @@
     "rootDir": "."
   },
   "exclude": ["node_modules", "lib"],
-  "include": ["package.json", "src/*", "src/test/*"],
+  "include": ["src/**/*.ts", "src/test/**/*.ts"],
   "compileOnSave": true
 }
