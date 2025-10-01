@@ -29,8 +29,6 @@ export class Source {
 
   constructor(
     content: string,
-    includeDefinitions: IncludeDefinition,
-    configuration: Configuration,
     source?: string
   ) {
     this.content = content;
@@ -39,44 +37,50 @@ export class Source {
     this.functions = [];
     this.includes = [];
     this.errors = [];
+  }
 
-    this.setClearLines();
-    this.searchFunctions();
+  public analise(includeDefinitions: IncludeDefinition,
+    configuration: Configuration): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.setClearLines();
+      this.searchFunctions();
 
-    if (configuration.includeAnalisys) {
-      // verifica se tem includes se achar pelo menos 1
-      if (this.content.match(/^\s*#include\s/gim)) {
-        this.searchIncludes(includeDefinitions);
-        // include que precisa mas não estão declarados
-        for (var key in this.requiredIncludes) {
-          const include = this.requiredIncludes[key];
-          this.errors.push(
-            new ErrorAdvpl(
-              include.line,
-              include.line,
-              'includes.desnecessarioContido ' + include.include,
-              Severity.Warning
-            )
-          );
-        }
+      if (configuration.includeAnalisys) {
+        // verifica se tem includes se achar pelo menos 1
+        if (this.content.match(/^\s*#include\s/gim)) {
+          this.searchIncludes(includeDefinitions);
+          // include que precisa mas não estão declarados
+          for (var key in this.requiredIncludes) {
+            const include = this.requiredIncludes[key];
+            this.errors.push(
+              new ErrorAdvpl(
+                include.line,
+                include.line,
+                'includes.desnecessarioContido ' + include.include,
+                Severity.Warning
+              )
+            );
+          }
 
-        // Existem includes sem usar
-        const semNecessidade = this.includes.filter((x) => {
-          return !x.required;
-        });
-        for (var key in semNecessidade) {
-          const include = semNecessidade[key];
-          this.errors.push(
-            new ErrorAdvpl(
-              include.line,
-              include.line,
-              'includes.desnecessarioContido ' + include.name,
-              Severity.Warning
-            )
-          );
+          // Existem includes sem usar
+          const semNecessidade = this.includes.filter((x) => {
+            return !x.required;
+          });
+          for (var key in semNecessidade) {
+            const include = semNecessidade[key];
+            this.errors.push(
+              new ErrorAdvpl(
+                include.line,
+                include.line,
+                'includes.desnecessarioContido ' + include.name,
+                Severity.Warning
+              )
+            );
+          }
         }
       }
-    }
+      resolve();
+    });
   }
 
   private setClearLines() {
@@ -92,18 +96,19 @@ export class Source {
 
     //Percorre todas as linhas para remover os comentários multiline
     let inComentary: boolean = false;
-    for (var key in this.clearLines) {
-      if (this.clearLines[key].match(/(\*\/)/i) && inComentary) {
+    for (let i = 0; i < this.clearLines.length; i++) {
+      const line = this.clearLines[i];
+      if (line.match(/(\*\/)/i) && inComentary) {
         inComentary = false;
-        this.clearLines[key] = this.clearLines[key].split('*/')[1];
-      } else if (this.clearLines[key].match(/\/\*/)) {
+        this.clearLines[i] = line.split('*/')[1];
+      } else if (line.match(/\/\*/)) {
         inComentary = true;
-        this.clearLines[key] = this.clearLines[key].split(/\/\*/)[0];
+        this.clearLines[i] = line.split(/\/\*/)[0];
       } else {
-        this.clearLines[key] = inComentary ? '' : this.clearLines[key];
+        this.clearLines[i] = inComentary ? '' : line;
       }
       // remove todos os comentários // até o fim da linha e tira os espaços
-      this.clearLines[key] = this.clearLines[key]
+      this.clearLines[i] = this.clearLines[i]
         .replace(/(\/\/)(.*)()$/gim, '')
         .trim();
     }
@@ -113,29 +118,31 @@ export class Source {
 
   private searchFunctions() {
     const definitions: FunctionDefinitionList = new FunctionDefinitionList();
-    for (var key in this.clearLines) {
+    for (let i = 0; i < this.clearLines.length; i++) {
+      const line = this.clearLines[i];
       // verifica sea primeira linha está nas monitoradas
       const definitionFunction: FunctionDefinition = definitions.list.find(
         (x) => {
-          return this.clearLines[key].match(x.expression);
+          return line.match(x.expression);
         }
       ) as FunctionDefinition;
       if (definitionFunction) {
         this.functions.push(
-          new Function(this.clearLines[key], parseInt(key), definitionFunction)
+          new Function(line, i, definitionFunction)
         );
       } else if (this.functions.length) {
         // Adiciona a variável na Última Função do Array
         const variable = ESCOPES.find((x) => {
-          return this.clearLines[key].match(x);
+          return line.match(x);
         });
 
         if (variable) {
-          let variableData = this.clearLines[key].match(variable);
+          let variableData: RegExpMatchArray | null = line.match(variable);
           if (variableData) {
-            variableData = variableData.toString().split(/\s+/);
+            const variableString = variableData[0].toString();
+            const variableDataSplited = variableString.split(/\s+/);
             this.functions[this.functions.length - 1].variables.push(
-              new Variable(variableData[1], parseInt(key), variableData[0])
+              new Variable(variableDataSplited[1], i, variableDataSplited[0])
             );
           }
         }
@@ -144,44 +151,44 @@ export class Source {
   }
 
   private searchIncludes(includeDefinitions: IncludeDefinition) {
-    for (var key in this.lines) {
-      if (this.lines[key].match(/^\s*#include\s(\"|\')(.*)(\"|\').*/gim)) {
+    for (const [i, line] of this.lines.entries()) {
+      if (line.match(/^\s*#include\s(\"|\')(.*)(\"|\').*/gim)) {
         this.includes.push(
           new Include(
-            this.lines[key].replace(
+            line.replace(
               /^\s*#include\s(\"|\')(.*)(\"|\').*/gim,
               '$2'
             ),
-            parseInt(key)
+            i
           )
         );
       }
     }
 
     // Verifica se o include é obsoleto ou necessário
-    for (var key in this.includes) {
-      this.includes[key].obsolet =
+    for (const include of this.includes) {
+      include.obsolet =
         includeDefinitions.includesObsoletos.find(
-          (x) => x === this.includes[key].name
+          (x) => x === include.name
         ) !== undefined;
 
       const defInclude = includeDefinitions.includeExpressoes.find(
-        (x) => x.include === this.includes[key].name
+        (x) => x.include === include.name
       );
 
       // se não encontrar o include nas definições indica que é necessário se não for obsoleto
       if (defInclude) {
-        if (!this.includes[key].obsolet) {
-          for (var keyExp in defInclude.expressoes) {
-            if (this.clearContent.match(defInclude.expressoes[keyExp])) {
-              this.includes[key].required = true;
+        if (!include.obsolet) {
+          for (const expression of defInclude.expressoes) {
+            if (this.clearContent.match(expression)) {
+              include.required = true;
               break;
             }
           }
         }
       } else {
         // se não tem definição subentende que precisa dele
-        this.includes[key].required = true;
+        include.required = true;
       }
     }
 
@@ -193,19 +200,23 @@ export class Source {
         }) === undefined
       );
     });
-    for (var key in includeNotUsed) {
-      const definition = includeNotUsed[key];
-      for (var keyExp in definition.expressoes) {
-        const expression = definition.expressoes[keyExp];
-        if (this.clearContent.match(expression)) {
-          for (var keyLine in this.clearLines) {
-            if (this.clearLines[keyLine].match(expression)) {
-              this.requiredIncludes.push({
-                include: definition.include,
-                line: parseInt(keyLine),
-              });
-            }
+    for (const definition of includeNotUsed) {
+      this.findExpression(definition);
+    }
+  }
+
+  private findExpression(definition: { include: string; expressoes: RegExp[] }) {
+    for (const expression of definition.expressoes) {
+      for (const [i, line] of this.clearLines.entries()) {
+        if (line.match(expression)) {
+          const requiredInclude = {
+            include: definition.include,
+            line: i,
+          };
+          if (!this.requiredIncludes.find(ri => ri.include === requiredInclude.include)) {
+            this.requiredIncludes.push(requiredInclude);
           }
+          return;
         }
       }
     }

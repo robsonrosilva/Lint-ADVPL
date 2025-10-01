@@ -1,5 +1,5 @@
 const fs = require('fs');
-import * as globby from 'globby';
+import { globby } from 'globby';
 import { Linter } from './../index.js';
 var advplExtensions = ['prw', 'prx', 'prg', 'apw', 'apl', 'tlpp'];
 
@@ -9,7 +9,7 @@ function Run1() {
   let antes = Date.now();
 
   const conteudo = fs.readFileSync(
-    'D:\\GDrive\\Trabalho\\Workspace\\POUPEX\\ADVPL\\protheus\\SIGACFG\\CLEAR_AUDIT.PRW',
+    'D:\\OneDrive - POUPEX\\POUPEX_ADVPL\\SIGACFG\\CLEAR_AUDIT.PRW',
     'latin1'
   );
 
@@ -26,9 +26,7 @@ function Run1() {
 // Validação de Projeto
 function Run2() {
   let antes = Date.now();
-  const pathsProject = [
-    'D:\\GDrive\\Trabalho\\Workspace\\POUPEX\\ADVPL\\protheus',
-  ];
+  const pathsProject = ['D:\\OneDrive - POUPEX\\POUPEX_ADVPL'];
 
   // monta expressão para buscar arquivos
   let globexp: any[] = [];
@@ -41,7 +39,7 @@ function Run2() {
     let pathProject: string = pathsProject[i];
 
     promissesGlobby.push(
-      globby.default(globexp, {
+      globby(globexp, {
         cwd: pathProject,
         caseSensitiveMatch: false,
       })
@@ -71,5 +69,6 @@ function Run2() {
 }
 
 Run1();
+Run2();
 
 /**/

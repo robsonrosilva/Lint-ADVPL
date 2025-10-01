@@ -12,29 +12,21 @@ export class Linter {
     this.listFiles = listFiles;
   }
 
-  runAnalisys(): Promise<any> {
-    const listPromisses: Promise<any>[] = [];
-    const that = this;
+  runAnalisys(): Promise<Source[]> {
+    const promises = this.listFiles.map(file => {
+      return new Promise<Source>((resolve, reject) => {
+        console.log('Arquivo: ' + file.name);
+        const source = new Source(
+          file.content,
+          file.name
+        );
+        source.analise(this.includeDefinitions, this.configuration).then(()=>{
+            this.sourceList.push(source);
+            resolve(source);
+        });
+      });
+    });
 
-    // cria os promisses de análise
-    for (var x = 0; x < this.listFiles.length; x++) {
-      let file = this.listFiles[x];
-      listPromisses.push(
-        new Promise((resolve: Function, reject: Function) => {
-          console.log('Arquivo: ' + file.name);
-          that.sourceList.push(
-            new Source(
-              file.content,
-              that.includeDefinitions,
-              that.configuration,
-              file.name
-            )
-          );
-          resolve();
-        })
-      );
-    }
-
-    return Promise.all(listPromisses);
+    return Promise.all(promises);
   }
 }

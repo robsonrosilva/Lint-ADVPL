@@ -1,6 +1,6 @@
 {
   "name": "advpl-lint",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Extension for Lint advpl laguage.",
   "types": "lib/src/index.d.ts",
   "main": "lib/src/index.js",
@@ -21,17 +21,17 @@
   "license": "ISC",
   "dependencies": {
     "file-system": "^2.2.2",
-    "globby": "^10.0.2",
-    "i18n": "^0.8.6"
+    "globby": "^15.0.0",
+    "i18n": "^0.15.2"
   },
   "devDependencies": {
-    "@types/node": "^10.17.38",
-    "@types/vscode": "^1.49.0",
+    "@types/node": "^24.6.1",
+    "@types/vscode": "^1.104.0",
     "asserts": "^4.0.2",
-    "chai": "^4.2.0",
-    "cpy-cli": "^3.1.1",
-    "cpy": "^8.1.2",
-    "mocha": "^8.3.1",
-    "typescript": "^3.9.7"
+    "chai": "^6.2.0",
+    "cpy": "^12.0.1",
+    "cpy-cli": "^6.0.0",
+    "mocha": "^11.7.3",
+    "typescript": "^5.9.3"
   }
 }
