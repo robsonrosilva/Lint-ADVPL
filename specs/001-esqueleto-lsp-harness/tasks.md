@@ -245,57 +245,57 @@ rodar sem o corpus e confirmar que avisa, encerra com sucesso, e não quebra a s
 
 ### Configuração do corpus
 
-- [ ] T047 [P] [US2] Escrever `packages/tooling/test/harness/corpus-config.test.ts`: `ADVPL_LINT_CORPUS`
+- [X] T047 [P] [US2] Escrever `packages/tooling/test/harness/corpus-config.test.ts`: `ADVPL_LINT_CORPUS`
       vence sobre `corpus.local.json`; sem os dois, o corpus é declarado indisponível (FR-023)
-- [ ] T048 [US2] Implementar `packages/tooling/src/harness/corpus-config.ts`
+- [X] T048 [US2] Implementar `packages/tooling/src/harness/corpus-config.ts`
 
 ### Inventário com cache
 
-- [ ] T049 [P] [US2] Escrever `packages/tooling/test/harness/inventory.test.ts`: o percurso filtra por
+- [X] T049 [P] [US2] Escrever `packages/tooling/test/harness/inventory.test.ts`: o percurso filtra por
       extensão **durante** a varredura; o cache é invalidado quando a raiz muda; e o inventário guarda
       **apenas** caminho e tamanho, nunca conteúdo (FR-023)
-- [ ] T050 [US2] Implementar `packages/tooling/src/harness/inventory.ts` gravando `.corpus-cache.json`
+- [X] T050 [US2] Implementar `packages/tooling/src/harness/inventory.ts` gravando `.corpus-cache.json`
       local e não versionado (R5)
 
 ### Amostragem estratificada
 
-- [ ] T051 [P] [US2] Escrever `packages/tooling/test/harness/sample.test.ts`: a amostra soma no mínimo
+- [X] T051 [P] [US2] Escrever `packages/tooling/test/harness/sample.test.ts`: a amostra soma no mínimo
       1.000 fontes e cobre p50, p90, p95, p99 e o maior arquivo — amostragem uniforme sub-representaria
       a cauda, que é onde o Princípio I corre risco (SC-006)
-- [ ] T052 [US2] Implementar `packages/tooling/src/harness/sample.ts` com estratificação por tamanho em bytes
+- [X] T052 [US2] Implementar `packages/tooling/src/harness/sample.ts` com estratificação por tamanho em bytes
 
 ### Medição
 
-- [ ] T053 [P] [US2] Escrever `packages/tooling/test/harness/measure.test.ts`: o cronômetro cobre
+- [X] T053 [P] [US2] Escrever `packages/tooling/test/harness/measure.test.ts`: o cronômetro cobre
       **apenas** a análise, com a leitura de disco fora; o resultado é a mediana de várias repetições;
       e o custo incremental de uma regra é a diferença entre rodar com e sem ela (FR-020, FR-021)
-- [ ] T054 [US2] Implementar `packages/tooling/src/harness/measure.ts` com pool de `worker_threads`
+- [X] T054 [US2] Implementar `packages/tooling/src/harness/measure.ts` com pool de `worker_threads`
       dimensionado em `min(12, núcleos - 2)` (R5)
 
 ### Relatório
 
-- [ ] T055 [P] [US2] Escrever `packages/tooling/test/harness/report.test.ts` validando o esquema de
+- [X] T055 [P] [US2] Escrever `packages/tooling/test/harness/report.test.ts` validando o esquema de
       [contracts/relatorio-baseline.md](contracts/relatorio-baseline.md) — e, explicitamente, que a
       saída **não contém** caminho de arquivo do corpus, trecho de fonte nem nome de programa
       (FR-022, FR-023)
-- [ ] T056 [US2] Implementar `packages/tooling/src/harness/report.ts` gerando
+- [X] T056 [US2] Implementar `packages/tooling/src/harness/report.ts` gerando
       `specs/001-esqueleto-lsp-harness/baseline/AAAA-MM-DD.json` e `.md`
-- [ ] T057 [US2] Implementar a saída do material de revisão de falso positivo em `.fp-review/`, **local
+- [X] T057 [US2] Implementar a saída do material de revisão de falso positivo em `.fp-review/`, **local
       e não versionado**. Do relatório sobe apenas o agregado (FR-022)
 
 ### Corpus ausente
 
-- [ ] T058 [P] [US2] Escrever o teste do caminho sem corpus: a suíte passa inteira e a medição avisa e
+- [X] T058 [P] [US2] Escrever o teste do caminho sem corpus: a suíte passa inteira e a medição avisa e
       encerra **com sucesso**, não com erro de execução (FR-024)
-- [ ] T059 [US2] Ligar `npm run baseline` ao encadeamento inventário → amostra → medição → relatório
+- [X] T059 [US2] Ligar `npm run baseline` ao encadeamento inventário → amostra → medição → relatório
 
 ### Execução real
 
-- [ ] T060 [US2] Rodar a medição real sobre `D:\Workspace\FONTES` e commitar
+- [X] T060 [US2] Rodar a medição real sobre `D:\Workspace\FONTES` e commitar
       `baseline/AAAA-MM-DD.{json,md}` (SC-006)
-- [ ] T061 [US2] Revisar a amostra de disparos de `CA3001`, apurar a taxa de falso positivo e registrar
+- [X] T061 [US2] Revisar a amostra de disparos de `CA3001`, apurar a taxa de falso positivo e registrar
       **somente o agregado** no relatório (SC-007)
-- [ ] T062 [US2] Confrontar os números medidos com o orçamento provisório do Princípio I e registrar a
+- [X] T062 [US2] Confrontar os números medidos com o orçamento provisório do Princípio I e registrar a
       divergência do "p95 de fonte de 1.000 linhas" contra o p95 real de 2.933 linhas (US2 cenário 5)
 
 **Checkpoint**: existe régua. A partir daqui, toda regra futura entra com custo medido.

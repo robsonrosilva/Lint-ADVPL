@@ -17,13 +17,13 @@
     "build": "npm run typecheck && node packages/tooling/scripts/bundle.mjs",
     "lint": "eslint .",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "node --test --experimental-test-coverage --test-coverage-include=packages/server/out/src/** --test-coverage-include=packages/tooling/out/src/** --test-coverage-include=packages/extension/out/src/** --test-coverage-exclude=packages/server/out/src/server.js --test-coverage-exclude=packages/extension/out/src/extension.js --test-coverage-exclude=packages/extension/out/src/client.js --test-coverage-exclude=packages/extension/out/src/encoding-guard.js --test-coverage-lines=98 --test-coverage-functions=98 --test-coverage-branches=98 \"packages/server/out/test/**/*.test.js\" \"packages/tooling/out/test/**/*.test.js\" \"packages/extension/out/test/unit/**/*.test.js\"",
+    "test:unit": "node --test --experimental-test-coverage --test-coverage-include=packages/server/out/src/** --test-coverage-include=packages/tooling/out/src/** --test-coverage-include=packages/extension/out/src/** --test-coverage-exclude=packages/server/out/src/server.js --test-coverage-exclude=packages/extension/out/src/extension.js --test-coverage-exclude=packages/extension/out/src/client.js --test-coverage-exclude=packages/extension/out/src/encoding-guard.js --test-coverage-exclude=packages/tooling/out/src/harness/measure-worker.js --test-coverage-exclude=packages/tooling/out/src/harness/baseline-cli.js --test-coverage-lines=98 --test-coverage-functions=98 --test-coverage-branches=98 \"packages/server/out/test/**/*.test.js\" \"packages/tooling/out/test/**/*.test.js\" \"packages/extension/out/test/unit/**/*.test.js\"",
     "test:integration": "npm run build && vscode-test",
     "check:nls": "node packages/tooling/out/src/checks/nls.js",
     "check:corpus": "node packages/tooling/out/src/checks/corpus.js",
     "check:docs": "node packages/tooling/out/src/checks/docs.js",
     "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run check:nls && npm run check:corpus && npm run check:docs",
-    "baseline": "node packages/tooling/out/src/harness/run.js"
+    "baseline": "node packages/tooling/out/src/harness/baseline-cli.js"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
