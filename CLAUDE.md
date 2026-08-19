@@ -2,11 +2,23 @@
 
 Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 
+## ⇥ Retomando o trabalho? Leia estes dois primeiro
+
+| Arquivo | Para quê |
+| ------- | -------- |
+| [`memoria/estado-atual.md`](memoria/estado-atual.md) | onde o projeto parou, o que falta, o que espera decisão do dono |
+| [`memoria/armadilhas-do-ambiente.md`](memoria/armadilhas-do-ambiente.md) | erros de ferramenta que **já** custaram tempo aqui — leia antes de rodar qualquer comando |
+
+**Resumo de 2026-08-19**: branch `001-esqueleto-lsp-harness`, MVP da spec 001 pronto e verde
+(`T001`–`T046` de 86). 139 testes unitários e 6 de integração passando; cobertura 100/98,47/100.
+`npm run verify` **falha** de propósito — encadeia três verificações que ainda não foram escritas
+(`T067`, `T073`, `T075`). Nada mergeado.
+
 ## Visão Geral
 
 - **Objetivo**: escrever **do zero**, neste repositório (`robsonrosilva/Lint-ADVPL`), uma **extensão
-  VS Code de lint ADVPL/TLPP** que substitua a extensão atual. Hoje o repositório tem documentação,
-  ferramentas e configuração — **o código nasce na primeira spec**.
+  VS Code de lint ADVPL/TLPP** que substitua a extensão atual. O código **já nasceu** na spec 001,
+  em 2026-08-19: monorepo de três workspaces, uma regra do catálogo funcionando ponta a ponta.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
@@ -21,18 +33,27 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 
 ## Estrutura
 
-> **Estrutura-alvo**: `specs/` e o código da extensão são criados pela primeira spec. O que existe
-> hoje está marcado com ✓.
-
 ```text
-.specify/          ✓ templates, scripts (PowerShell) e a constituição do spec-kit
-.claude/skills/    ✓ skills do fluxo Spec-Driven Development
-analise-advpl/     ✓ LEGADO CONGELADO — repo separado, referência de comportamento
-README.md          ✓ catálogo de regras (descreve a lib legada; revisar quando a extensão existir)
-SONNAR-RULES.md    ✓ detalhamento das regras TOTVS Code Analyzer
-specs/               Spec-Driven Development — uma pasta por feature
-memoria/             memória entre sessões, versionada
+packages/
+  extension/       cliente fino de VS Code — orquestra, NÃO analisa
+  server/          o motor (Language Server) — nenhum import de `vscode`
+  tooling/         harness e verificações — nunca empacotado, nunca publicado
+docs/
+  regras/          uma página por identificador de regra (portão 6)
+  inventario-legado.md   as 28 críticas do legado, item a item — o "piso" do Princípio III
+specs/             Spec-Driven Development — uma pasta por feature; índice em specs/README.md
+memoria/           memória entre sessões, versionada — comece por estado-atual.md
+referencias/totvs/ cópia byte-idêntica da release v1.0.1 — NÃO editar
+.specify/          templates, scripts (PowerShell) e a constituição
+.claude/skills/    skills do fluxo Spec-Driven Development
+analise-advpl/     LEGADO CONGELADO — repo aninhado, NÃO versionado, referência de comportamento
+README.md          ⚠️ ainda descreve a lib LEGADA — reescrever é a tarefa T077
+SONNAR-RULES.md    detalhamento das regras TOTVS Code Analyzer (apoio, gerado por IA)
 ```
+
+**Comandos**: `npm run typecheck` · `lint` · `test:unit` (com o limiar de cobertura) ·
+`test:integration` (reconstrói antes) · `build` · `verify` (portão completo — hoje falha nas três
+verificações que faltam) · `baseline` (ainda não existe). **F5** abre a instância de desenvolvimento.
 
 ## O legado — como consultar sem copiar
 
@@ -144,12 +165,15 @@ português).
 
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
+| **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
+| **Ordem do trabalho**          | fechar a 001 (`T047`–`T086`) ou abrir a 002 antes? Escopo da 002 já decidido em [memoria/spec-002-escopo-decidido.md](memoria/spec-002-escopo-decidido.md) |
 | CI                             | não decidida — verificação local vale até lá                                |
 | `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
 | Linha de base de desempenho    | orçamento provisório **subdimensionado**: o p95 real é 2.933 linhas, não 1.000 |
 | `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
 | Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
+| `package-lock.json` ignorado   | herdado do legado; para extensão (não é lib publicada) versionar daria build reproduzível |
 | ~~Índice de specs~~            | ✅ resolvido — [specs/README.md](specs/README.md) é a fonte única de progresso |
 
 ## Fontes de Referência
