@@ -22,7 +22,7 @@
     "check:nls": "node packages/tooling/out/src/checks/nls-cli.js",
     "check:corpus": "node packages/tooling/out/src/checks/corpus-cli.js",
     "check:docs": "node packages/tooling/out/src/checks/docs-cli.js",
-    "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run check:nls && npm run check:corpus && npm run check:docs",
+    "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run check:nls && npm run check:corpus && npm run check:docs && npm run test:integration",
     "baseline": "node packages/tooling/out/src/harness/baseline-cli.js",
     "fixture:large": "node packages/tooling/out/src/fixtures/large-cli.js"
   },

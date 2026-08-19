@@ -105,7 +105,8 @@ Requer Node 24 ou mais novo.
 
 ```bash
 npm install
-npm run verify          # o portão completo: tipos, lint, testes+cobertura e as três verificações
+npm run verify          # o portão completo: tipos, lint, testes com cobertura, as três
+                        # verificações e a suíte de integração. ~23 s.
 ```
 
 | Comando | O que faz |

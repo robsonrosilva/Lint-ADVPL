@@ -478,7 +478,7 @@ Anexado pela `/speckit-converge` em 2026-08-19, depois de `T001`–`T085` conclu
 Avaliados: 35 requisitos funcionais, 12 critérios de sucesso, as decisões do plano e os seis
 princípios da constituição. O que **não** virou tarefa está registrado ao pé desta fase.
 
-- [ ] T087 Fazer `npm run verify` encadear a suíte **inteira**, e não apenas `test:unit`, por T023 e
+- [X] T087 Fazer `npm run verify` encadear a suíte **inteira**, e não apenas `test:unit`, por T023 e
       pelo Portão 2 da constituição (contradicts). Hoje os 10 testes de integração ficam **de fora**
       do portão de merge, enquanto o quickstart o chama de "portão local completo" — quem confia no
       verify está confiando em menos do que pensa. Conferir o custo: `test:integration` reconstrói o

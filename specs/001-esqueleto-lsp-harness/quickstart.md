@@ -36,10 +36,19 @@ Reúne, em ordem:
 | ----- | ----------- | --------- |
 | `typecheck` | compila sem erro; e que o motor não importa `vscode` | Portão 1, Princípio I |
 | `lint` | sem `*Sync`, sem `console.*` em `packages/server/src` | FR-007 |
-| `test` | a suíte inteira **e cobertura ≥ 98%** em linhas, funções e ramos | Portão 2, FR-030 |
-| `check:nls` | as chaves batem nos quatro idiomas | FR-015, SC-005 |
+| `test:unit` | motor, ferramentas e protocolo, **com cobertura ≥ 98%** em linhas, funções e ramos | Portão 2, FR-030 |
+| `check:nls` | as chaves batem nos quatro idiomas; o manifesto bate com o registro | FR-015, SC-005 |
 | `check:corpus` | nenhum fonte do corpus versionado; fixtures com autoria declarada | FR-027, SC-008 |
-| `check:docs` | toda regra tem documentação e vice-versa | Portão 6 |
+| `check:docs` | toda regra tem documentação e está no README, e vice-versa | Portão 6 |
+| `test:integration` | ativação, painel de problemas, configuração e encoding, dentro de um VS Code real | Portão 2 |
+
+O portão inteiro leva **~23 s** nesta máquina. A integração vem por último de propósito: o que é
+barato reprova primeiro, e assim o laço de trabalho não paga 11 s para descobrir um erro de tipo.
+
+⚠️ Até 2026-08-19 o `verify` **não** rodava a integração — encadeava só `test:unit`, contra o que a
+`T023` pedia. Dez testes ficavam fora do portão de merge enquanto este guia o chamava de completo, e
+ninguém percebeu porque ele estava sempre verde. Hoje `packages/tooling/test/checks/verify-gate.test.ts`
+trava isso por máquina.
 
 ⚠️ **Não canalizar a saída.** `npm test | tail` devolve o código de saída do `tail`, não do teste —
 um "exit code 0" já mascarou suíte que nem chegou a rodar. Rodar direto e ler o resultado.
