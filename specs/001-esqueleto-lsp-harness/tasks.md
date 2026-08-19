@@ -348,17 +348,17 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Vazamento de corpus
 
-- [ ] T073 [P] Escrever `packages/tooling/test/checks/corpus.test.ts`: a verificação **falha** com fonte
+- [X] T073 [P] Escrever `packages/tooling/test/checks/corpus.test.ts`: a verificação **falha** com fonte
       ADVPL versionado fora de `packages/*/test/fixtures/`, com fixture sem cabeçalho de autoria, e com
       fixture acima de 300 linhas (FR-027, SC-008)
-- [ ] T074 Implementar `packages/tooling/src/checks/corpus.ts`
+- [X] T074 Implementar `packages/tooling/src/checks/corpus.ts`
 
 ### Sincronismo de documentação
 
-- [ ] T075 [P] Escrever `packages/tooling/test/checks/docs.test.ts`: a verificação **falha** nos dois
+- [X] T075 [P] Escrever `packages/tooling/test/checks/docs.test.ts`: a verificação **falha** nos dois
       sentidos — regra registrada sem arquivo em `docs/regras/`, e arquivo sem regra correspondente
       (Portão 6)
-- [ ] T076 Implementar `packages/tooling/src/checks/docs.ts`
+- [X] T076 Implementar `packages/tooling/src/checks/docs.ts`
 
 ### Fechamento
 
