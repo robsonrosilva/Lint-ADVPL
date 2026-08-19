@@ -16,7 +16,10 @@ integração em VS Code real e 7 de protocolo nos quatro idiomas. A linha de bas
 corpus real e está versionada em `specs/001-esqueleto-lsp-harness/baseline/`.
 
 A **spec 002 já está escrita** (branch `002-correcao-e-portabilidade-include`), sem esclarecimento
-pendente, parada até a 001 fechar. Nada mergeado.
+pendente, parada até a 001 fechar.
+
+**A spec 001 foi mergeada na `master` em 2026-08-19** (merge `70c5916`): a `master` deixou de ser a
+biblioteca legada e passou a ser a extensão. O `npm run verify` roda verde nela.
 
 ## Visão Geral
 

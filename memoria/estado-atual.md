@@ -10,10 +10,15 @@ Ele envelhece: quem avançar o projeto **atualiza aqui**, senão vira mentira.
 
 ## Onde estamos
 
-Branch **`001-esqueleto-lsp-harness`**, cinco commits à frente da `renew`. Nada mergeado.
+**A spec 001 foi MERGEADA na `master`** em 2026-08-19 — merge `70c5916`, com `--no-ff`, 28 commits e
+196 arquivos. A `master` deixou de ser a biblioteca legada e passou a ser **a extensão**. O legado
+continua no histórico abaixo do merge, e em `analise-advpl/` como referência de comportamento.
 
-O **MVP da spec 001 está pronto e verde**: `T001`–`T046` de 86. Existe uma extensão de lint ADVPL
-funcionando, com uma regra real do catálogo, sobre a arquitetura que a constituição exige.
+`npm run verify` roda **verde na master**. As branches `001-esqueleto-lsp-harness` e `renew` foram
+removidas por já estarem mergeadas; a `002-correcao-e-portabilidade-include` **continua**, com dois
+commits próprios que ainda não estão na master.
+
+⚠️ **Nada foi enviado ao remoto.** A `master` local está 29 commits à frente de `origin/master`.
 
 **A spec 001 está COMPLETA**: 90 tarefas, nenhuma pendente. O ciclo inteiro rodou — `specify`,
 `plan`, `tasks`, `implement`, `converge` e `security-review`.
