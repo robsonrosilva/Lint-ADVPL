@@ -1,6 +1,7 @@
+import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { findDocsProblems, listRuleDocs, registeredRuleIds } from './docs'
+import { findDocsProblems, findReadmeProblems, listRuleDocs, registeredRuleIds } from './docs'
 
 /**
  * Ponto de entrada de `npm run check:docs`.
@@ -14,10 +15,13 @@ const REPO_ROOT = join(__dirname, '..', '..', '..', '..', '..')
 
 async function main(): Promise<number> {
   const ruleIds = registeredRuleIds()
-  const problems = await findDocsProblems({ ruleIds, docFiles: await listRuleDocs(REPO_ROOT) })
+  const problems = [
+    ...(await findDocsProblems({ ruleIds, docFiles: await listRuleDocs(REPO_ROOT) })),
+    ...findReadmeProblems(ruleIds, await readFile(join(REPO_ROOT, 'README.md'), 'utf8')),
+  ]
 
   if (problems.length === 0) {
-    console.info(`check:docs — ${ruleIds.length} regra(s), cada uma com sua página.`)
+    console.info(`check:docs — ${ruleIds.length} regra(s), cada uma com sua página e listada no README.`)
     return 0
   }
 

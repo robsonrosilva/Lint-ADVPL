@@ -5,7 +5,9 @@ import { join } from 'node:path'
 import {
   DOCS_DIR,
   findDocsProblems,
+  findReadmeProblems,
   listRuleDocs,
+  readmeRuleIds,
   registeredRuleIds,
 } from '../../src/checks/docs'
 
@@ -73,5 +75,56 @@ describe('Sincronismo de documentação — falha nos DOIS sentidos', () => {
     })
 
     assert.deepEqual(problems, [])
+  })
+})
+
+describe('Sincronismo do README (Portão 6, ao pé da letra)', () => {
+  it('o README lista exatamente as regras que o produto entrega', async () => {
+    // "Regra que existe no código mas não no README, ou descrita no README e
+    // ausente do código, bloqueia o merge. Vale nos dois sentidos."
+    const { readFile } = await import('node:fs/promises')
+    const readme = await readFile(join(REPO_ROOT, 'README.md'), 'utf8')
+
+    const problems = findReadmeProblems(registeredRuleIds(), readme)
+
+    assert.deepEqual(problems, [], `README fora de sincronia:\n${problems.join('\n')}`)
+  })
+
+  it('lê os identificadores só da região demarcada', () => {
+    // O resto do README fala do backlog à vontade — citar uma regra futura em
+    // prosa não pode reprovar o build.
+    const readme = [
+      'texto solto citando CA9999 no meio da prosa',
+      '<!-- regras:início -->',
+      '| `CA3001` | ... |',
+      '<!-- regras:fim -->',
+      'e o backlog menciona PJ0001 e CA2050',
+    ].join('\n')
+
+    assert.deepEqual(readmeRuleIds(readme), ['CA3001'])
+  })
+
+  it('acusa regra entregue que o README não lista', () => {
+    const readme = '<!-- regras:início -->\n| `CA3001` |\n<!-- regras:fim -->'
+
+    const problems = findReadmeProblems(['CA3001', 'PJ0001'], readme)
+
+    assert.ok(problems.some((p) => p.includes('PJ0001')))
+  })
+
+  it('acusa regra listada no README que o produto não tem', () => {
+    const readme = '<!-- regras:início -->\n| `CA3001` |\n| `CA1004` |\n<!-- regras:fim -->'
+
+    const problems = findReadmeProblems(['CA3001'], readme)
+
+    assert.ok(problems.some((p) => p.includes('CA1004')))
+  })
+
+  it('acusa README sem a região demarcada', () => {
+    // Sem os marcadores não há o que conferir, e um portão que não confere nada
+    // passando em silêncio é pior que portão nenhum.
+    const problems = findReadmeProblems(['CA3001'], '# README sem marcadores')
+
+    assert.ok(problems.some((p) => /marcador|regi[ãa]o/i.test(p)))
   })
 })

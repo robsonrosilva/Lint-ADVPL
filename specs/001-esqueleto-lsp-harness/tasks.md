@@ -362,11 +362,11 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Fechamento
 
-- [ ] T077 Atualizar o `README.md` da raiz: hoje ele descreve a biblioteca legada, e o Portão 6 vale nos
+- [X] T077 Atualizar o `README.md` da raiz: hoje ele descreve a biblioteca legada, e o Portão 6 vale nos
       dois sentidos
-- [ ] T078 Rodar `npm run verify` inteiro, **sem cano**, e registrar no relatório ao usuário exatamente
+- [X] T078 Rodar `npm run verify` inteiro, **sem cano**, e registrar no relatório ao usuário exatamente
       o que foi executado e o que passou
-- [ ] T079 Executar o [quickstart.md](quickstart.md) ponta a ponta, incluindo as validações manuais das
+- [X] T079 Executar o [quickstart.md](quickstart.md) ponta a ponta, incluindo as validações manuais das
       três histórias
 - [x] T080 ~~**Emendar a constituição**~~ — **FEITO em 2026-08-19, constituição na v2.2.0.** Princípio
       V passou a "Multilíngue por Construção" com os quatro idiomas do Protheus (D4); Princípio VI

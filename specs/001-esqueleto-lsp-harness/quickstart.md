@@ -9,7 +9,7 @@ código. Todos os comandos rodam a partir da raiz do repositório.
 | ---- | ------------- | -------------------- |
 | Node.js | 24 | `v24.18.0` |
 | npm | 10 | `11.16.0` |
-| VS Code | 1.85 | `1.133.0` |
+| VS Code | 1.85 | `1.134.0` |
 | git | qualquer | `core.autocrlf=true` — daí o `.gitattributes` |
 
 O **corpus é opcional** para tudo, exceto a medição. Sem ele, a suíte de testes passa inteira
@@ -49,11 +49,25 @@ um "exit code 0" já mascarou suíte que nem chegou a rodar. Rodar direto e ler 
 Um limiar que nunca reprovou ninguém não é portão. Para provar que ele fecha:
 
 ```bash
-npm test -- --test-coverage-lines=100      # esperado: FALHA, e o processo sai com erro
-npm test                                    # esperado: passa, com cobertura >= 98%
+# esperado: FALHA, com "does not meet threshold of 100%"
+node --test --experimental-test-coverage \
+  --test-coverage-include="packages/server/out/src/**" \
+  --test-coverage-branches=100 \
+  "packages/server/out/test/unit/**/*.test.js"
+
+npm run test:unit    # esperado: passa, com cobertura >= 98%
 ```
 
-Se a primeira linha passar, o limiar não está sendo aplicado e o Portão 2 é decorativo.
+Se a primeira passar, o limiar não está sendo aplicado e o Portão 2 é decorativo.
+
+⚠️ **Duas armadilhas, as duas medidas em 2026-08-19 ao executar este guia:**
+
+1. **`npm run test:unit -- --test-coverage-lines=100` NÃO funciona.** O `npm` anexa o argumento ao
+   fim do comando, e o script termina com os globs dos arquivos de teste — a flag cai depois deles e
+   é ignorada em silêncio. O comando sai com **sucesso**, dando a impressão de que o portão está
+   quebrado quando o quebrado é o comando. Por isso a forma acima invoca o `node` direto.
+2. **`--test-coverage-lines=100` não reprova**, porque a cobertura de linhas do motor **é** 100%. Um
+   limiar impossível de verdade precisa ser o de **ramos**.
 
 Toda exclusão da medição vive em `coverage-exclusions.json`, **com a razão de cada item** (FR-032).
 Baixar o limiar em vez de declarar a exclusão é violação do Princípio VI, não atalho — a exclusão
@@ -117,12 +131,31 @@ padrão do Protheus entra no repositório.**
    **Esperado**: some, sem reiniciar.
 2. Religar e pôr `"advplLint.rules.CA3001.severity": "warning"`. **Esperado**: vira aviso, mantendo
    `CA3001` e a mesma posição.
-3. Trocar o idioma do editor (`Configure Display Language`) entre `pt-br`, `es`, `en` e `ru`.
-   **Esperado**: a mensagem muda; identificador e posição não.
-4. Escolher um idioma sem tradução nossa. **Esperado**: cai no inglês — **nunca** aparece o
-   identificador cru da chave.
-5. Apagar uma chave de `package.nls.es.json` e rodar `npm run verify`. **Esperado**: **falha**,
+3. Apagar uma chave de `package.nls.es.json` e rodar `npm run check:nls`. **Esperado**: **falha**,
    nomeando a chave e o arquivo. Se passar, a verificação do FR-015 não está fazendo efeito.
+   Conferido em 2026-08-19: falha com
+   `a chave "configuration.title" falta em "package.nls.es.json"`.
+
+### Idioma: por que a validação NÃO é manual no editor
+
+O passo óbvio seria trocar o idioma pelo `Configure Display Language` e olhar a mensagem. **Ele não
+serve**, e a razão é do ambiente: o VS Code só honra outro idioma com o **pacote de idioma
+instalado**. Sem ele, `vscode.env.language` continua `en` e a validação passa a provar o contrário do
+que diz — medido aqui em 2026-08-19, ao tentar automatizar exatamente isso.
+
+Quem prova a tradução é `packages/server/test/protocol/locale.test.ts`, que sobe o servidor e fala
+**LSP direto** com ele, fazendo o aperto de mão em cada idioma:
+
+```bash
+node --test "packages/server/out/test/protocol/*.test.js"
+```
+
+Cobre os **quatro** idiomas em vez de um, confere que o russo sai em cirílico — o que denunciaria
+encoding errado —, que um idioma sem tradução nossa recai no inglês, que a chave crua **nunca**
+aparece, e que identificador e intervalo não mudam com o idioma.
+
+Se você tiver o pacote de idioma instalado e quiser conferir no editor mesmo assim, o resultado
+esperado é: a mensagem muda; identificador e posição, não.
 
 ## Verificar o que mais engana
 
