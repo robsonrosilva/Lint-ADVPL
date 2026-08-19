@@ -9,10 +9,12 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 | [`memoria/estado-atual.md`](memoria/estado-atual.md) | onde o projeto parou, o que falta, o que espera decisão do dono |
 | [`memoria/armadilhas-do-ambiente.md`](memoria/armadilhas-do-ambiente.md) | erros de ferramenta que **já** custaram tempo aqui — leia antes de rodar qualquer comando |
 
-**Resumo de 2026-08-19**: branch `001-esqueleto-lsp-harness`, MVP da spec 001 pronto e verde
-(`T001`–`T046` de 86). 139 testes unitários e 6 de integração passando; cobertura 100/98,47/100.
-`npm run verify` **falha** de propósito — encadeia três verificações que ainda não foram escritas
-(`T067`, `T073`, `T075`). Nada mergeado.
+**Resumo de 2026-08-19**: branch `002-correcao-e-portabilidade-include`, nascida da
+`001-esqueleto-lsp-harness`. O MVP da spec 001 está pronto e verde (`T001`–`T046` de 86): 139 testes
+unitários e 6 de integração passando, cobertura 100/98,47/100. `npm run verify` **falha** de propósito
+— encadeia três verificações que ainda não foram escritas (`T067`, `T073`, `T075`). A **spec 002 está
+escrita** e sem esclarecimento pendente, mas **parada**: a implementação retoma pela 001, porque a
+medição de custo da 002 depende do harness que é a US2 da 001. Nada mergeado.
 
 ## Visão Geral
 
@@ -166,7 +168,7 @@ português).
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
-| **Ordem do trabalho**          | fechar a 001 (`T047`–`T086`) ou abrir a 002 antes? Escopo da 002 já decidido em [memoria/spec-002-escopo-decidido.md](memoria/spec-002-escopo-decidido.md) |
+| ~~**Ordem do trabalho**~~      | ✅ resolvido — **especificar a 002 primeiro** (feito), **implementar a 001 primeiro**. A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
 | CI                             | não decidida — verificação local vale até lá                                |
 | `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
