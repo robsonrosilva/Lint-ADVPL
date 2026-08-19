@@ -4,7 +4,8 @@
 
 **Created**: 2026-08-19
 
-**Status**: Draft — pronta para `/speckit-plan`; nenhum ponto de esclarecimento em aberto
+**Status**: Draft — pronta para `/speckit-plan`; nenhum ponto de esclarecimento em aberto.
+Reforçada em 2026-08-19 pela revisão de segurança da spec 001 (FR-027b1, FR-027b2, SC-016)
 
 **Input**: Descrição do usuário: "Ações de correção (codeAction) e regra de portabilidade de include. Escopo decidido pelo dono em 2026-08-19, registrado em `memoria/spec-002-escopo-decidido.md`."
 
@@ -318,6 +319,22 @@ desapareceu.
 - **FR-027b**: Ao ler configuração de outra extensão, o sistema MUST ler **exclusivamente** o que
   descreve diretórios de include. O arquivo da fonte 1 guarda também servidores, permissões e tokens
   salvos; nada além dos caminhos MUST ser lido, retido, registrado em log ou exibido.
+- **FR-027b1**: A extração dos caminhos MUST acontecer **no ponto de leitura**, e o objeto lido MUST
+  ser descartado ali mesmo. Nenhuma parte do arquivo além da lista de diretórios pode ser guardada em
+  variável, campo, cache ou estrutura que sobreviva à função que leu.
+
+  *Razão (revisão de segurança, 2026-08-19):* o risco prático não é ler o arquivo — é o objeto
+  completo viajar. Uma vez retido, ele acaba em log de depuração, em mensagem de erro ou em telemetria
+  sem que ninguém tenha decidido isso. Extrair e descartar de imediato remove a possibilidade em vez
+  de confiar em disciplina em cada ponto seguinte.
+- **FR-027b2**: Mensagem de erro, aviso ou registro de log referente à leitura das fontes de terceiros
+  MUST citar **apenas o caminho do arquivo e a natureza do problema**. O conteúdo lido — inteiro ou em
+  trecho — NEVER pode aparecer.
+
+  *Razão (revisão de segurança, 2026-08-19):* este é o vazamento mais provável de todos. Um
+  `JSON.parse` que falha e ecoa o texto recebido, ou um erro que carrega o objeto junto, publica os
+  tokens salvos no canal de log. O FR-027d já manda recuar em silêncio quando o formato não for
+  legível; o que este requisito acrescenta é que a **mensagem** desse recuo também não carregue nada.
 - **FR-027c**: O sistema MUST informar ao usuário, sob demanda, **qual** fonte da cadeia está em uso e
   quais diretórios ela produziu. Sem isso, "a regra não dispara" e "a regra dispara sobre a árvore
   errada" são indistinguíveis para quem usa.
@@ -428,8 +445,13 @@ desapareceu.
   o estado real da máquina de referência, em que as duas primeiras fontes existem e estão vazias.
 - **SC-015**: O usuário consegue descobrir, sem ler código, qual fonte da cadeia venceu e quais
   diretórios ela produziu.
-- **SC-016**: Nada além de caminhos de diretório é lido dos arquivos de configuração de terceiros —
-  verificável por teste sobre um arquivo que contenha também tokens e credenciais.
+- **SC-016**: Nada além de caminhos de diretório sai dos arquivos de configuração de terceiros. O
+  teste MUST usar um arquivo com **valor sentinela reconhecível** nos campos sensíveis (`permissions`,
+  `savedTokens`, `connectedServer`) e provar que essa sentinela não aparece em **lugar nenhum** da
+  saída: nem no valor devolvido, nem no log, nem no texto de exceção.
+
+  Verificar só o valor devolvido não basta — os dois caminhos por onde o conteúdo escapa de verdade
+  são o log e a mensagem de erro, e nenhum dos dois aparece no retorno da função.
 
 ---
 
@@ -502,9 +524,18 @@ desapareceu.
   regressão é silenciosa por natureza: a extensão continua funcionando e a regra passa a olhar outra
   árvore. O plano precisa dizer como isso é detectado — FR-027c é a primeira metade da resposta.
 - **Leitura de arquivo com credenciais**: a fonte 1 é o mesmo arquivo onde a extensão da TOTVS guarda
-  servidores, permissões e tokens salvos. FR-027b restringe a leitura aos caminhos; o risco é de
-  vazamento por descuido — log, mensagem de erro que ecoa o arquivo, objeto inteiro carregado e
-  repassado adiante.
+  servidores, permissões e tokens salvos — confirmado por inspeção em 2026-08-19: além de `includes`,
+  ele traz `permissions`, `savedTokens` e `connectedServer`.
+
+  A **revisão de segurança de 2026-08-19** apontou este como o único risco real que esta spec
+  introduz, e desdobrou o FR-027b em dois requisitos que atacam os dois caminhos por onde o conteúdo
+  escapa na prática: **reter o objeto** (FR-027b1) e **ecoá-lo numa mensagem** (FR-027b2). O SC-016
+  passou a exigir prova por valor sentinela, porque verificar só o retorno da função não alcança nem
+  o log nem o texto da exceção.
+
+  O que a revisão **não** encontrou: nenhuma vulnerabilidade no código já entregue pela spec 001 —
+  sem injeção de comando (`execFile` sem shell e com argumentos fixos), sem código dinâmico, sem
+  travessia de caminho explorável.
 - **Vigilância do sistema de arquivos**: manter o índice incremental exige observar mudanças no disco.
   Observador mal dimensionado sobre dezenas de milhares de arquivos é fonte clássica de travamento — é
   Princípio I sob outro nome.
@@ -530,7 +561,7 @@ desapareceu.
 | IV — Identidade, Severidade e Desligamento | FR-004, FR-008, FR-034, FR-035, FR-044; SC-007 |
 | V — Multilíngue por Construção | FR-009, FR-031; SC-011 |
 | VI — Fixture, Teste e Medição Antes da Regra | FR-036, FR-041 a FR-043, FR-045, FR-046; SC-009, SC-010, SC-012, SC-013 |
-| Arquitetura — Segurança | FR-027b; SC-016 — o arquivo da fonte 1 guarda tokens, e só os caminhos são lidos |
+| Arquitetura — Segurança | FR-027b, FR-027b1, FR-027b2; SC-016 — o arquivo da fonte 1 guarda tokens salvos, e só os caminhos saem dele |
 | Arquitetura — Portabilidade | FR-019, FR-020, FR-028 — a regra existe porque o AppServer roda em Linux e o sistema de arquivos lá distingue caixa |
 
 ---
