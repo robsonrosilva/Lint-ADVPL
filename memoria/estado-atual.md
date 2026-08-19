@@ -15,6 +15,11 @@ Branch **`001-esqueleto-lsp-harness`**, cinco commits à frente da `renew`. Nada
 O **MVP da spec 001 está pronto e verde**: `T001`–`T046` de 86. Existe uma extensão de lint ADVPL
 funcionando, com uma regra real do catálogo, sobre a arquitetura que a constituição exige.
 
+**A US2 também está pronta** — `T047`–`T062`, commit `cea5fe4`. O harness de medição existe e a
+**linha de base foi medida sobre o corpus real**: 35.659 fontes inventariados, 1.012 medidos em
+amostra estratificada. Relatório em `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.{json,md}`,
+confronto com o orçamento do Princípio I em `CONFRONTO-2026-08-19.md`. Falta `T063` em diante.
+
 Última execução, nesta máquina, sem cano na saída:
 
 | Comando | Resultado |
@@ -44,7 +49,7 @@ outro processo, então depurá-lo exige anexar.
 
 | Bloco | Tarefas | O que é |
 | ----- | ------- | ------- |
-| US2 | `T047`–`T062` | harness de medição, amostragem do corpus, relatório de linha de base |
+| ~~US2~~ | ~~`T047`–`T062`~~ | ✅ feito em 2026-08-19 — harness, amostragem, linha de base medida |
 | US3 | `T063`–`T072` | configuração por regra, troca de idioma, verificação de NLS |
 | Portões | `T073`–`T079` | vazamento de corpus, sincronismo de docs, README, quickstart |
 | Cobertura | `T083`–`T085` | lista de exclusões e o 98% aferido no fim |
