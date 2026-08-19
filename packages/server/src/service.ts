@@ -89,6 +89,21 @@ export class DiagnosticsService {
     this.options.publish({ uri, version: 0, diagnostics: [] })
   }
 
+  /**
+   * Reanalisa tudo o que está aberto.
+   *
+   * É o que a mudança de configuração aciona (US3): o usuário desliga uma regra
+   * ou muda a severidade e o painel reage, sem reabrir arquivo e sem reiniciar
+   * o editor.
+   *
+   * Passa pelo MESMO caminho debounced e cancelável da digitação — configuração
+   * não é atalho para furar o Princípio I. Uma rajada de mudanças produz uma
+   * análise, não uma por mudança.
+   */
+  revalidateAll(): void {
+    for (const uri of this.documents.keys()) this.schedule(uri, this.debounceMs)
+  }
+
   /** Aguarda o trabalho pendente terminar. Usado pelos testes e no encerramento. */
   async whenIdle(): Promise<void> {
     // Um giro basta na maioria dos casos, mas uma análise pode agendar outra;

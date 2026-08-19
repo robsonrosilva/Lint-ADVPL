@@ -120,6 +120,66 @@ suite('Extensão de arquivo em caixa alta', () => {
   })
 })
 
+suite('Configuração por regra, sem reiniciar (US3)', () => {
+  const config = () => vscode.workspace.getConfiguration('advplLint')
+
+  /** Espera o painel refletir a mudança — a revalidação é debounced. */
+  async function waitFor(
+    uri: vscode.Uri,
+    condition: (diagnostics: vscode.Diagnostic[]) => boolean,
+    timeoutMs = 15000,
+  ): Promise<vscode.Diagnostic[]> {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      const found = vscode.languages.getDiagnostics(uri)
+      if (condition(found)) return found
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
+    return vscode.languages.getDiagnostics(uri)
+  }
+
+  teardown(async () => {
+    await config().update('rules.CA3001.enabled', undefined, true)
+    await config().update('rules.CA3001.severity', undefined, true)
+  })
+
+  test('desligar a regra faz o diagnóstico sumir sem reiniciar o editor', async () => {
+    // US3, cenário 1. Nada de recarregar janela: o usuário muda a chave e vê.
+    const uri = vscode.Uri.file(path.join(WORKSPACE, 'exemplo.prw'))
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri))
+    await waitFor(uri, (d) => d.some((x) => codeValueOf(x) === 'CA3001'))
+
+    await config().update('rules.CA3001.enabled', false, true)
+
+    const depois = await waitFor(uri, (d) => !d.some((x) => codeValueOf(x) === 'CA3001'))
+    assert.equal(depois.filter((d) => codeValueOf(d) === 'CA3001').length, 0)
+  })
+
+  test('mudar a severidade altera só a severidade, sem reiniciar o editor', async () => {
+    // US3, cenário 2. Identificador e intervalo são contrato: supressão e
+    // filtro do usuário se apoiam neles e não podem mudar junto.
+    const uri = vscode.Uri.file(path.join(WORKSPACE, 'exemplo.prw'))
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri))
+    const antes = (await waitFor(uri, (d) => d.some((x) => codeValueOf(x) === 'CA3001'))).find(
+      (d) => codeValueOf(d) === 'CA3001',
+    )
+    assert.ok(antes)
+
+    await config().update('rules.CA3001.severity', 'error', true)
+
+    const depois = (
+      await waitFor(uri, (d) =>
+        d.some((x) => codeValueOf(x) === 'CA3001' && x.severity === vscode.DiagnosticSeverity.Error),
+      )
+    ).find((d) => codeValueOf(d) === 'CA3001')
+
+    assert.ok(depois)
+    assert.equal(depois.severity, vscode.DiagnosticSeverity.Error)
+    assert.equal(codeValueOf(depois), codeValueOf(antes))
+    assert.deepEqual(depois.range, antes.range)
+  })
+})
+
 suite('Codificação', () => {
   test('a extensão impõe windows1252 como padrão para advpl', () => {
     // FR-003 no caminho de edição: quem decodifica o byte CP1252 é o VS Code,

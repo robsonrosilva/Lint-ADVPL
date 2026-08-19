@@ -312,31 +312,31 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Configuração por regra
 
-- [ ] T063 [P] [US3] Escrever o teste: `advplLint.rules.CA3001.enabled: false` faz o diagnóstico
+- [X] T063 [P] [US3] Escrever o teste: `advplLint.rules.CA3001.enabled: false` faz o diagnóstico
       desaparecer **sem reiniciar** o editor (FR-013, US3 cenário 1)
-- [ ] T064 [P] [US3] Escrever o teste: mudar `advplLint.rules.CA3001.severity` altera a severidade
+- [X] T064 [P] [US3] Escrever o teste: mudar `advplLint.rules.CA3001.severity` altera a severidade
       exibida **mantendo** `code` e `range` (FR-013, US3 cenário 2)
-- [ ] T065 [US3] Implementar a resolução de configuração por documento e a revalidação em mudança de
+- [X] T065 [US3] Implementar a resolução de configuração por documento e a revalidação em mudança de
       configuração, passando pelo mesmo caminho debounced e cancelável — configuração não é atalho
       para furar o Princípio I
-- [ ] T066 [US3] Gerar as chaves de `contributes.configuration` **a partir do registro de regras**, não
+- [X] T066 [US3] Gerar as chaves de `contributes.configuration` **a partir do registro de regras**, não
       escrevê-las à mão no manifesto — é o que impede manifesto e motor de divergirem
       ([contracts/configuracao.md](contracts/configuracao.md))
 
 ### Os quatro idiomas
 
-- [ ] T067 [P] [US3] Escrever `packages/tooling/test/checks/nls.test.ts`: a verificação **falha** quando
+- [X] T067 [P] [US3] Escrever `packages/tooling/test/checks/nls.test.ts`: a verificação **falha** quando
       uma chave existe em um idioma e falta em qualquer outro, em **qualquer** dos dois mecanismos, e a
       mensagem de erro nomeia a chave e o arquivo (FR-015, SC-005)
-- [ ] T068 [US3] Implementar `packages/tooling/src/checks/nls.ts` comparando **todos os pares** dos
+- [X] T068 [US3] Implementar `packages/tooling/src/checks/nls.ts` comparando **todos os pares** dos
       quatro idiomas, consumindo a lista única de T021
-- [ ] T069 [P] [US3] Criar `packages/extension/package.nls.json` (en, base), `package.nls.pt-br.json`,
+- [X] T069 [P] [US3] Criar `packages/extension/package.nls.json` (en, base), `package.nls.pt-br.json`,
       `package.nls.es.json` e `package.nls.ru.json` com os rótulos de configuração (FR-015)
-- [ ] T070 [P] [US3] Escrever o teste de integração de idioma: trocar entre `pt-br`, `es`, `en` e `ru`
+- [X] T070 [P] [US3] Escrever o teste de integração de idioma: trocar entre `pt-br`, `es`, `en` e `ru`
       muda a mensagem e **não** muda `code` nem `range` (US3 cenário 3)
-- [ ] T071 [P] [US3] Escrever o teste do recuo: idioma sem tradução nossa cai no inglês e **nunca**
+- [X] T071 [P] [US3] Escrever o teste do recuo: idioma sem tradução nossa cai no inglês e **nunca**
       exibe o identificador cru da chave (US3 cenário 4)
-- [ ] T072 [US3] Ajustar o carregamento de tradução para satisfazer T070 e T071
+- [X] T072 [US3] Ajustar o carregamento de tradução para satisfazer T070 e T071
 
 **Checkpoint**: as três histórias funcionam de forma independente.
 

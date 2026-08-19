@@ -10,6 +10,7 @@ import {
 import { DiagnosticsService, SUPPORTED_LANGUAGES } from './service'
 import { RuleRegistry } from './rules/registry'
 import { ca3001 } from './rules/ca3001'
+import { CONFIG_ROOT, Settings } from './config/settings'
 import { createTranslator, loadBundles, normalizeLocale, type Translator } from './l10n/messages'
 import { createLogChannel } from './logging/channel'
 
@@ -36,6 +37,8 @@ registry.register(ca3001)
 let translate: Translator = (key) => key
 let service: DiagnosticsService | undefined
 
+const settings = new Settings()
+
 connection.onInitialize(async (params: InitializeParams): Promise<InitializeResult> => {
   const locale = normalizeLocale(params.locale)
   // Dois candidatos porque o caminho depende de como o servidor foi iniciado:
@@ -55,9 +58,8 @@ connection.onInitialize(async (params: InitializeParams): Promise<InitializeResu
     },
     translate: (rule, args) => translate(rule.messageKey, args),
     docHrefOf: (rule) => `${DOCS_BASE_URL}/${rule.id}.md`,
-    // A configuração por regra é da spec 001/US3. Aqui o padrão vale para todas.
-    isEnabled: () => true,
-    severityOf: (rule) => rule.defaultSeverity,
+    isEnabled: (rule) => settings.isEnabled(rule),
+    severityOf: (rule) => settings.severityOf(rule),
   })
 
   log.info(() => `servidor pronto, idioma ${locale}, ${registry.all().length} regra(s)`)
@@ -70,6 +72,19 @@ connection.onInitialize(async (params: InitializeParams): Promise<InitializeResu
       textDocumentSync: TextDocumentSyncKind.Full,
     },
   }
+})
+
+/**
+ * Mudança de configuração revalida o que está aberto (US3).
+ *
+ * O cliente manda o bloco inteiro; o servidor troca o estado e reanalisa pelo
+ * mesmo caminho debounced — configuração não é atalho para furar o Princípio I.
+ */
+connection.onDidChangeConfiguration((change) => {
+  const raw = (change.settings as Record<string, unknown> | undefined)?.[CONFIG_ROOT]
+  settings.update(raw)
+  log.info(() => 'configuração mudou, revalidando documentos abertos')
+  service?.revalidateAll()
 })
 
 connection.onDidOpenTextDocument(({ textDocument }) => {
