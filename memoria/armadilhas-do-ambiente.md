@@ -81,3 +81,18 @@ normalizadas e os testes passam sobre conteúdo que ninguém escreveu.
 
 Heredoc do bash come barra invertida em expressão regular. Para script com `\\`, escreva o arquivo
 com a ferramenta de escrita em vez de heredoc.
+
+## VS Code
+
+**O painel de Problemas NÃO lista diagnóstico de severidade `Hint`.** Ele mostra `Error`, `Warning` e
+`Information`. Um `Hint` aparece só como sublinhado pontilhado discreto no editor e pelo balão ao
+passar o mouse. Custou uma sessão inteira de diagnóstico: `CA3001` foi rebaixada a `Hint` por volume
+medido e a extensão passou a parecer quebrada — abrir um fonte real com seis violações não mostrava
+nada. **Ao escolher severidade, conferir como o editor EXIBE aquela severidade**, não só quanto a
+regra dispara.
+
+**A instância de desenvolvimento (F5) roda com `--disable-extensions`.** Todas as outras extensões
+ficam desligadas nela. Isso é ótimo para isolar o comportamento — e é o teste decisivo para saber em
+que janela se está: se um diagnóstico de outra extensão aparece no painel, **não** é a janela de
+desenvolvimento, e portanto a extensão nova não está rodando ali. Ela não está instalada no VS Code
+normal; só existe sob F5 ou empacotada em `.vsix`.

@@ -69,7 +69,7 @@ suite('Diagnóstico no painel de problemas', () => {
     const ca3001 = diagnostics.find((d) => codeValueOf(d) === 'CA3001')
 
     assert.ok(ca3001, `nenhum CA3001 veio; vieram: ${diagnostics.map(codeValueOf).join(', ')}`)
-    assert.equal(ca3001.severity, vscode.DiagnosticSeverity.Hint)
+    assert.equal(ca3001.severity, vscode.DiagnosticSeverity.Information)
     assert.equal(ca3001.source, 'advpl-lint')
     assert.equal(ca3001.range.start.line, 2)
     assert.equal(ca3001.range.start.character, 0)
@@ -94,6 +94,29 @@ suite('Diagnóstico no painel de problemas', () => {
     assert.ok(ca3001)
     assert.notEqual(ca3001.message, 'rule.CA3001.message')
     assert.ok(ca3001.message.length > 10)
+  })
+})
+
+suite('Extensão de arquivo em caixa alta', () => {
+  test('reconhece a linguagem em arquivo .PRX, e não só .prx', async () => {
+    // Fonte Protheus vem com a extensão nas duas caixas — no corpus real, boa
+    // parte dos `.PRX` e `.PRW` está em maiúscula. Se o editor não casar a
+    // extensão sem olhar a caixa, a extensão nunca ativa nesses arquivos e o
+    // usuário vê um painel de problemas vazio, sem nenhum erro que explique.
+    const uri = vscode.Uri.file(path.join(WORKSPACE, 'EXEMPLO.PRX'))
+    const doc = await vscode.workspace.openTextDocument(uri)
+
+    assert.equal(doc.languageId, 'advpl', `linguagem detectada foi "${doc.languageId}"`)
+  })
+
+  test('emite diagnóstico em arquivo com extensão em caixa alta', async () => {
+    const uri = vscode.Uri.file(path.join(WORKSPACE, 'EXEMPLO.PRX'))
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri))
+
+    const diagnostics = await waitForDiagnostics(uri)
+    const encontrados = diagnostics.filter((d) => codeValueOf(d) === 'CA3001')
+
+    assert.equal(encontrados.length, 2, 'as duas diretivas em caixa alta deveriam ser marcadas')
   })
 })
 

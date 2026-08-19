@@ -242,12 +242,22 @@ describe('Registro de regras — sobreposição de severidade', () => {
   })
 })
 
-describe('CA3001 — a sobreposição real', () => {
-  it('nasce como Hint, com a razão medida registrada no código', async () => {
+describe('CA3001 — a severidade sai da tabela, sem sobreposição', () => {
+  it('nasce como Information, o que a tabela mapeia para MINOR', async () => {
     const { ca3001 } = await import('../../../src/rules/ca3001')
     const registry = new RuleRegistry()
     registry.register(ca3001)
-    assert.equal(registry.get('CA3001')?.defaultSeverity, DiagnosticSeverity.Hint)
-    assert.match(ca3001.severityOverride?.reason ?? '', /71,9%/)
+    assert.equal(registry.get('CA3001')?.defaultSeverity, DiagnosticSeverity.Information)
+  })
+
+  it('não sobrepõe a tabela', async () => {
+    // A sobreposição para `Hint` existiu entre 2026-08-19 e a mesma data, e foi
+    // revertida por um motivo que a medição de volume não enxergava: o painel
+    // de Problemas do VS Code lista Error, Warning e Information — e NÃO lista
+    // Hint. Como Hint, a única regra do produto ficava invisível no lugar onde
+    // o usuário vai procurar. O mecanismo de sobreposição continua existindo e
+    // testado acima; quem não o usa é esta regra.
+    const { ca3001 } = await import('../../../src/rules/ca3001')
+    assert.equal(ca3001.severityOverride, undefined)
   })
 })

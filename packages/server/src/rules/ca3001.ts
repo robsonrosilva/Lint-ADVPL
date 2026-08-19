@@ -1,5 +1,3 @@
-import { DiagnosticSeverity } from 'vscode-languageserver-types'
-
 import type { RuleDefinition } from './registry'
 import type { RuleContext } from './context'
 import { rangeAt } from '../document/analyzed-document'
@@ -43,24 +41,20 @@ export const ca3001: RuleDefinition = {
   messageKey: 'rule.CA3001.message',
   projectRationale: null,
 
-  // A tabela mapeia MINOR para Information, e continua certa como TRADUÇÃO da
-  // severidade de catálogo. Esta regra sobrepõe por VOLUME, que é outro eixo:
+  // NÃO sobrepõe a tabela: a severidade exibida sai dela, e MINOR mapeia para
+  // Information.
   //
-  // Medido em 2026-08-19 sobre 6.000 fontes reais do corpus: das 15.306
-  // diretivas #include encontradas, 11.006 estão em caixa alta — 71,9%. Como
-  // Information, uma única regra MINOR de estilo dominaria o painel de
-  // problemas de qualquer projeto Protheus real, e o Princípio III é explícito
-  // em que regra ruidosa treina o usuário a ignorar o painel inteiro.
+  // Esta regra JÁ sobrepôs para `Hint`, em 2026-08-19, com razão medida — 71,9%
+  // das 15.306 diretivas do corpus estão em caixa alta, e uma regra de estilo
+  // com esse volume dominaria o painel. A medição estava certa; a conclusão,
+  // não. O painel de Problemas do VS Code lista Error, Warning e Information e
+  // **não lista Hint**. Como Hint, a única regra do produto sumia exatamente do
+  // lugar onde o usuário vai procurar — foi assim que ela foi encontrada, um
+  // fonte real aberto sem nenhuma crítica à vista.
   //
-  // Como Hint, a violação continua marcada no código e a ação de correção
-  // continua oferecida — só não entulha a lista.
-  severityOverride: {
-    severity: DiagnosticSeverity.Hint,
-    reason:
-      '71,9% das diretivas #include do corpus (11.006 de 15.306, medido em 2026-08-19 sobre ' +
-      '6.000 fontes) estão em caixa alta. Como Information, esta regra sozinha dominaria o ' +
-      'painel de problemas — o ruído que o Princípio III proíbe.',
-  },
+  // O volume continua real e continua sem resposta aqui. A resposta é a ação de
+  // "corrigir todas deste arquivo" da spec 002: com ela, muitas ocorrências
+  // viram um clique, e o volume deixa de ser argumento para esconder.
 
   run(context: RuleContext): void {
     const { document, scan, token, report, startLine, endLine } = context
