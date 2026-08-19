@@ -4,8 +4,20 @@
     "rootDir": ".",
     "outDir": "out",
     "tsBuildInfoFile": "out/.tsbuildinfo",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"],
-  "exclude": ["test/fixtures/**"]
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "exclude": [
+    "test/fixtures/**"
+  ],
+  "references": [
+    {
+      "path": "../server"
+    }
+  ]
 }

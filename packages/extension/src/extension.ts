@@ -22,12 +22,34 @@ import { registerEncodingGuard } from './encoding-guard'
 
 let client: LanguageClient | undefined
 
-export function activate(context: ExtensionContext): void {
+/**
+ * O que a extensão devolve a quem a ativa.
+ *
+ * `activationMs` é o tempo do trabalho PRÓPRIO da ativação — o corpo desta
+ * função, e nada mais. Ele existe porque o orçamento do Princípio I tem duas
+ * metades e só esta está sob controle do código: quem chama `activate()` mede a
+ * ativação COMPLETA, que inclui o editor ler, compilar e resolver os `require`
+ * do pacote. Medido em 2026-08-19: 18,4 ms de trabalho próprio contra 200 a
+ * 430 ms de carregamento.
+ *
+ * Sem este número, um `await` indevido acrescentado aqui se esconderia dentro da
+ * variação do carregamento — que depende do disco e do estado do editor — e
+ * nenhum portão pegaria.
+ */
+export interface AdvplLintApi {
+  readonly activationMs: number
+}
+
+export function activate(context: ExtensionContext): AdvplLintApi {
+  const started = performance.now()
+
   client = createClient(context)
   registerEncodingGuard(context)
 
   // Sem await: a ativação retorna e o servidor sobe em paralelo.
   void client.start()
+
+  return { activationMs: performance.now() - started }
 }
 
 export function deactivate(): Promise<void> | undefined {

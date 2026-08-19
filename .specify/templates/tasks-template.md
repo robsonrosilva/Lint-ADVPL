@@ -9,7 +9,16 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
+**Tests**: NÃO são opcionais neste repositório. O Princípio VI da constituição — NÃO NEGOCIÁVEL —
+determina que **toda tarefa de implementação seja precedida pela sua tarefa de teste, escrita para
+falhar primeiro**, e subordina explicitamente a ele qualquer template, skill ou ferramenta que
+declare o contrário. Artefato de tarefas com implementação órfã de teste é artefato **a refazer**,
+não a executar. A cobertura mínima de 98% em linhas, funções e ramos é portão de merge.
+
+> Este parágrafo substitui o texto padrão do spec-kit, que dizia "Tests are OPTIONAL - only include
+> them if explicitly requested". A contradição foi neutralizada à mão na geração de tarefas da spec
+> 001 antes de ser corrigida aqui; um princípio não negociável que depende de alguém lembrar de
+> contrariar o padrão da ferramenta não está protegido.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -80,7 +89,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (OBRIGATÓRIOS — escritos ANTES da implementação, para falhar primeiro) ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
@@ -106,7 +115,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (OBRIGATÓRIOS — escritos ANTES da implementação, para falhar primeiro) ⚠️
 
 - [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
@@ -128,7 +137,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (OBRIGATÓRIOS — escritos ANTES da implementação, para falhar primeiro) ⚠️
 
 - [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
@@ -154,7 +163,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
+- [ ] TXXX [P] Testes unitários adicionais em tests/unit/ — nunca "se pedido": ver o Princípio VI
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
 

@@ -8,9 +8,10 @@
 - [**Estado atual**](estado-atual.md) — onde parou, o que falta, o que espera decisão. **Leia primeiro**
 - [**Armadilhas do ambiente**](armadilhas-do-ambiente.md) — erros de ferramenta que já custaram tempo aqui
 - [Escopo decidido da spec 002](spec-002-escopo-decidido.md) — ações de correção + portabilidade de include
+- [Documentação da linguagem na TDN](documentacao-tdn.md) — o catálogo diz o que apontar; a TDN diz como a linguagem funciona
 - [Corpus externo de fontes reais](corpus-externo.md) — onde está, por que não pode ser versionado, e como usá-lo para derivar fixture
 - [Distribuição de tamanho dos fontes](distribuicao-tamanho-fontes.md) — p50 309, p95 2.933, máx 24.636 linhas
-- [Orçamento de desempenho subdimensionado](orcamento-desempenho-subdimensionado.md) — o "1.000 linhas" do Princípio I fica abaixo do p95 real
+- [Orçamento de desempenho](orcamento-desempenho-subdimensionado.md) — todos os itens aferidos (constituição v2.4.0); a ativação virou dois números, e só um está sob controle do código
 - [Identificador de regra](identificador-de-regra.md) — id puro do catálogo (`CA3001`); regras próprias na faixa `PJ####`
 - [Identidade da extensão](identidade-da-extensao.md) — publica independente da atual; assumir a antiga é spec futura
 - [Severidade MINOR → Information](severidade-minor-information.md) — a tabela mapeia por catálogo; volume se resolve por sobreposição com razão

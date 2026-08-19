@@ -456,6 +456,18 @@ número na mão**, nunca por impressão.
 > registrada no código; o registro rejeita sobreposição sem justificativa. A tabela segue
 > `MINOR → Information` para todas as demais.
 
+⚠️ **Segunda emenda, 2026-08-19, ainda no mesmo dia: a sobreposição para `Hint` foi REVERTIDA.**
+`CA3001` voltou a `Information` e não sobrepõe mais nada.
+
+O painel de Problemas do VS Code lista `Error`, `Warning` e `Information` — e **não lista `Hint`**.
+Descoberto na prática: um fonte real de 9.636 linhas, com seis `#INCLUDE` em caixa alta, aberto no
+editor sem nenhuma crítica à vista. O motor estava certo (verificado sobre o mesmo arquivo: seis
+disparos em 4,49 ms); o diagnóstico é que não chegava à tela.
+
+A medição de volume continua valendo — a conclusão tirada dela é que não. A resposta ao volume é a
+ação de "corrigir todas deste arquivo" da spec 002, não esconder a regra. O mecanismo de
+`severityOverride` permanece no contrato e testado; apenas esta regra deixou de usá-lo.
+
 ### D4 — Idiomas: os **quatro do Protheus**, não dois
 
 A extensão acompanha os idiomas em que o Protheus é localizado: **português do Brasil, espanhol,

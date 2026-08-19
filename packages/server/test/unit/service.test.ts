@@ -42,7 +42,7 @@ describe('Serviço — publicação de diagnóstico', () => {
     assertDiagnostics(lastOf(published), [
       {
         code: 'CA3001',
-        severity: DiagnosticSeverity.Hint,
+        severity: DiagnosticSeverity.Information,
         range: { start: { line: 1, character: 0 }, end: { line: 1, character: 8 } },
       },
     ])
@@ -225,5 +225,104 @@ describe('Serviço — padrões', () => {
     await service.whenIdle()
     assert.equal(lastOf(published).length, 2)
     assert.equal(published[published.length - 1]?.version, 2)
+  })
+})
+
+describe('Serviço — configuração muda o resultado sem reiniciar (US3)', () => {
+  it('desligar a regra faz o diagnóstico desaparecer, sem reabrir o documento', async () => {
+    // US3, cenário 1. O usuário mexe na chave e o painel reage — reiniciar o
+    // editor para ver o efeito de uma configuração é o tipo de atrito que faz
+    // as chaves nunca serem usadas.
+    let ligada = true
+    const registry = new RuleRegistry()
+    registry.register(ca3001)
+    const published: PublishedDiagnostics[] = []
+    const service = new DiagnosticsService({
+      registry,
+      publish: (payload) => published.push(payload),
+      translate: (rule) => `mensagem de ${rule.id}`,
+      docHrefOf: (rule) => `https://docs/${rule.id}.md`,
+      isEnabled: () => ligada,
+      severityOf: (rule) => rule.defaultSeverity,
+      debounceMs: 1,
+    })
+
+    service.open({ ...DOC, text: '#INCLUDE "TOTVS.CH"\n' })
+    await service.whenIdle()
+    assert.equal(lastOf(published).length, 1)
+
+    ligada = false
+    service.revalidateAll()
+    await service.whenIdle()
+
+    assertDiagnostics(lastOf(published), [])
+    service.dispose()
+  })
+
+  it('mudar a severidade mantém identificador e intervalo', async () => {
+    // US3, cenário 2. O que muda é a severidade exibida — e SÓ ela. Se o
+    // identificador ou a posição mudassem junto, supressão e filtro do usuário
+    // quebrariam a cada troca de configuração.
+    // A anotação é necessária: `DiagnosticSeverity` do protocolo é um objeto de
+    // constantes, não um enum, então sem ela o TypeScript infere o tipo
+    // LITERAL `3` e a reatribuição vira erro.
+    let severidade: DiagnosticSeverity = DiagnosticSeverity.Information
+    const registry = new RuleRegistry()
+    registry.register(ca3001)
+    const published: PublishedDiagnostics[] = []
+    const service = new DiagnosticsService({
+      registry,
+      publish: (payload) => published.push(payload),
+      translate: (rule) => `mensagem de ${rule.id}`,
+      docHrefOf: (rule) => `https://docs/${rule.id}.md`,
+      isEnabled: () => true,
+      severityOf: () => severidade,
+      debounceMs: 1,
+    })
+
+    service.open({ ...DOC, text: '// topo\n#INCLUDE "TOTVS.CH"\n' })
+    await service.whenIdle()
+    const antes = lastOf(published)[0]!
+
+    severidade = DiagnosticSeverity.Error
+    service.revalidateAll()
+    await service.whenIdle()
+    const depois = lastOf(published)[0]!
+
+    assert.equal(depois.severity, DiagnosticSeverity.Error)
+    assert.equal(depois.code, antes.code)
+    assert.deepEqual(depois.range, antes.range)
+    service.dispose()
+  })
+
+  it('revalidar sem documento aberto não quebra nem publica nada', async () => {
+    const { service, published } = serviceWith()
+
+    service.revalidateAll()
+    await service.whenIdle()
+
+    assert.equal(published.length, 0)
+    service.dispose()
+  })
+
+  it('a revalidação passa pelo mesmo caminho debounced e cancelável', async () => {
+    // Configuração não é atalho para furar o Princípio I: uma rajada de
+    // mudanças de configuração não pode disparar uma análise por mudança.
+    const { service, published } = serviceWith({ debounceMs: 30 })
+    service.open({ ...DOC, text: '#INCLUDE "TOTVS.CH"\n' })
+    await service.whenIdle()
+    const depoisDaAbertura = published.length
+
+    service.revalidateAll()
+    service.revalidateAll()
+    service.revalidateAll()
+    await service.whenIdle()
+
+    assert.equal(
+      published.length - depoisDaAbertura,
+      1,
+      'três mudanças seguidas deveriam produzir uma análise, não três',
+    )
+    service.dispose()
   })
 })

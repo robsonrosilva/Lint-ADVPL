@@ -9,12 +9,17 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 | [`memoria/estado-atual.md`](memoria/estado-atual.md) | onde o projeto parou, o que falta, o que espera decisão do dono |
 | [`memoria/armadilhas-do-ambiente.md`](memoria/armadilhas-do-ambiente.md) | erros de ferramenta que **já** custaram tempo aqui — leia antes de rodar qualquer comando |
 
-**Resumo de 2026-08-19**: branch `002-correcao-e-portabilidade-include`, nascida da
-`001-esqueleto-lsp-harness`. O MVP da spec 001 está pronto e verde (`T001`–`T046` de 86): 139 testes
-unitários e 6 de integração passando, cobertura 100/98,47/100. `npm run verify` **falha** de propósito
-— encadeia três verificações que ainda não foram escritas (`T067`, `T073`, `T075`). A **spec 002 está
-escrita** e sem esclarecimento pendente, mas **parada**: a implementação retoma pela 001, porque a
-medição de custo da 002 depende do harness que é a US2 da 001. Nada mergeado.
+**Resumo de 2026-08-19**: a **spec 001 está implementada** — `T001`–`T085` de 86, na branch
+`001-esqueleto-lsp-harness`. Falta só a `T086`, a `/speckit-converge`, obrigatória antes do merge.
+`npm run verify` passa **inteiro**: 347 testes unitários com cobertura 99,81/98,80/99,47, mais 10 de
+integração em VS Code real e 7 de protocolo nos quatro idiomas. A linha de base foi medida sobre o
+corpus real e está versionada em `specs/001-esqueleto-lsp-harness/baseline/`.
+
+A **spec 002 já está escrita** (branch `002-correcao-e-portabilidade-include`), sem esclarecimento
+pendente, parada até a 001 fechar.
+
+**A spec 001 foi mergeada na `master` em 2026-08-19** (merge `70c5916`): a `master` deixou de ser a
+biblioteca legada e passou a ser a extensão. O `npm run verify` roda verde nela.
 
 ## Visão Geral
 
@@ -24,7 +29,7 @@ medição de custo da 002 depende do harness que é a US2 da 001. Nada mergeado.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.2.1**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.4.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
@@ -53,9 +58,10 @@ README.md          ⚠️ ainda descreve a lib LEGADA — reescrever é a tarefa
 SONNAR-RULES.md    detalhamento das regras TOTVS Code Analyzer (apoio, gerado por IA)
 ```
 
-**Comandos**: `npm run typecheck` · `lint` · `test:unit` (com o limiar de cobertura) ·
-`test:integration` (reconstrói antes) · `build` · `verify` (portão completo — hoje falha nas três
-verificações que faltam) · `baseline` (ainda não existe). **F5** abre a instância de desenvolvimento.
+**Comandos**: `npm run typecheck` · `lint` · `test:unit` (com o limiar de cobertura, lendo as
+exclusões de `coverage-exclusions.json`) · `test:integration` (reconstrói antes) · `build` ·
+`verify` (portão completo — **verde**) · `baseline` (mede o corpus) · `fixture:large` (gera o fonte
+de 24.636 linhas). **F5** abre a instância de desenvolvimento, com `--disable-extensions`.
 
 ## O legado — como consultar sem copiar
 
@@ -168,11 +174,11 @@ português).
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
-| ~~**Ordem do trabalho**~~      | ✅ resolvido — **especificar a 002 primeiro** (feito), **implementar a 001 primeiro**. A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
+| ~~**Ordem do trabalho**~~      | ✅ resolvido — especificar a 002 primeiro (feito), implementar a 001 primeiro (feito até `T085`). A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
 | CI                             | não decidida — verificação local vale até lá                                |
-| `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
+| ~~`tasks-template` teste opcional~~ | ✅ resolvido — corrigido nos **seis** lugares onde a contradição estava, não nos dois citados (`T081`) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
-| Linha de base de desempenho    | orçamento provisório **subdimensionado**: o p95 real é 2.933 linhas, não 1.000 |
+| ~~Linha de base de desempenho~~ | ✅ resolvido — constituição **v2.4.0**, todos os itens do orçamento medidos e com teste. `TODO(BENCHMARK_BASE)` fechado |
 | `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
 | Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
 | `package-lock.json` ignorado   | herdado do legado; para extensão (não é lib publicada) versionar daria build reproduzível |
@@ -195,7 +201,20 @@ Proveniência e o que **não** foi trazido: [PROVENIENCIA.md](referencias/totvs/
 | `skill-code-review.md`, `skill-sql-code-review.md` | como a TOTVS revisa ADVPL/TLPP e SQL         |
 | `advpl-tlpp-skills-reference.md`             | índice do pacote — o que existe e não foi trazido |
 
-Fora do repositório: `https://code.visualstudio.com/api` (providers, LSP, ativação) e
+**Documentação oficial da linguagem, na TDN** (informada pelo dono em 2026-08-19). Na hierarquia da
+constituição, a TDN vem **logo abaixo do catálogo oficial** e **acima** das skills e dos documentos
+gerados por IA deste repositório:
+
+| Fonte | Para quê |
+| ----- | -------- |
+| `https://tdn.totvs.com/display/tec/AdvPL` | a linguagem ADVPL — sintaxe, funções, comportamento do pré-processador |
+| `https://tdn.totvs.com/display/tec/TLPP` | TLPP — orientação a objetos, anotações, o que difere do ADVPL |
+
+Use-as para **decidir comportamento de regra** quando o catálogo não responde: o catálogo diz o que
+apontar, a TDN diz como a linguagem funciona. Toda consulta que sustentar decisão de regra entra na
+spec **com a data**, como manda a constituição — página de wiki muda sem aviso.
+
+Fora do repositório, ainda: `https://code.visualstudio.com/api` (providers, LSP, ativação) e
 `github.com/totvs/engpro-advpl-tlpp-skills` (origem das cópias, caminho de atualização).
 
 ⚠️ **Não edite os arquivos de `referencias/totvs/`.** São cópia fiel; correção vive em documento

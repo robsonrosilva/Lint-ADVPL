@@ -245,57 +245,57 @@ rodar sem o corpus e confirmar que avisa, encerra com sucesso, e não quebra a s
 
 ### Configuração do corpus
 
-- [ ] T047 [P] [US2] Escrever `packages/tooling/test/harness/corpus-config.test.ts`: `ADVPL_LINT_CORPUS`
+- [X] T047 [P] [US2] Escrever `packages/tooling/test/harness/corpus-config.test.ts`: `ADVPL_LINT_CORPUS`
       vence sobre `corpus.local.json`; sem os dois, o corpus é declarado indisponível (FR-023)
-- [ ] T048 [US2] Implementar `packages/tooling/src/harness/corpus-config.ts`
+- [X] T048 [US2] Implementar `packages/tooling/src/harness/corpus-config.ts`
 
 ### Inventário com cache
 
-- [ ] T049 [P] [US2] Escrever `packages/tooling/test/harness/inventory.test.ts`: o percurso filtra por
+- [X] T049 [P] [US2] Escrever `packages/tooling/test/harness/inventory.test.ts`: o percurso filtra por
       extensão **durante** a varredura; o cache é invalidado quando a raiz muda; e o inventário guarda
       **apenas** caminho e tamanho, nunca conteúdo (FR-023)
-- [ ] T050 [US2] Implementar `packages/tooling/src/harness/inventory.ts` gravando `.corpus-cache.json`
+- [X] T050 [US2] Implementar `packages/tooling/src/harness/inventory.ts` gravando `.corpus-cache.json`
       local e não versionado (R5)
 
 ### Amostragem estratificada
 
-- [ ] T051 [P] [US2] Escrever `packages/tooling/test/harness/sample.test.ts`: a amostra soma no mínimo
+- [X] T051 [P] [US2] Escrever `packages/tooling/test/harness/sample.test.ts`: a amostra soma no mínimo
       1.000 fontes e cobre p50, p90, p95, p99 e o maior arquivo — amostragem uniforme sub-representaria
       a cauda, que é onde o Princípio I corre risco (SC-006)
-- [ ] T052 [US2] Implementar `packages/tooling/src/harness/sample.ts` com estratificação por tamanho em bytes
+- [X] T052 [US2] Implementar `packages/tooling/src/harness/sample.ts` com estratificação por tamanho em bytes
 
 ### Medição
 
-- [ ] T053 [P] [US2] Escrever `packages/tooling/test/harness/measure.test.ts`: o cronômetro cobre
+- [X] T053 [P] [US2] Escrever `packages/tooling/test/harness/measure.test.ts`: o cronômetro cobre
       **apenas** a análise, com a leitura de disco fora; o resultado é a mediana de várias repetições;
       e o custo incremental de uma regra é a diferença entre rodar com e sem ela (FR-020, FR-021)
-- [ ] T054 [US2] Implementar `packages/tooling/src/harness/measure.ts` com pool de `worker_threads`
+- [X] T054 [US2] Implementar `packages/tooling/src/harness/measure.ts` com pool de `worker_threads`
       dimensionado em `min(12, núcleos - 2)` (R5)
 
 ### Relatório
 
-- [ ] T055 [P] [US2] Escrever `packages/tooling/test/harness/report.test.ts` validando o esquema de
+- [X] T055 [P] [US2] Escrever `packages/tooling/test/harness/report.test.ts` validando o esquema de
       [contracts/relatorio-baseline.md](contracts/relatorio-baseline.md) — e, explicitamente, que a
       saída **não contém** caminho de arquivo do corpus, trecho de fonte nem nome de programa
       (FR-022, FR-023)
-- [ ] T056 [US2] Implementar `packages/tooling/src/harness/report.ts` gerando
+- [X] T056 [US2] Implementar `packages/tooling/src/harness/report.ts` gerando
       `specs/001-esqueleto-lsp-harness/baseline/AAAA-MM-DD.json` e `.md`
-- [ ] T057 [US2] Implementar a saída do material de revisão de falso positivo em `.fp-review/`, **local
+- [X] T057 [US2] Implementar a saída do material de revisão de falso positivo em `.fp-review/`, **local
       e não versionado**. Do relatório sobe apenas o agregado (FR-022)
 
 ### Corpus ausente
 
-- [ ] T058 [P] [US2] Escrever o teste do caminho sem corpus: a suíte passa inteira e a medição avisa e
+- [X] T058 [P] [US2] Escrever o teste do caminho sem corpus: a suíte passa inteira e a medição avisa e
       encerra **com sucesso**, não com erro de execução (FR-024)
-- [ ] T059 [US2] Ligar `npm run baseline` ao encadeamento inventário → amostra → medição → relatório
+- [X] T059 [US2] Ligar `npm run baseline` ao encadeamento inventário → amostra → medição → relatório
 
 ### Execução real
 
-- [ ] T060 [US2] Rodar a medição real sobre `D:\Workspace\FONTES` e commitar
+- [X] T060 [US2] Rodar a medição real sobre `D:\Workspace\FONTES` e commitar
       `baseline/AAAA-MM-DD.{json,md}` (SC-006)
-- [ ] T061 [US2] Revisar a amostra de disparos de `CA3001`, apurar a taxa de falso positivo e registrar
+- [X] T061 [US2] Revisar a amostra de disparos de `CA3001`, apurar a taxa de falso positivo e registrar
       **somente o agregado** no relatório (SC-007)
-- [ ] T062 [US2] Confrontar os números medidos com o orçamento provisório do Princípio I e registrar a
+- [X] T062 [US2] Confrontar os números medidos com o orçamento provisório do Princípio I e registrar a
       divergência do "p95 de fonte de 1.000 linhas" contra o p95 real de 2.933 linhas (US2 cenário 5)
 
 **Checkpoint**: existe régua. A partir daqui, toda regra futura entra com custo medido.
@@ -312,31 +312,31 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Configuração por regra
 
-- [ ] T063 [P] [US3] Escrever o teste: `advplLint.rules.CA3001.enabled: false` faz o diagnóstico
+- [X] T063 [P] [US3] Escrever o teste: `advplLint.rules.CA3001.enabled: false` faz o diagnóstico
       desaparecer **sem reiniciar** o editor (FR-013, US3 cenário 1)
-- [ ] T064 [P] [US3] Escrever o teste: mudar `advplLint.rules.CA3001.severity` altera a severidade
+- [X] T064 [P] [US3] Escrever o teste: mudar `advplLint.rules.CA3001.severity` altera a severidade
       exibida **mantendo** `code` e `range` (FR-013, US3 cenário 2)
-- [ ] T065 [US3] Implementar a resolução de configuração por documento e a revalidação em mudança de
+- [X] T065 [US3] Implementar a resolução de configuração por documento e a revalidação em mudança de
       configuração, passando pelo mesmo caminho debounced e cancelável — configuração não é atalho
       para furar o Princípio I
-- [ ] T066 [US3] Gerar as chaves de `contributes.configuration` **a partir do registro de regras**, não
+- [X] T066 [US3] Gerar as chaves de `contributes.configuration` **a partir do registro de regras**, não
       escrevê-las à mão no manifesto — é o que impede manifesto e motor de divergirem
       ([contracts/configuracao.md](contracts/configuracao.md))
 
 ### Os quatro idiomas
 
-- [ ] T067 [P] [US3] Escrever `packages/tooling/test/checks/nls.test.ts`: a verificação **falha** quando
+- [X] T067 [P] [US3] Escrever `packages/tooling/test/checks/nls.test.ts`: a verificação **falha** quando
       uma chave existe em um idioma e falta em qualquer outro, em **qualquer** dos dois mecanismos, e a
       mensagem de erro nomeia a chave e o arquivo (FR-015, SC-005)
-- [ ] T068 [US3] Implementar `packages/tooling/src/checks/nls.ts` comparando **todos os pares** dos
+- [X] T068 [US3] Implementar `packages/tooling/src/checks/nls.ts` comparando **todos os pares** dos
       quatro idiomas, consumindo a lista única de T021
-- [ ] T069 [P] [US3] Criar `packages/extension/package.nls.json` (en, base), `package.nls.pt-br.json`,
+- [X] T069 [P] [US3] Criar `packages/extension/package.nls.json` (en, base), `package.nls.pt-br.json`,
       `package.nls.es.json` e `package.nls.ru.json` com os rótulos de configuração (FR-015)
-- [ ] T070 [P] [US3] Escrever o teste de integração de idioma: trocar entre `pt-br`, `es`, `en` e `ru`
+- [X] T070 [P] [US3] Escrever o teste de integração de idioma: trocar entre `pt-br`, `es`, `en` e `ru`
       muda a mensagem e **não** muda `code` nem `range` (US3 cenário 3)
-- [ ] T071 [P] [US3] Escrever o teste do recuo: idioma sem tradução nossa cai no inglês e **nunca**
+- [X] T071 [P] [US3] Escrever o teste do recuo: idioma sem tradução nossa cai no inglês e **nunca**
       exibe o identificador cru da chave (US3 cenário 4)
-- [ ] T072 [US3] Ajustar o carregamento de tradução para satisfazer T070 e T071
+- [X] T072 [US3] Ajustar o carregamento de tradução para satisfazer T070 e T071
 
 **Checkpoint**: as três histórias funcionam de forma independente.
 
@@ -348,49 +348,49 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Vazamento de corpus
 
-- [ ] T073 [P] Escrever `packages/tooling/test/checks/corpus.test.ts`: a verificação **falha** com fonte
+- [X] T073 [P] Escrever `packages/tooling/test/checks/corpus.test.ts`: a verificação **falha** com fonte
       ADVPL versionado fora de `packages/*/test/fixtures/`, com fixture sem cabeçalho de autoria, e com
       fixture acima de 300 linhas (FR-027, SC-008)
-- [ ] T074 Implementar `packages/tooling/src/checks/corpus.ts`
+- [X] T074 Implementar `packages/tooling/src/checks/corpus.ts`
 
 ### Sincronismo de documentação
 
-- [ ] T075 [P] Escrever `packages/tooling/test/checks/docs.test.ts`: a verificação **falha** nos dois
+- [X] T075 [P] Escrever `packages/tooling/test/checks/docs.test.ts`: a verificação **falha** nos dois
       sentidos — regra registrada sem arquivo em `docs/regras/`, e arquivo sem regra correspondente
       (Portão 6)
-- [ ] T076 Implementar `packages/tooling/src/checks/docs.ts`
+- [X] T076 Implementar `packages/tooling/src/checks/docs.ts`
 
 ### Fechamento
 
-- [ ] T077 Atualizar o `README.md` da raiz: hoje ele descreve a biblioteca legada, e o Portão 6 vale nos
+- [X] T077 Atualizar o `README.md` da raiz: hoje ele descreve a biblioteca legada, e o Portão 6 vale nos
       dois sentidos
-- [ ] T078 Rodar `npm run verify` inteiro, **sem cano**, e registrar no relatório ao usuário exatamente
+- [X] T078 Rodar `npm run verify` inteiro, **sem cano**, e registrar no relatório ao usuário exatamente
       o que foi executado e o que passou
-- [ ] T079 Executar o [quickstart.md](quickstart.md) ponta a ponta, incluindo as validações manuais das
+- [X] T079 Executar o [quickstart.md](quickstart.md) ponta a ponta, incluindo as validações manuais das
       três histórias
 - [x] T080 ~~**Emendar a constituição**~~ — **FEITO em 2026-08-19, constituição na v2.2.0.** Princípio
       V passou a "Multilíngue por Construção" com os quatro idiomas do Protheus (D4); Princípio VI
       passou a "Fixture, Teste e Medição Antes da Regra", com teste não-opcional escrito e cobertura
       de 98% como portão (D5). Bump MINOR. Deixou de bloquear o merge
-- [ ] T081 [P] Corrigir a contradição do template: `.specify/templates/tasks-template.md` linha 12 e
+- [X] T081 [P] Corrigir a contradição do template: `.specify/templates/tasks-template.md` linha 12 e
       `.claude/skills/speckit-tasks/SKILL.md` linha 145 declaram testes opcionais contra o Princípio VI
-- [ ] T082 [P] Atualizar `specs/README.md` e `memoria/` com o que a implementação apurou — em especial
+- [X] T082 [P] Atualizar `specs/README.md` e `memoria/` com o que a implementação apurou — em especial
       os números medidos da linha de base
 
 ### Cobertura
 
-- [ ] T083 Criar `coverage-exclusions.json` versionado, com **a razão de cada exclusão** registrada.
+- [X] T083 Criar `coverage-exclusions.json` versionado, com **a razão de cada exclusão** registrada.
       Nasce vazio; item entra só quando um ramo for genuinamente inalcançável em teste (FR-032, SC-012)
-- [ ] T084 Levar a cobertura a **98% em linhas, funções e ramos** e conferir que o portão falha
+- [X] T084 Levar a cobertura a **98% em linhas, funções e ramos** e conferir que o portão falha
       abaixo disso — derrubar o limiar num teste de mesa e confirmar que o processo sai com erro
       (FR-030, SC-011)
-- [ ] T085 Registrar em `coverage-exclusions.json` o que a camada de integração com o editor não
+- [X] T085 Registrar em `coverage-exclusions.json` o que a camada de integração com o editor não
       alcançar, **com razão por item**. Baixar o limiar em vez de declarar a exclusão é violação do
       Princípio VI, não atalho
 
 ### Fechamento
 
-- [ ] T086 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
+- [X] T086 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
 
 ---
 
@@ -467,3 +467,68 @@ paralelizar mão de obra. Na prática, servem para escolher a próxima tarefa se
 - O relatório ao usuário diz o que foi executado e nada além. "Suíte verde" só se a suíte rodou.
 - Nada de `analise-advpl/` entra como código ou dependência. Consulta é leitura humana.
 - Nenhum fonte de `D:\Workspace\FONTES` entra no repositório, em nenhuma forma, em nenhuma tarefa.
+
+---
+
+## Phase 7: Convergence
+
+Anexado pela `/speckit-converge` em 2026-08-19, depois de `T001`–`T085` concluídas e com
+`npm run verify` verde. Cada item traz a origem e o tipo de lacuna.
+
+Avaliados: 35 requisitos funcionais, 12 critérios de sucesso, as decisões do plano e os seis
+princípios da constituição. O que **não** virou tarefa está registrado ao pé desta fase.
+
+- [X] T087 Fazer `npm run verify` encadear a suíte **inteira**, e não apenas `test:unit`, por T023 e
+      pelo Portão 2 da constituição (contradicts). Hoje os 10 testes de integração ficam **de fora**
+      do portão de merge, enquanto o quickstart o chama de "portão local completo" — quem confia no
+      verify está confiando em menos do que pensa. Conferir o custo: `test:integration` reconstrói o
+      pacote e sobe um VS Code, então o verify passa de segundos a dezenas de segundos; se isso for
+      inaceitável para o laço de trabalho, a alternativa é um alvo separado explícito, **nunca**
+      deixar o portão incompleto em silêncio.
+- [X] T088 ✅ **Medida, e o resultado mudou a norma.** A ativação leva 218–451 ms; o teto era 200 ms.
+      Instrumentando o `activate`, o quadro ficou claro: o corpo dele custa **18,4 ms** e todo o
+      resto — 200 a 430 ms — é o editor carregando um pacote de 352 KB que é quase todo
+      `vscode-languageclient`. Minificar não muda (377 ms em produção contra 418 em desenvolvimento),
+      e separação de código não funciona em CommonJS.
+
+      Um teto único media as duas coisas juntas e reprovava o código correto pelo custo de uma
+      dependência necessária. O dono decidiu separar, e a constituição **v2.4.0** passou a orçar
+      **trabalho próprio da ativação ≤ 50 ms** e **ativação completa ≤ 1000 ms** — este último no
+      ponto em que o próprio VS Code trata uma extensão como lenta. Ambos com teste de integração.
+
+      A extensão passou a expor `activationMs` na sua API: sem esse número, um `await` indevido no
+      caminho de ativação se esconderia dentro da variação do carregamento e nenhum portão pegaria.
+
+- [X] T091 ✅ **AUTOMATIZADO** (decisão do dono: automatizar, não assumir manual). O SC-002 — digitar
+      10 s num fonte do p99 sem interrupção perceptível.
+      O automatizado hoje é a contagem determinística de cessões do laço de eventos, que é
+      necessária e não suficiente: ela prova que o motor cede, não que a digitação não engasga. Ou
+      se automatiza a medição de latência de tecla, ou se registra no quickstart que este critério é
+      **permanentemente manual**, com a razão escrita. O que não vale é deixá-lo parecendo coberto.
+- [X] T092 Acrescentar asserção agregada de que **todo** diagnóstico emitido carrega identificador,
+      severidade e posição inicial e final, por SC-004 (missing). Cada teste verifica o seu
+      diagnóstico; nenhum varre o conjunto. É barato e fecha o critério.
+- [X] T093 Escrever o teste que trava a segunda metade do FR-014a — nenhuma configuração da extensão
+      atual é lida ou migrada (missing). Conferido à mão em 2026-08-19: nada de `advpl.*` é lido. Um
+      teste impede que a conveniência de "aproveitar o que o usuário já configurou" entre sem
+      decisão.
+
+### O que foi avaliado e NÃO virou tarefa
+
+**Satisfeito por meio diferente do previsto** — o requisito está cumprido; o caminho é que mudou, e
+a mudança está justificada em commit e comentário:
+
+| Previsto | Entregue | Por quê |
+| -------- | -------- | ------- |
+| `T070`/`T071`: teste de idioma dentro do VS Code | teste de protocolo LSP em `packages/server/test/protocol/locale.test.ts` | o editor só honra `--locale` com pacote de idioma instalado; sem ele o teste provava o contrário do que dizia. O substituto cobre os **quatro** idiomas em vez de um e não depende de rede |
+| `T066`: geração das chaves do manifesto | `check:nls` absorveu a conferência manifesto ⟺ registro | uma verificação a mais no mesmo portão, não uma a menos |
+| Portão 6 sobre o README | `check:docs` passou a conferir também o README | o Portão 6 deixou de depender de disciplina |
+
+**Acréscimos não pedidos, todos com teste e alinhados a requisito existente** (unrequested, LOW —
+nenhuma ação recomendada): `config/settings.ts` (FR-013), `harness/tokens.ts`,
+`checks/manifest.ts` (Princípio IV), os quatro CLIs, `fixtures/large-cli.ts`,
+`scripts/test-unit.mjs` (FR-032) e a separação `measure-pool.ts`/`measure-worker.ts`.
+
+**`CA3001` mudou de severidade duas vezes** — `Information` → `Hint` → `Information`. Não é lacuna:
+FR-014 exige que a severidade saia da tabela versionada, e é o que acontece hoje. As duas mudanças
+estão registradas na D3 da spec, em `docs/regras/CA3001.md` e na memória.

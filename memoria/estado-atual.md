@@ -10,20 +10,36 @@ Ele envelhece: quem avançar o projeto **atualiza aqui**, senão vira mentira.
 
 ## Onde estamos
 
-Branch **`002-correcao-e-portabilidade-include`**, nascida da `001-esqueleto-lsp-harness` (cinco
-commits à frente da `renew`). Nada mergeado.
+**A spec 001 foi MERGEADA na `master`** em 2026-08-19 — merge `70c5916`, com `--no-ff`, 28 commits e
+196 arquivos. A `master` deixou de ser a biblioteca legada e passou a ser **a extensão**. O legado
+continua no histórico abaixo do merge, e em `analise-advpl/` como referência de comportamento.
 
-**A spec 002 foi aberta em 2026-08-19** — `specs/002-correcao-e-portabilidade-include/spec.md`,
-sem esclarecimento pendente. Ela ficou **especificada e parada**: o dono decidiu, na mesma sessão,
-que a **implementação retoma pela 001**, e a 002 só sai do papel quando a 001 fechar.
+`npm run verify` roda **verde na master**. As branches `001-esqueleto-lsp-harness` e `renew` foram
+removidas por já estarem mergeadas; a `002-correcao-e-portabilidade-include` **continua**, com dois
+commits próprios que ainda não estão na master.
 
-A razão é dura, não preferência: os requisitos FR-041 a FR-043 da 002 (custo medido, linha de base
-reconferida) dependem do harness de medição, que é a **US2 da 001** — `T047`–`T062`, não
-implementada. O Portão 4 da constituição bloqueia merge sem isso. Somam-se `npm run verify` ainda
-vermelho (`T067`, `T073`, `T075`) e o `README.md` descrevendo a lib legada (`T077`, Portão 6).
+⚠️ **Nada foi enviado ao remoto.** A `master` local está à frente de `origin/master`.
 
-O **MVP da spec 001 está pronto e verde**: `T001`–`T046` de 86. Existe uma extensão de lint ADVPL
-funcionando, com uma regra real do catálogo, sobre a arquitetura que a constituição exige.
+**O trabalho corrente é a spec 002**, na branch `002-correcao-e-portabilidade-include`, que já tem a
+`master` mergeada para dentro — ou seja, ela carrega o código da extensão além da própria spec. A
+etapa atual é `/speckit-plan`.
+
+**A spec 001 está COMPLETA**: 90 tarefas, nenhuma pendente. O ciclo inteiro rodou — `specify`,
+`plan`, `tasks`, `implement`, `converge` e `security-review`.
+
+`npm run verify` passa **inteiro**, em ~34 s: tipagem, lint, 351 testes unitários com cobertura
+99,81/98,80/99,47, as três verificações e 16 testes de integração em VS Code real. As verificações
+reprovam de verdade — cada uma foi testada com uma quebra proposital.
+
+A `/speckit-converge` anexou 7 tarefas (`T087`–`T093`) e todas foram fechadas. A mais séria era o
+`verify` não rodar a integração: dez testes ficavam fora do portão de merge enquanto o quickstart o
+chamava de completo.
+
+A **revisão de segurança** não encontrou vulnerabilidade no código entregue. O único risco real que
+ela apontou é futuro e pertence à spec 002 — ler `~/.totvsls/servers.json`, que guarda `savedTokens`.
+Virou FR-027b1, FR-027b2 e um SC-016 reforçado, já registrados naquela spec.
+
+**O que falta é a decisão de merge, e ela é sua.**
 
 Última execução, nesta máquina, sem cano na saída:
 
@@ -52,15 +68,15 @@ outro processo, então depurá-lo exige anexar.
 
 ## O que falta na spec 001
 
-| Bloco | Tarefas | O que é |
-| ----- | ------- | ------- |
-| US2 | `T047`–`T062` | harness de medição, amostragem do corpus, relatório de linha de base |
-| US3 | `T063`–`T072` | configuração por regra, troca de idioma, verificação de NLS |
-| Portões | `T073`–`T079` | vazamento de corpus, sincronismo de docs, README, quickstart |
-| Cobertura | `T083`–`T085` | lista de exclusões e o 98% aferido no fim |
-| Fechamento | `T081`, `T082`, `T086` | corrigir o template, atualizar memória, `/speckit-converge` |
+| Bloco | Tarefas | Estado |
+| ----- | ------- | ------ |
+| ~~US2 — harness e linha de base~~ | ~~`T047`–`T062`~~ | ✅ |
+| ~~US3 — configuração e idiomas~~ | ~~`T063`–`T072`~~ | ✅ |
+| ~~Portões, README e quickstart~~ | ~~`T073`–`T079`~~ | ✅ |
+| ~~Template, memória e cobertura~~ | ~~`T081`–`T085`~~ | ✅ |
+| **`/speckit-converge`** | `T086` | **é o que falta** |
 
-`T080` (emenda da constituição) já está **feita**.
+`T080` (emenda da constituição) já estava feita.
 
 ## O que está aberto esperando decisão sua
 
@@ -69,9 +85,8 @@ outro processo, então depurá-lo exige anexar.
    id de catálogo) e `projeto` (regra nossa). Norma da TOTVS sem id não é nem uma nem outra. Ou se
    cria uma terceira origem, ou entram como `projeto` citando a diretriz — o que embaralha o
    significado de `projeto`. Detalhe em `docs/inventario-legado.md`.
-2. ~~**Ordem do trabalho.**~~ ✅ resolvido em 2026-08-19: **especificar a 002 primeiro** (feito),
-   **implementar a 001 primeiro**. A 002 espera em `Draft`, pronta para `/speckit-plan`, até
-   `T047`–`T086` fecharem.
+2. **Ordem do trabalho.** A spec 002 já tem escopo decidido (ver [[spec-002-escopo-decidido]]), mas
+   não foi aberta. A alternativa é fechar a 001 antes.
 3. **`analise-advpl/` continua repositório aninhado** e fora do versionamento. `TODO(REPO_LAYOUT)`.
 4. **CI não existe.** `TODO(CI)`. Verificação é local.
 

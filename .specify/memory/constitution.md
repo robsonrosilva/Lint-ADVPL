@@ -1,6 +1,91 @@
 <!--
 Sync Impact Report
 ==================
+Versão: 2.3.0 → 2.4.0
+Tipo de bump: MINOR — o item de ativação do orçamento do Princípio I passa de UM teto não aferido
+para DOIS tetos medidos. Nenhum princípio removido nem redefinido de forma incompatível. Aprovada
+pelo dono em 2026-08-19, no mesmo dia da v2.3.0.
+
+Motivo: a v2.3.0 marcou "ativação da extensão ≤ 200 ms" como NÃO AFERIDO. Aferir foi a primeira
+coisa que reprovou — e o portão fez o trabalho dele.
+
+  medido, seis rodadas:  260, 334, 351, 378, 418, 451 ms   (teto era 200)
+
+Instrumentando o `activate`, o quadro ficou claro e mudou a conclusão:
+
+  corpo do activate      18,4 ms    <- o que ESTE código controla
+  resto                 200-430 ms  <- o editor carregando o módulo de 352 KB
+
+O código próprio está com folga de 10x. O custo é ler, compilar e resolver os `require` de um pacote
+que é quase todo `vscode-languageclient`. Minificar não muda (377 ms no pacote de produção contra
+418 no de desenvolvimento), e separação de código não funciona no formato CommonJS — `await import()`
+vira `require` no mesmo arquivo.
+
+Um teto único media as duas coisas juntas e REPROVAVA O CÓDIGO CORRETO pelo custo de carregar uma
+dependência necessária. A emenda separa:
+
+  trabalho próprio da ativação     <=  50 ms   (medido 18,4)
+  ativação completa no editor      <= 1000 ms  (medido 218-451)
+
+Os 1000 ms têm margem de 2,2x sobre o máximo observado e coincidem com o ponto em que o próprio VS
+Code trata uma extensão como lenta. O dono considerou 500 ms — que passava nas medições, mas com 11%
+de folga acusaria em máquina mais lenta sem que nada tivesse regredido, e falha assim se lê errado.
+A pressão sobre o custo fica onde é honesta: nos 50 ms do trabalho próprio, que o código controla.
+
+Acrescentado também o item "do arquivo aberto ao primeiro diagnóstico <= 300 ms" (SC-001, medido
+~112 ms), que já era critério de sucesso da spec 001 e agora tem lugar no orçamento.
+
+Nenhuma dívida TODO mudou de estado. A dívida T088 da spec 001 está CUMPRIDA: a ativação foi medida.
+
+--- Emenda anterior ---
+
+Versão: 2.2.1 → 2.3.0
+Tipo de bump: MINOR — ampliação material do Princípio I. Nenhum princípio removido, nenhum
+redefinido de forma incompatível. Aprovada pelo dono em 2026-08-19.
+
+Motivo: o orçamento de desempenho do Princípio I era **provisório por escrito** e mandava a si
+mesmo ser emendado "com base em medição, não por estimativa". A linha de base da spec 001 produziu
+a medição. A emenda executa o que o próprio texto previa — não muda uma regra, cumpre uma.
+
+O que a medição mostrou, e por que o orçamento antigo não servia:
+
+  1. O TAMANHO DE REFERÊNCIA media o arquivo errado. "p95 de fonte de 1.000 linhas" ancorava o
+     orçamento em torno do percentil 75 real — entre o p50 (309) e o p90 (1.862). O Princípio I
+     existe para proteger a CAUDA: o legado não travava em arquivo mediano, travava no fonte de dez
+     mil linhas. O p95 verdadeiro é 3.230 linhas.
+  2. O TETO NÃO LIMITAVA NADA. O fonte de p95 é analisado em 0,91 ms contra um teto de 100 ms —
+     109 vezes de folga. Uma regressão de TRINTA vezes passaria sem acender luz, e o Portão 4
+     ("nenhuma regressão de desempenho não justificada") não tinha como ser cumprido assim. Portão
+     que nunca reprova não é frouxo: é enganoso.
+
+Seção alterada:
+  - Princípio I, item de orçamento: substituído por tabela com quatro tetos aferidos e um NÃO
+    aferido, cada um com o valor medido ao lado, e a justificativa da margem de uma ordem de
+    grandeza. Removido o bloco ⚠️ que registrava o subdimensionamento — ele deixou de ser
+    constatação pendente e virou o próprio orçamento.
+
+Dois itens de orçamento são NOVOS, e cobrem onde o legado falhava:
+  - reanálise do maior fonte (27.832 linhas) ≤ 50 ms — o legado REJEITAVA a análise de fonte grande
+    com um setTimeout de 1000 ms;
+  - parada após cancelamento ≤ 5 ms — o legado descartava o resultado no fim em vez de parar.
+  Medir só o p95 deixaria os dois defeitos originais sem portão.
+
+⚠️ LIMITE HONESTO DESTA EMENDA: a ativação da extensão DENTRO do editor continua sem verificação.
+Os 41,4 ms medidos são a partida do MOTOR — subir o processo e carregar o código. O item "ativação
+≤ 200 ms" PERMANECE no orçamento, marcado como não aferido, porque trocá-lo pelo número do motor
+apagaria um item fingindo tê-lo medido. Dívida: tarefa T088 da spec 001.
+
+TODOs atualizados nesta emenda:
+  - TODO(BENCHMARK_BASE): **FECHADO**. A linha de base existe, está versionada em
+    `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.{json,md}` e produziu os números desta
+    emenda. O confronto entre o orçamento antigo e o medido está em `CONFRONTO-2026-08-19.md`.
+  - TODO(CORPUS): números atualizados pela medição estratificada — 35.659 fontes inventariados;
+    p50 309, p90 1.862, p95 3.230, p99 10.155, máximo 27.832 linhas. A apuração anterior
+    (p95 2.933, máximo 24.636) subamostrava a cauda e foi substituída.
+  - TODO(SEVERITY_MAP), TODO(CI), TODO(REPO_LAYOUT): intocados.
+
+--- Emenda anterior ---
+
 Versão: 2.2.0 → 2.2.1
 Tipo de bump: PATCH — esclarecimento de redação. Nenhum princípio novo, nenhum princípio
 alterado, nenhuma mudança de escopo.
@@ -149,14 +234,63 @@ Este é o primeiro princípio porque foi a falha que matou a versão anterior. R
 - **Cache é incremental.** NEVER reescrever o cache inteiro para gravar um arquivo. Escrita é
   assíncrona e a chave combina hash do conteúdo com versão da extensão.
 - **Não existe timeout que rejeita a análise.** Fonte grande demora mais; ela não falha.
-- **Orçamento provisório**, até a linha de base medida existir (ver TODO(BENCHMARK_BASE)):
-  ativação da extensão ≤ 200 ms; reanálise p95 de fonte de 1.000 linhas ≤ 100 ms.
+- **Orçamento medido.** Os tetos abaixo saem da linha de base de 2026-08-19, versionada em
+  `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.json` — 35.659 fontes reais inventariados,
+  amostra estratificada de 1.012 arquivos, cinco repetições cada, mediana.
 
-⚠️ **O orçamento provisório está subdimensionado, e isso é sabido desde 2026-08-19.** No corpus
-real, uma fonte de 1.000 linhas fica **entre o p50 (309) e o p90 (1.699)**; o p95 verdadeiro é
-**2.933 linhas**, e a cauda vai a 24.636. Um orçamento ancorado em arquivo menor que o p95 real
-declara vitória num tamanho que boa parte dos fontes ultrapassa. Os números MUST ser emendados com
-base em medição, não ajustados por estimativa — é o que a spec 001 produz.
+  | Item | Teto | Medido | Estado |
+  | ---- | ---- | ------ | ------ |
+  | **Trabalho próprio da ativação** — o que o `activate` executa | ≤ **50 ms** | 18,4 ms | aferido |
+  | **Ativação completa no editor** — inclui carregar o módulo | ≤ **1000 ms** | 218–451 ms | aferido |
+  | Partida do motor — subir o processo e carregar o código | ≤ **100 ms** | 41,4 ms | aferido |
+  | Reanálise do p95 — fonte de **3.230 linhas** | ≤ **10 ms** | 0,91 ms | aferido |
+  | Reanálise do maior fonte — 27.832 linhas | ≤ **50 ms** | 4,71 ms | aferido |
+  | Do arquivo aberto ao primeiro diagnóstico — fonte mediano | ≤ **300 ms** | ~112 ms | aferido |
+  | Parada após cancelamento | ≤ **5 ms** | 0,09 ms | aferido |
+
+  **A ativação são DOIS números porque são duas coisas, e só uma está sob controle deste código.**
+  O `activate` executa em 18,4 ms — criar o cliente, registrar a guarda de codificação e disparar o
+  servidor sem esperar por ele. Os outros 200 a 430 ms são o editor **carregando o módulo**: ler,
+  compilar e resolver os `require` de um pacote de 352 KB que é quase todo `vscode-languageclient`.
+  Minificar não muda isso (377 ms com o pacote de produção contra 418 com o de desenvolvimento), e
+  reduzi-lo exigiria separação de código — que no formato CommonJS não funciona, porque
+  `await import()` vira `require` no mesmo arquivo.
+
+  Um teto único de 200 ms para a soma media as duas coisas juntas e **reprovava o código correto**
+  pelo custo de carregar uma dependência necessária. Separá-las mantém a proteção onde ela morde:
+  um `await` indevido no caminho de ativação estoura os 50 ms na hora, e nenhum ruído de disco
+  esconde isso.
+
+  **Os 1000 ms da ativação completa têm margem de 2,2× sobre o máximo observado** (451 ms), e o
+  número não é arbitrário: é o ponto em que o próprio VS Code passa a tratar uma extensão como lenta.
+  Acima disso, o problema deixa de ser nosso orçamento e vira reclamação do editor ao usuário.
+
+  A decisão foi do dono em 2026-08-19, depois de considerar 500 ms — que passava nas medições, mas
+  com 11% de folga acusaria em máquina mais lenta ou com disco frio, e uma falha dessas se lê como
+  regressão sem ser. **A pressão sobre o custo de carregamento fica onde ela é honesta: nos 50 ms do
+  trabalho próprio**, que o código controla de verdade. Se um dia o item de cima acusar e o de baixo
+  seguir verde, a leitura é ambiente, não regressão — é para isso que a decomposição existe.
+
+  **A margem é de uma ordem de grandeza sobre o medido, e o número tem razão.** Ela precisa absorver
+  máquina mais lenta que a da medição, as dezenas de regras que ainda vão entrar e a variação entre
+  execuções. O teto anterior era 100 ms contra 0,91 ms reais — **109 vezes** o custo — e uma folga
+  dessa ordem deixaria passar uma regressão de trinta vezes sem acender luz nenhuma. Portão que
+  nunca reprova não é frouxo: é **enganoso**, porque produz a sensação de proteção. Afrouxar teto
+  depois é pior que apertá-lo agora.
+
+  **Os dois itens do meio são novos**, e cobrem exatamente onde o legado falhava: ele rejeitava a
+  análise de fonte grande com um `setTimeout` de 1000 ms, e descartava o resultado no fim em vez de
+  parar quando cancelado. Medir só o p95 deixaria os dois defeitos originais sem portão.
+
+⚠️ **A ativação da extensão continua SEM VERIFICAÇÃO, e o item permanece no orçamento por isso.**
+Os 41,4 ms medidos são a **partida do motor** — subir o processo e carregar o código. A ativação
+dentro do editor envolve o VS Code e nada a mede hoje. Trocar um número pelo outro apagaria um item
+do orçamento fingindo tê-lo aferido. Dívida registrada: tarefa `T088` da spec 001.
+
+⚠️ **Os números do corpus mudaram junto com o método.** A apuração anterior dava p95 de 2.933 linhas
+e máximo de 24.636; a estratificada dá **3.230** e **27.832**. A primeira subamostrava a cauda — o
+defeito que a estratificação por tamanho existe para evitar. Os desta tabela são os que valem. Ver
+`memoria/distribuicao-tamanho-fontes.md`.
 
 Rationale — cada regra acima corresponde a um defeito medido em `analise-advpl/`, e é por isso que
 elas são específicas em vez de "escreva código rápido":
@@ -442,7 +576,17 @@ e de exposição.
   autoexplicativo o bastante para servir de comparativo mesmo sem nova execução.
 
 Estado apurado em 2026-08-19: ~27.139 `.prw`, 4.072 `.tlpp`, 3.210 `.prx`, 1.178 `.prg` e 35.103
-`.ch`. Amostra de 3.000 fontes: p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas.
+`.ch`.
+
+**Distribuição medida pelo harness**, sobre inventário de **35.659** fontes analisáveis, com amostra
+**estratificada por tamanho** de 1.012 arquivos: p50 **309**, p90 **1.862**, p95 **3.230**, p99
+**10.155**, máximo **27.832** linhas.
+
+⚠️ Estes números **substituem** a apuração anterior (p90 1.699, p95 2.933, p99 7.951, máximo
+24.636), feita sobre amostra de 3.000 fontes sem estratificação. A diferença está toda na cauda,
+e a causa é o método: amostragem uniforme sub-representa os arquivos grandes, que são exatamente
+os que o Princípio I existe para proteger. O p50 idêntico nas duas apurações é o indício de que a
+divergência é de cauda, não erro sistemático.
 
 ## Governança
 
@@ -466,4 +610,4 @@ Report são dívidas conhecidas: NEVER servem de precedente para novas violaçõ
 comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
 `memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.2.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.4.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
