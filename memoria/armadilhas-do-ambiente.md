@@ -107,3 +107,18 @@ ficam desligadas nela. Isso é ótimo para isolar o comportamento — e é o tes
 que janela se está: se um diagnóstico de outra extensão aparece no painel, **não** é a janela de
 desenvolvimento, e portanto a extensão nova não está rodando ali. Ela não está instalada no VS Code
 normal; só existe sob F5 ou empacotada em `.vsix`.
+
+## Git — o `.gitignore` é por branch, e isso morde
+
+**Commitar numa branch antiga sem rodar o portão deixa passar o que o portão pegaria.** Aconteceu em
+2026-08-19: dois arquivos de fixture GERADOS entraram no repositório num commit feito na branch da
+spec 002, porque ali o `.gitignore` ainda era o antigo — o padrão corrigido
+(`packages/*/test/fixtures/**/generated/`) só existia na branch da 001. O `git add -A` os pegou, e
+como não rodei `npm run verify` naquele commit, ninguém avisou.
+
+Quem encontrou foi o `check:corpus`, na primeira vez que o portão rodou naquela branch — depois de a
+master ser mergeada para dentro dela.
+
+**Regra prática: rodar `npm run verify` antes de commitar, em QUALQUER branch.** O hábito de confiar
+no portão só na branch principal é o que deixa a brecha; o `.gitignore` viaja com a branch, e uma
+branch antiga tem regras antigas.
