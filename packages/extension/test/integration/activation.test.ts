@@ -97,6 +97,51 @@ suite('Diagnóstico no painel de problemas', () => {
   })
 })
 
+suite('Do arquivo aberto ao primeiro diagnóstico (SC-001)', () => {
+  // O fonte de tamanho MEDIANO do corpus tem 309 linhas — e é por isso que ele
+  // é gerado aqui em vez de versionado: `check:corpus` reprova fixture acima de
+  // 300 linhas, porque fixture autoral desse tamanho quase certamente foi
+  // colada. O limite e este teste não se contradizem; o caso grande de propósito
+  // é sempre gerado.
+  const GERADO = path.join(WORKSPACE, 'generated')
+  const MEDIANO = path.join(GERADO, 'mediano.prw')
+
+  suiteSetup(async () => {
+    const fs = await import('node:fs/promises')
+    await fs.mkdir(GERADO, { recursive: true })
+    const linhas = [
+      '// FIXTURE GERADA - advpl-lint - NAO e copia de fonte padrao do Protheus.',
+      '// Proposito: tamanho MEDIANO do corpus (309 linhas) para medir o SC-001',
+      '#INCLUDE "TOTVS.CH"',
+      ...Array.from({ length: 305 }, (_, i) => `Local x${i} := "valor ${i}"  // linha de enchimento`),
+      'Return',
+    ]
+    await fs.writeFile(MEDIANO, Buffer.from(linhas.join('\r\n'), 'latin1'))
+  })
+
+  test('o primeiro diagnóstico aparece em no máximo 300 ms', async () => {
+    // A extensão e o servidor já estão de pé aqui — é o estado em que o
+    // desenvolvedor abre o segundo arquivo do dia, e é dele que o SC-001 fala.
+    // Medir a primeira abertura da sessão misturaria a subida do servidor, que
+    // tem orçamento próprio.
+    const uri = vscode.Uri.file(MEDIANO)
+
+    const started = performance.now()
+    await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(uri))
+    const diagnostics = await waitForDiagnostics(uri)
+    const elapsed = performance.now() - started
+
+    assert.ok(
+      diagnostics.some((d) => codeValueOf(d) === 'CA3001'),
+      'nenhum CA3001 veio do fonte mediano',
+    )
+    assert.ok(
+      elapsed <= 300,
+      `levou ${elapsed.toFixed(1)} ms entre abrir o fonte de 309 linhas e ver o diagnóstico`,
+    )
+  })
+})
+
 suite('Extensão de arquivo em caixa alta', () => {
   test('reconhece a linguagem em arquivo .PRX, e não só .prx', async () => {
     // Fonte Protheus vem com a extensão nas duas caixas — no corpus real, boa

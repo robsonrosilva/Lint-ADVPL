@@ -485,18 +485,32 @@ princípios da constituição. O que **não** virou tarefa está registrado ao p
       pacote e sobe um VS Code, então o verify passa de segundos a dezenas de segundos; se isso for
       inaceitável para o laço de trabalho, a alternativa é um alvo separado explícito, **nunca**
       deixar o portão incompleto em silêncio.
-- [ ] T088 Medir a ativação real da extensão dentro do editor e asserir o teto de 200 ms, por SC-003
-      (missing). O que existe hoje mede a **partida do motor** — subir o thread e carregar o código,
-      41 ms — e o relatório e o `CONFRONTO-2026-08-19.md` dizem isso com todas as letras. É outra
-      coisa: a ativação envolve o VS Code, e só o teste de integração alcança. Enquanto não existir,
-      metade do orçamento do Princípio I não tem verificação própria.
+- [ ] T088 ⚠️ **MEDIDO EM 2026-08-19, E REPROVA.** A ativação da extensão no editor leva **218 a
+      451 ms** — o teto do Princípio I é 200 ms. Seis medições: 260, 334, 351, 378, 418, 451.
+      Consistente, não é ruído.
+
+      Onde vai o tempo, medido com instrumentação temporária: o corpo do `activate` custa **18,4 ms**
+      (createClient 17,0 + guarda de codificação 0,3 + start 1,1). Todo o resto — 200 a 430 ms — é o
+      VS Code **carregando o módulo**: ler, compilar e resolver os requires do bundle de 352 KB
+      minificado (779 KB em desenvolvimento). Minificar não resolveu: 377 ms com o bundle de
+      produção.
+
+      O código próprio está com folga de 10× dentro do orçamento. O custo é o carregamento do
+      `vscode-languageclient`, que é quase todo o bundle. Reduzi-lo exige separação de código, que
+      com formato CommonJS não funciona — `await import()` vira `require` no mesmo arquivo. As saídas
+      seriam migrar a extensão para ESM ou marcar a dependência como externa, trocando um arquivo
+      grande por muitos, que o Princípio I também critica.
+
+      **Depende de decisão do dono**: ou se persegue a otimização, ou se revê o que o orçamento mede
+      — separando o que o código controla do custo de carregamento do módulo. O teste que faz esta
+      medição está escrito e guardado; não foi commitado para não deixar o portão vermelho.
 - [X] T089 Emendar o Princípio I com os números medidos, por `/speckit-constitution`, fechando o
       `TODO(BENCHMARK_BASE)` (missing). A proposta, com margem de uma ordem de grandeza sobre o
       medido, está em `baseline/CONFRONTO-2026-08-19.md`. Enquanto não for feita, a constituição
       mantém "p95 de fonte de 1.000 linhas ≤ 100 ms" — tamanho que fica entre o p50 e o p90 reais, e
       teto **109 vezes** maior que o custo medido. Orçamento que nunca reprova é decoração.
       **Depende de decisão do dono**: emenda constitucional não se faz por conta própria.
-- [ ] T090 Asserir no teste de integração o teto de 300 ms entre abrir o fonte e ver o primeiro
+- [X] T090 Asserir no teste de integração o teto de 300 ms entre abrir o fonte e ver o primeiro
       diagnóstico, por SC-001 (missing). Hoje `waitForDiagnostics` espera até 15 s sem medir nada —
       o teste prova que o diagnóstico chega, não que chega a tempo.
 - [ ] T091 Resolver o SC-002 — digitar 10 s num fonte do p99 sem interrupção perceptível (partial).
