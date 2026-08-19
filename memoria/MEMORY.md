@@ -9,3 +9,4 @@
 - [Identidade da extensão](identidade-da-extensao.md) — publica independente da atual; assumir a antiga é spec futura
 - [Severidade MINOR → Information](severidade-minor-information.md) — primeira e única entrada da tabela de mapeamento
 - [Idiomas do Protheus](idiomas-do-protheus.md) — quatro idiomas (pt-br, es, en, ru); excede o Princípio V e exige emenda MINOR
+- [Convenção de idioma no código](convencao-de-idioma-no-codigo.md) — inglês no que a máquina lê, pt-BR no que a pessoa lê (comentários inclusive)

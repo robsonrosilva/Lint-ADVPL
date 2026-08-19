@@ -409,24 +409,42 @@ publicado.
 
 ---
 
-## R9 — Idioma do código-fonte
+## R9 — Idioma: a divisão é entre **o que a máquina lê** e **o que a pessoa lê**
 
 ### Decisão
 
-**Identificadores, nomes de arquivo e caminhos em inglês. Documentação, mensagens ao usuário e
-commits em pt-BR.**
+| Em **inglês** | Em **pt-BR** |
+| ------------- | ------------ |
+| identificadores (variáveis, funções, tipos, classes) | **comentários dentro do código** |
+| nomes de arquivo e de diretório | documentação (`docs/`, `specs/`, `README.md`) |
+| chaves de configuração e de tradução | mensagens ao usuário (via NLS, nos quatro idiomas) |
+| mensagens de erro internas e de teste | mensagens de commit |
+| | nomes de teste e descrições de `describe`/`it` |
+
+A linha não é "código versus documentação" — é **o que a máquina interpreta versus o que uma pessoa
+lê**. Comentário é para pessoa; ele fica em pt-BR, junto com o nome do teste, que também é prosa
+lida por gente.
+
+```ts
+// A varredura classifica comentário e literal numa única passagem. Rodar isto
+// por regra faria o custo virar O(regras × linhas) já na segunda regra.
+export function scanDocument(document: AnalyzedDocument): ScanResult {
+```
 
 ### Razão
 
-A API do VS Code, o LSP e o ecossistema npm são em inglês; misturar produz nomes híbridos do tipo
-`validaDocument`. O Princípio V declara que o produto atende equipes brasileiras **e internacionais**
-no mesmo pacote — o que é dito ao usuário é bilíngue por construção, e o código não precisa carregar
-essa carga.
+A API do VS Code, o LSP e o ecossistema npm são em inglês; identificador em português produz híbrido
+do tipo `validaDocument`, que o legado tinha (`validaAdvpl.ts`, `Restritos.ts` e `Erro.ts` ao lado de
+`cache.ts` e `params.ts`).
 
-O legado misturava (`validaAdvpl.ts`, `Restritos.ts`, `Erro.ts` ao lado de `cache.ts`, `params.ts`).
+Comentário é outra coisa: ele existe para explicar **por que** o código é assim a quem for mantê-lo,
+e quem mantém este repositório escreve e pensa em português. Comentário em inglês forçado é
+comentário pior — mais raso, mais genérico, mais fácil de virar paráfrase da linha seguinte. O
+Princípio I depende de comentários que expliquem decisões contraintuitivas de desempenho; esses
+precisam ser bem escritos, não traduzidos.
 
-**Esta decisão é barata de reverter agora e cara depois.** Se o dono preferir código em pt-BR, o
-momento de dizer é antes da T001 — não existe uma linha escrita ainda.
+**Confirmada pelo dono em 2026-08-19**, antes da T001 e com zero linha de código escrita — inclusive
+a distinção sobre comentários. Reverter depois passa a ser renomeação em massa.
 
 ---
 
@@ -443,4 +461,4 @@ momento de dizer é antes da T001 — não existe uma linha escrita ainda.
 | R6 | Verificação de vazamento com três regras; fixture declara autoria; fixture grande é gerada, não versionada |
 | R7 | Quatro idiomas do Protheus (`en` base, `pt-br`, `es`, `ru`) em dois mecanismos; lista única; divergência de chave falha a construção |
 | R8 | Um arquivo de documentação por identificador de regra; portão mecânico nos dois sentidos |
-| R9 | Código em inglês, produto e documentação em pt-BR — reversível agora, caro depois |
+| R9 | Inglês no que a máquina lê (identificadores, arquivos, chaves); pt-BR no que a pessoa lê (comentários, nomes de teste, documentação, commits) |
