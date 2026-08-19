@@ -1,6 +1,53 @@
 <!--
 Sync Impact Report
 ==================
+Versão: 2.2.1 → 2.3.0
+Tipo de bump: MINOR — ampliação material do Princípio I. Nenhum princípio removido, nenhum
+redefinido de forma incompatível. Aprovada pelo dono em 2026-08-19.
+
+Motivo: o orçamento de desempenho do Princípio I era **provisório por escrito** e mandava a si
+mesmo ser emendado "com base em medição, não por estimativa". A linha de base da spec 001 produziu
+a medição. A emenda executa o que o próprio texto previa — não muda uma regra, cumpre uma.
+
+O que a medição mostrou, e por que o orçamento antigo não servia:
+
+  1. O TAMANHO DE REFERÊNCIA media o arquivo errado. "p95 de fonte de 1.000 linhas" ancorava o
+     orçamento em torno do percentil 75 real — entre o p50 (309) e o p90 (1.862). O Princípio I
+     existe para proteger a CAUDA: o legado não travava em arquivo mediano, travava no fonte de dez
+     mil linhas. O p95 verdadeiro é 3.230 linhas.
+  2. O TETO NÃO LIMITAVA NADA. O fonte de p95 é analisado em 0,91 ms contra um teto de 100 ms —
+     109 vezes de folga. Uma regressão de TRINTA vezes passaria sem acender luz, e o Portão 4
+     ("nenhuma regressão de desempenho não justificada") não tinha como ser cumprido assim. Portão
+     que nunca reprova não é frouxo: é enganoso.
+
+Seção alterada:
+  - Princípio I, item de orçamento: substituído por tabela com quatro tetos aferidos e um NÃO
+    aferido, cada um com o valor medido ao lado, e a justificativa da margem de uma ordem de
+    grandeza. Removido o bloco ⚠️ que registrava o subdimensionamento — ele deixou de ser
+    constatação pendente e virou o próprio orçamento.
+
+Dois itens de orçamento são NOVOS, e cobrem onde o legado falhava:
+  - reanálise do maior fonte (27.832 linhas) ≤ 50 ms — o legado REJEITAVA a análise de fonte grande
+    com um setTimeout de 1000 ms;
+  - parada após cancelamento ≤ 5 ms — o legado descartava o resultado no fim em vez de parar.
+  Medir só o p95 deixaria os dois defeitos originais sem portão.
+
+⚠️ LIMITE HONESTO DESTA EMENDA: a ativação da extensão DENTRO do editor continua sem verificação.
+Os 41,4 ms medidos são a partida do MOTOR — subir o processo e carregar o código. O item "ativação
+≤ 200 ms" PERMANECE no orçamento, marcado como não aferido, porque trocá-lo pelo número do motor
+apagaria um item fingindo tê-lo medido. Dívida: tarefa T088 da spec 001.
+
+TODOs atualizados nesta emenda:
+  - TODO(BENCHMARK_BASE): **FECHADO**. A linha de base existe, está versionada em
+    `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.{json,md}` e produziu os números desta
+    emenda. O confronto entre o orçamento antigo e o medido está em `CONFRONTO-2026-08-19.md`.
+  - TODO(CORPUS): números atualizados pela medição estratificada — 35.659 fontes inventariados;
+    p50 309, p90 1.862, p95 3.230, p99 10.155, máximo 27.832 linhas. A apuração anterior
+    (p95 2.933, máximo 24.636) subamostrava a cauda e foi substituída.
+  - TODO(SEVERITY_MAP), TODO(CI), TODO(REPO_LAYOUT): intocados.
+
+--- Emenda anterior ---
+
 Versão: 2.2.0 → 2.2.1
 Tipo de bump: PATCH — esclarecimento de redação. Nenhum princípio novo, nenhum princípio
 alterado, nenhuma mudança de escopo.
@@ -149,14 +196,38 @@ Este é o primeiro princípio porque foi a falha que matou a versão anterior. R
 - **Cache é incremental.** NEVER reescrever o cache inteiro para gravar um arquivo. Escrita é
   assíncrona e a chave combina hash do conteúdo com versão da extensão.
 - **Não existe timeout que rejeita a análise.** Fonte grande demora mais; ela não falha.
-- **Orçamento provisório**, até a linha de base medida existir (ver TODO(BENCHMARK_BASE)):
-  ativação da extensão ≤ 200 ms; reanálise p95 de fonte de 1.000 linhas ≤ 100 ms.
+- **Orçamento medido.** Os tetos abaixo saem da linha de base de 2026-08-19, versionada em
+  `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.json` — 35.659 fontes reais inventariados,
+  amostra estratificada de 1.012 arquivos, cinco repetições cada, mediana.
 
-⚠️ **O orçamento provisório está subdimensionado, e isso é sabido desde 2026-08-19.** No corpus
-real, uma fonte de 1.000 linhas fica **entre o p50 (309) e o p90 (1.699)**; o p95 verdadeiro é
-**2.933 linhas**, e a cauda vai a 24.636. Um orçamento ancorado em arquivo menor que o p95 real
-declara vitória num tamanho que boa parte dos fontes ultrapassa. Os números MUST ser emendados com
-base em medição, não ajustados por estimativa — é o que a spec 001 produz.
+  | Item | Teto | Medido | Estado |
+  | ---- | ---- | ------ | ------ |
+  | Partida do motor — subir o processo e carregar o código | ≤ **100 ms** | 41,4 ms | aferido |
+  | Reanálise do p95 — fonte de **3.230 linhas** | ≤ **10 ms** | 0,91 ms | aferido |
+  | Reanálise do maior fonte — 27.832 linhas | ≤ **50 ms** | 4,71 ms | aferido |
+  | Parada após cancelamento | ≤ **5 ms** | 0,09 ms | aferido |
+  | **Ativação da extensão dentro do editor** | ≤ **200 ms** | — | ⚠️ **NÃO aferido** |
+
+  **A margem é de uma ordem de grandeza sobre o medido, e o número tem razão.** Ela precisa absorver
+  máquina mais lenta que a da medição, as dezenas de regras que ainda vão entrar e a variação entre
+  execuções. O teto anterior era 100 ms contra 0,91 ms reais — **109 vezes** o custo — e uma folga
+  dessa ordem deixaria passar uma regressão de trinta vezes sem acender luz nenhuma. Portão que
+  nunca reprova não é frouxo: é **enganoso**, porque produz a sensação de proteção. Afrouxar teto
+  depois é pior que apertá-lo agora.
+
+  **Os dois itens do meio são novos**, e cobrem exatamente onde o legado falhava: ele rejeitava a
+  análise de fonte grande com um `setTimeout` de 1000 ms, e descartava o resultado no fim em vez de
+  parar quando cancelado. Medir só o p95 deixaria os dois defeitos originais sem portão.
+
+⚠️ **A ativação da extensão continua SEM VERIFICAÇÃO, e o item permanece no orçamento por isso.**
+Os 41,4 ms medidos são a **partida do motor** — subir o processo e carregar o código. A ativação
+dentro do editor envolve o VS Code e nada a mede hoje. Trocar um número pelo outro apagaria um item
+do orçamento fingindo tê-lo aferido. Dívida registrada: tarefa `T088` da spec 001.
+
+⚠️ **Os números do corpus mudaram junto com o método.** A apuração anterior dava p95 de 2.933 linhas
+e máximo de 24.636; a estratificada dá **3.230** e **27.832**. A primeira subamostrava a cauda — o
+defeito que a estratificação por tamanho existe para evitar. Os desta tabela são os que valem. Ver
+`memoria/distribuicao-tamanho-fontes.md`.
 
 Rationale — cada regra acima corresponde a um defeito medido em `analise-advpl/`, e é por isso que
 elas são específicas em vez de "escreva código rápido":
@@ -442,7 +513,17 @@ e de exposição.
   autoexplicativo o bastante para servir de comparativo mesmo sem nova execução.
 
 Estado apurado em 2026-08-19: ~27.139 `.prw`, 4.072 `.tlpp`, 3.210 `.prx`, 1.178 `.prg` e 35.103
-`.ch`. Amostra de 3.000 fontes: p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas.
+`.ch`.
+
+**Distribuição medida pelo harness**, sobre inventário de **35.659** fontes analisáveis, com amostra
+**estratificada por tamanho** de 1.012 arquivos: p50 **309**, p90 **1.862**, p95 **3.230**, p99
+**10.155**, máximo **27.832** linhas.
+
+⚠️ Estes números **substituem** a apuração anterior (p90 1.699, p95 2.933, p99 7.951, máximo
+24.636), feita sobre amostra de 3.000 fontes sem estratificação. A diferença está toda na cauda,
+e a causa é o método: amostragem uniforme sub-representa os arquivos grandes, que são exatamente
+os que o Princípio I existe para proteger. O p50 idêntico nas duas apurações é o indício de que a
+divergência é de cauda, não erro sistemático.
 
 ## Governança
 
@@ -466,4 +547,4 @@ Report são dívidas conhecidas: NEVER servem de precedente para novas violaçõ
 comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
 `memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.2.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.3.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19

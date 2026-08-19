@@ -26,7 +26,7 @@ pendente, parada até a 001 fechar. Nada mergeado.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.2.1**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.3.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
@@ -173,9 +173,9 @@ português).
 | **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
 | ~~**Ordem do trabalho**~~      | ✅ resolvido — especificar a 002 primeiro (feito), implementar a 001 primeiro (feito até `T085`). A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
 | CI                             | não decidida — verificação local vale até lá                                |
-| `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
+| ~~`tasks-template` teste opcional~~ | ✅ resolvido — corrigido nos **seis** lugares onde a contradição estava, não nos dois citados (`T081`) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
-| Linha de base de desempenho    | orçamento provisório **subdimensionado**: o p95 real é 2.933 linhas, não 1.000 |
+| ~~Linha de base de desempenho~~ | ✅ resolvido — constituição **v2.3.0** com os números medidos; `TODO(BENCHMARK_BASE)` fechado. Resta a ativação da extensão, sem verificação (`T088`) |
 | `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
 | Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
 | `package-lock.json` ignorado   | herdado do legado; para extensão (não é lib publicada) versionar daria build reproduzível |

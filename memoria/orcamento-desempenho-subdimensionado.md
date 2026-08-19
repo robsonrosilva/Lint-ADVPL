@@ -1,38 +1,54 @@
 ---
 name: orcamento-desempenho-subdimensionado
-description: O orçamento provisório do Princípio I erra nas duas metades — o tamanho de referência é pequeno demais e o teto de tempo é 109x o custo real medido
+description: RESOLVIDO em 2026-08-19 — o orçamento do Princípio I foi emendado com os números medidos (constituição v2.3.0); resta a ativação da extensão, ainda sem verificação
 metadata:
   type: project
 ---
 
-A constituição v2.2.1, Princípio I, fixa como orçamento **provisório**: "ativação da extensão
-≤ 200 ms; reanálise p95 de fonte de 1.000 linhas ≤ 100 ms".
+> ✅ **Resolvido em 2026-08-19.** A constituição foi emendada para a **v2.3.0** e o
+> `TODO(BENCHMARK_BASE)` está fechado. O nome deste arquivo ficou histórico — ele descreve o
+> problema que existiu, e a última seção diz o que vale hoje.
 
-**Medido em 2026-08-19** pela linha de base da spec 001 (ver [[distribuicao-tamanho-fontes]]), o
-orçamento erra nas **duas** metades:
+## O problema que existiu
 
-| | Orçamento | Medido | |
-| - | --------- | ------ | - |
-| Tamanho de referência | 1.000 linhas | o p95 real é **3.230** | 1.000 fica entre o p50 (309) e o p90 (1.862) |
-| Teto de tempo | 100 ms | p95 custa **0,91 ms** | teto **109× maior** que o custo real |
+A constituição, até a v2.2.1, fixava um orçamento **provisório**: "ativação da extensão ≤ 200 ms;
+reanálise p95 de fonte de 1.000 linhas ≤ 100 ms". O próprio texto mandava emendá-lo com base em
+medição. Quando a medição chegou, ele errava nas **duas** metades:
 
-**Why:** um orçamento ancorado em arquivo menor que o p95 declara vitória num tamanho que boa parte
-dos fontes ultrapassa. E um teto 109 vezes folgado **não limita nada**: uma regressão de trinta
-vezes passaria pelo portão sem acender luz. Orçamento que nunca reprova é decoração — e o Princípio
-I existe porque o legado travava o editor sem ninguém saber.
+| | Constituição dizia | Medido |
+| - | ------------------ | ------ |
+| Tamanho de referência | p95 = 1.000 linhas | p95 real = **3.230** (1.000 fica entre o p50 e o p90) |
+| Teto de tempo | ≤ 100 ms | **0,91 ms** — teto **109×** o custo real |
 
-**How to apply:** a emenda ao Princípio I ainda **não foi feita** — depende de decisão do dono, via
-`/speckit-constitution`. A proposta, com margem de uma ordem de grandeza sobre o medido, está em
-`specs/001-esqueleto-lsp-harness/baseline/CONFRONTO-2026-08-19.md`:
+**Why:** um orçamento ancorado abaixo do p90 declara vitória onde o problema não estava — o legado
+travava no fonte de dez mil linhas, não no mediano. E um teto 109 vezes folgado deixaria passar uma
+regressão de **trinta vezes** sem acender luz. Portão que nunca reprova não é frouxo: é enganoso,
+porque produz a sensação de proteção.
 
-| Item | Proposto | Medido |
-| ---- | -------- | ------ |
-| Partida do motor | ≤ 100 ms | 41,4 ms |
-| Reanálise do p95 (3.230 linhas) | ≤ 10 ms | 0,91 ms |
-| Reanálise do maior fonte (27.832 linhas) | ≤ 50 ms | 4,71 ms |
-| Parada após cancelamento | ≤ 5 ms | 0,09 ms |
+## O orçamento que vale hoje (constituição v2.3.0)
 
-⚠️ **Lacuna conhecida**: o campo `activationMs` do relatório mede a **partida do motor** — subir o
-thread e carregar o código —, não a ativação da extensão dentro do editor, que envolve o VS Code e
-pertence ao teste de integração. Enquanto essa metade não for medida, o item "ativação ≤ 200 ms" do
-Princípio I continua sem verificação própria.
+| Item | Teto | Medido | Estado |
+| ---- | ---- | ------ | ------ |
+| Partida do motor | ≤ 100 ms | 41,4 ms | aferido |
+| Reanálise do p95 — 3.230 linhas | ≤ 10 ms | 0,91 ms | aferido |
+| Reanálise do maior fonte — 27.832 linhas | ≤ 50 ms | 4,71 ms | aferido |
+| Parada após cancelamento | ≤ 5 ms | 0,09 ms | aferido |
+| **Ativação da extensão no editor** | ≤ 200 ms | — | ⚠️ **não aferido** |
+
+A margem é de uma ordem de grandeza sobre o medido: absorve máquina mais lenta, as regras que ainda
+vão entrar e a variação entre execuções, e ainda assim **reprova** uma regressão real. Os dois itens
+do meio são novos e cobrem onde o legado falhava — `setTimeout` que rejeitava fonte grande, e
+resultado descartado no fim em vez de análise interrompida.
+
+## O que continua aberto
+
+⚠️ **A ativação da extensão dentro do editor não é medida por nada.** Os 41,4 ms são a partida do
+**motor** — subir o processo e carregar o código. A ativação envolve o VS Code e pertence ao teste
+de integração. O item permanece no orçamento marcado como não aferido, de propósito: trocá-lo pelo
+número do motor apagaria um item fingindo tê-lo medido.
+
+**How to apply:** a dívida é a tarefa **`T088`** da spec 001. Enquanto ela não fechar, ninguém pode
+afirmar que o orçamento do Princípio I está inteiramente verificado.
+
+Ver [[distribuicao-tamanho-fontes]] e o confronto completo em
+`specs/001-esqueleto-lsp-harness/baseline/CONFRONTO-2026-08-19.md`.

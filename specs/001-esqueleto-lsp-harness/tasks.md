@@ -490,7 +490,7 @@ princípios da constituição. O que **não** virou tarefa está registrado ao p
       41 ms — e o relatório e o `CONFRONTO-2026-08-19.md` dizem isso com todas as letras. É outra
       coisa: a ativação envolve o VS Code, e só o teste de integração alcança. Enquanto não existir,
       metade do orçamento do Princípio I não tem verificação própria.
-- [ ] T089 Emendar o Princípio I com os números medidos, por `/speckit-constitution`, fechando o
+- [X] T089 Emendar o Princípio I com os números medidos, por `/speckit-constitution`, fechando o
       `TODO(BENCHMARK_BASE)` (missing). A proposta, com margem de uma ordem de grandeza sobre o
       medido, está em `baseline/CONFRONTO-2026-08-19.md`. Enquanto não for feita, a constituição
       mantém "p95 de fonte de 1.000 linhas ≤ 100 ms" — tamanho que fica entre o p50 e o p90 reais, e
