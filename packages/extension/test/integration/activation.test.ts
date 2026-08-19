@@ -44,6 +44,56 @@ suite('Ativação', () => {
     assert.equal(extension.isActive, false, 'a extensão ativou com um .txt aberto')
   })
 
+  test('a ativação cabe no orçamento, nas suas DUAS metades (SC-003)', async () => {
+    // A constituição v2.4.0 orça a ativação em dois números porque são duas
+    // coisas, e só uma está sob controle deste código:
+    //
+    //   trabalho próprio do `activate`   <=  50 ms   (medido 18,4)
+    //   ativação completa no editor      <= 1000 ms  (medido 218-451)
+    //
+    // O segundo inclui o editor LER, COMPILAR e resolver os `require` de um
+    // pacote de 352 KB que é quase todo `vscode-languageclient`. Um teto único
+    // de 200 ms media os dois juntos e reprovava o código correto pelo custo de
+    // carregar uma dependência necessária.
+    //
+    // Este teste precisa ser o PRIMEIRO a ativar: ele vem depois do teste do
+    // `.txt`, que garante extensão inativa, e antes de qualquer `.prw` ser
+    // aberto — abrir um fonte dispara `onLanguage` e a ativação começaria por
+    // fora, tornando a medição uma corrida.
+    const extension = vscode.extensions.getExtension(EXTENSION_ID)
+    assert.ok(extension)
+    assert.equal(
+      extension.isActive,
+      false,
+      'a extensão já estava ativa: esta medição precisa da PRIMEIRA ativação',
+    )
+
+    const started = performance.now()
+    const api = (await extension.activate()) as { activationMs?: number } | undefined
+    const total = performance.now() - started
+
+    assert.equal(extension.isActive, true)
+
+    // O que o código faz. Um `await` indevido no caminho de ativação estoura
+    // isto na hora, e nenhum ruído de disco esconde.
+    assert.equal(typeof api?.activationMs, 'number', 'a extensão não expôs o tempo do próprio activate')
+    assert.ok(
+      api!.activationMs! <= 50,
+      `o trabalho próprio da ativação levou ${api!.activationMs!.toFixed(1)} ms, acima dos 50 ms`,
+    )
+
+    // O que o usuário espera. 1000 ms é o ponto em que o próprio VS Code passa
+    // a tratar uma extensão como lenta — acima disso o problema deixa de ser o
+    // nosso orçamento e vira reclamação do editor. Se ESTE falhar e o de cima
+    // passar, leia como ambiente: o código não regrediu, a máquina está lenta.
+    assert.ok(
+      total <= 1000,
+      `a ativação completa levou ${total.toFixed(1)} ms, acima do teto de 1000 ms ` +
+        `(trabalho próprio: ${api?.activationMs?.toFixed(1) ?? '?'} ms — se este estiver dentro ` +
+        `dos 50 ms, o excesso é do carregamento do módulo, não do código)`,
+    )
+  })
+
   test('a extensão ativa ao abrir um fonte .prw', async () => {
     const extension = vscode.extensions.getExtension(EXTENSION_ID)
     assert.ok(extension)

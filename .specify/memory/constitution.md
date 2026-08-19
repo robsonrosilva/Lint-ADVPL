@@ -1,6 +1,44 @@
 <!--
 Sync Impact Report
 ==================
+Versão: 2.3.0 → 2.4.0
+Tipo de bump: MINOR — o item de ativação do orçamento do Princípio I passa de UM teto não aferido
+para DOIS tetos medidos. Nenhum princípio removido nem redefinido de forma incompatível. Aprovada
+pelo dono em 2026-08-19, no mesmo dia da v2.3.0.
+
+Motivo: a v2.3.0 marcou "ativação da extensão ≤ 200 ms" como NÃO AFERIDO. Aferir foi a primeira
+coisa que reprovou — e o portão fez o trabalho dele.
+
+  medido, seis rodadas:  260, 334, 351, 378, 418, 451 ms   (teto era 200)
+
+Instrumentando o `activate`, o quadro ficou claro e mudou a conclusão:
+
+  corpo do activate      18,4 ms    <- o que ESTE código controla
+  resto                 200-430 ms  <- o editor carregando o módulo de 352 KB
+
+O código próprio está com folga de 10x. O custo é ler, compilar e resolver os `require` de um pacote
+que é quase todo `vscode-languageclient`. Minificar não muda (377 ms no pacote de produção contra
+418 no de desenvolvimento), e separação de código não funciona no formato CommonJS — `await import()`
+vira `require` no mesmo arquivo.
+
+Um teto único media as duas coisas juntas e REPROVAVA O CÓDIGO CORRETO pelo custo de carregar uma
+dependência necessária. A emenda separa:
+
+  trabalho próprio da ativação     <=  50 ms   (medido 18,4)
+  ativação completa no editor      <= 1000 ms  (medido 218-451)
+
+Os 1000 ms têm margem de 2,2x sobre o máximo observado e coincidem com o ponto em que o próprio VS
+Code trata uma extensão como lenta. O dono considerou 500 ms — que passava nas medições, mas com 11%
+de folga acusaria em máquina mais lenta sem que nada tivesse regredido, e falha assim se lê errado.
+A pressão sobre o custo fica onde é honesta: nos 50 ms do trabalho próprio, que o código controla.
+
+Acrescentado também o item "do arquivo aberto ao primeiro diagnóstico <= 300 ms" (SC-001, medido
+~112 ms), que já era critério de sucesso da spec 001 e agora tem lugar no orçamento.
+
+Nenhuma dívida TODO mudou de estado. A dívida T088 da spec 001 está CUMPRIDA: a ativação foi medida.
+
+--- Emenda anterior ---
+
 Versão: 2.2.1 → 2.3.0
 Tipo de bump: MINOR — ampliação material do Princípio I. Nenhum princípio removido, nenhum
 redefinido de forma incompatível. Aprovada pelo dono em 2026-08-19.
@@ -202,11 +240,36 @@ Este é o primeiro princípio porque foi a falha que matou a versão anterior. R
 
   | Item | Teto | Medido | Estado |
   | ---- | ---- | ------ | ------ |
+  | **Trabalho próprio da ativação** — o que o `activate` executa | ≤ **50 ms** | 18,4 ms | aferido |
+  | **Ativação completa no editor** — inclui carregar o módulo | ≤ **1000 ms** | 218–451 ms | aferido |
   | Partida do motor — subir o processo e carregar o código | ≤ **100 ms** | 41,4 ms | aferido |
   | Reanálise do p95 — fonte de **3.230 linhas** | ≤ **10 ms** | 0,91 ms | aferido |
   | Reanálise do maior fonte — 27.832 linhas | ≤ **50 ms** | 4,71 ms | aferido |
+  | Do arquivo aberto ao primeiro diagnóstico — fonte mediano | ≤ **300 ms** | ~112 ms | aferido |
   | Parada após cancelamento | ≤ **5 ms** | 0,09 ms | aferido |
-  | **Ativação da extensão dentro do editor** | ≤ **200 ms** | — | ⚠️ **NÃO aferido** |
+
+  **A ativação são DOIS números porque são duas coisas, e só uma está sob controle deste código.**
+  O `activate` executa em 18,4 ms — criar o cliente, registrar a guarda de codificação e disparar o
+  servidor sem esperar por ele. Os outros 200 a 430 ms são o editor **carregando o módulo**: ler,
+  compilar e resolver os `require` de um pacote de 352 KB que é quase todo `vscode-languageclient`.
+  Minificar não muda isso (377 ms com o pacote de produção contra 418 com o de desenvolvimento), e
+  reduzi-lo exigiria separação de código — que no formato CommonJS não funciona, porque
+  `await import()` vira `require` no mesmo arquivo.
+
+  Um teto único de 200 ms para a soma media as duas coisas juntas e **reprovava o código correto**
+  pelo custo de carregar uma dependência necessária. Separá-las mantém a proteção onde ela morde:
+  um `await` indevido no caminho de ativação estoura os 50 ms na hora, e nenhum ruído de disco
+  esconde isso.
+
+  **Os 1000 ms da ativação completa têm margem de 2,2× sobre o máximo observado** (451 ms), e o
+  número não é arbitrário: é o ponto em que o próprio VS Code passa a tratar uma extensão como lenta.
+  Acima disso, o problema deixa de ser nosso orçamento e vira reclamação do editor ao usuário.
+
+  A decisão foi do dono em 2026-08-19, depois de considerar 500 ms — que passava nas medições, mas
+  com 11% de folga acusaria em máquina mais lenta ou com disco frio, e uma falha dessas se lê como
+  regressão sem ser. **A pressão sobre o custo de carregamento fica onde ela é honesta: nos 50 ms do
+  trabalho próprio**, que o código controla de verdade. Se um dia o item de cima acusar e o de baixo
+  seguir verde, a leitura é ambiente, não regressão — é para isso que a decomposição existe.
 
   **A margem é de uma ordem de grandeza sobre o medido, e o número tem razão.** Ela precisa absorver
   máquina mais lenta que a da medição, as dezenas de regras que ainda vão entrar e a variação entre
@@ -547,4 +610,4 @@ Report são dívidas conhecidas: NEVER servem de precedente para novas violaçõ
 comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
 `memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.3.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.4.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19

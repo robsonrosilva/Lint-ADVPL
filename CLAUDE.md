@@ -26,7 +26,7 @@ pendente, parada até a 001 fechar. Nada mergeado.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.3.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.4.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
@@ -175,7 +175,7 @@ português).
 | CI                             | não decidida — verificação local vale até lá                                |
 | ~~`tasks-template` teste opcional~~ | ✅ resolvido — corrigido nos **seis** lugares onde a contradição estava, não nos dois citados (`T081`) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
-| ~~Linha de base de desempenho~~ | ✅ resolvido — constituição **v2.3.0** com os números medidos; `TODO(BENCHMARK_BASE)` fechado. Resta a ativação da extensão, sem verificação (`T088`) |
+| ~~Linha de base de desempenho~~ | ✅ resolvido — constituição **v2.4.0**, todos os itens do orçamento medidos e com teste. `TODO(BENCHMARK_BASE)` fechado |
 | `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
 | Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
 | `package-lock.json` ignorado   | herdado do legado; para extensão (não é lib publicada) versionar daria build reproduzível |
