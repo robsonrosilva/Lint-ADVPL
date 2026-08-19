@@ -21,9 +21,11 @@ mudam o desenho:
    caminho quente. Como CP1252 é de byte único e todos os pontos são do plano básico, deslocamento em
    bytes, índice de caractere e unidade de código UTF-16 coincidem, e a aritmética de coluna fica
    trivialmente correta.
-2. **A fronteira cliente/motor é garantida pelo compilador** (R2). `packages/server` não declara
-   `vscode` nem `@types/vscode`; um import acidental da API do editor dentro do motor não compila. O
-   "a camada VS Code é fina e não analisa nada" do Princípio I deixa de ser disciplina.
+2. **A fronteira cliente/motor é imposta por ferramenta, não por disciplina** (R2). Um import da API
+   do editor dentro de `packages/server` **reprova no lint**, com mensagem que cita o princípio.
+   Medido em 2026-08-19: apenas omitir `vscode`/`@types/vscode` do `package.json` **não basta** — o
+   içamento de workspaces do npm faz a resolução do TypeScript encontrar os tipos assim mesmo. O
+   mecanismo real é `no-restricted-imports`, verificado disparando.
 3. **`.gitattributes` é a primeira tarefa** (R4). `core.autocrlf=true` está confirmado nesta máquina.
    Sem ele, as fixtures de fim de linha e de codificação seriam normalizadas na entrada do
    repositório e os testes passariam sobre conteúdo que ninguém escreveu.
@@ -81,7 +83,7 @@ p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas.
 
 | Regra da constituição | Como o desenho atende | Verificado por |
 | --------------------- | --------------------- | -------------- |
-| Análise fora do processo da extensão, por LSP | `packages/server` em processo próprio; `packages/extension` só orquestra | fronteira imposta pelo compilador (R2) |
+| Análise fora do processo da extensão, por LSP | `packages/server` em processo próprio; `packages/extension` só orquestra | `no-restricted-imports` sobre `packages/server/**` (R2) |
 | I/O síncrono proibido no caminho de análise | o motor só consome o texto que chega pelo LSP; não abre arquivo | regra de lint que proíbe `*Sync` em `packages/server/src` |
 | Log no caminho quente proibido | canal de log com nível, padrão desligado | mesma regra de lint proíbe `console.*` no motor |
 | `CancellationToken` respeitado de fato | verificação de cancelamento entre blocos de linhas, não só ao final | teste que cancela no meio e mede quando o trabalho parou |
@@ -254,9 +256,9 @@ packages/
 ```
 
 **Structure Decision**: monorepo npm de três workspaces, escolhido para que a separação exigida pelo
-Princípio I entre camada de editor e motor de análise seja **imposta pelo grafo de dependências**, e
-não pela disciplina de quem escreve. `packages/server` não tem acesso ao tipo `vscode`; `tooling`
-fica fora do empacotamento e portanto fora do custo de ativação. O detalhe de cada escolha está em
+Princípio I entre camada de editor e motor de análise seja **imposta por ferramenta**, e não pela
+disciplina de quem escreve. O import de `vscode` dentro do motor reprova no lint; `tooling` fica fora
+do empacotamento e portanto fora do custo de ativação. O detalhe de cada escolha está em
 [research.md](research.md), R2.
 
 ## Complexity Tracking

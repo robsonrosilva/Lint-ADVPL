@@ -1,0 +1,28 @@
+{
+  "name": "advpl-lint",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "robsonrosilva",
+  "author": "Robson Rogério Silva",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=24.0.0"
+  },
+  "categories": ["Linters", "Programming Languages"],
+  "main": "./out/src/extension.js",
+  "l10n": "./l10n",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('out',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}

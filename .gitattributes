@@ -1,0 +1,17 @@
+# Fim de linha normalizado para LF dentro do repositório.
+* text=auto eol=lf
+*.md text eol=lf
+
+# Fixtures ADVPL/TLPP: aqui os BYTES são o objeto do teste.
+#
+# Estas fixtures existem para provar que o motor lida com CRLF, com LF, com os
+# dois misturados no mesmo arquivo, e com bytes CP1252 na faixa 0x80-0x9F. Se o
+# git normalizar o fim de linha na entrada ou na saída do repositório, o teste
+# passa a rodar sobre um conteúdo que ninguém escreveu — e passa. Verde
+# enganoso é pior que vermelho.
+#
+# `-text` desliga qualquer conversão e preserva o `diff`; `binary` também
+# serviria, mas descartaria a diferença legível em revisão.
+#
+# Medido nesta máquina em 2026-08-19: core.autocrlf = true. O risco é real.
+packages/*/test/fixtures/** -text

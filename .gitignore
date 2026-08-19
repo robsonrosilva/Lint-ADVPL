@@ -6,3 +6,17 @@ out
 package-lock.json
 .tmp
 lib/*
+
+# --- Corpus de medição: externo, local, NUNCA versionado ---
+# São fontes padrão do Protheus. Versioná-las é problema de licença e de
+# exposição (constituição v2.2.0, seção "Corpus de Medição").
+corpus.local.json
+.corpus-cache.json
+
+# Material de revisão de falso positivo. Revisar exige olhar o trecho que
+# disparou; gravar isso no repositório seria cópia parcial do corpus pela porta
+# dos fundos. Do relatório versionado sobe apenas o agregado.
+.fp-review/
+
+# Fixtures grandes são GERADAS em tempo de teste, nunca versionadas.
+packages/*/test/fixtures/generated/

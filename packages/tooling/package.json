@@ -1,0 +1,10 @@
+{
+  "name": "@advpl-lint/tooling",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Harness de medição e verificações de portão. Nunca empacotado, nunca publicado.",
+  "license": "MIT",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('out',{recursive:true,force:true})\""
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@advpl-lint/server",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Motor de análise ADVPL/TLPP — Language Server. Não conhece a API do VS Code.",
+  "license": "MIT",
+  "main": "out/src/server.js",
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('out',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.18",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  }
+}

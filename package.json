@@ -1,0 +1,38 @@
+{
+  "name": "advpl-lint-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Extensão VS Code de lint e formatação ADVPL/TLPP",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "packages/server",
+    "packages/extension",
+    "packages/tooling"
+  ],
+  "scripts": {
+    "typecheck": "tsc --build",
+    "build": "npm run typecheck && node packages/tooling/scripts/bundle.mjs",
+    "lint": "eslint .",
+    "test": "npm run typecheck && npm run test:unit",
+    "test:unit": "node --test --experimental-test-coverage --test-coverage-include=packages/server/out/src/** --test-coverage-include=packages/tooling/out/src/** --test-coverage-lines=98 --test-coverage-functions=98 --test-coverage-branches=98 \"packages/server/out/test/**/*.test.js\" \"packages/tooling/out/test/**/*.test.js\"",
+    "test:integration": "vscode-test",
+    "check:nls": "node packages/tooling/out/src/checks/nls.js",
+    "check:corpus": "node packages/tooling/out/src/checks/corpus.js",
+    "check:docs": "node packages/tooling/out/src/checks/docs.js",
+    "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run check:nls && npm run check:corpus && npm run check:docs",
+    "baseline": "node packages/tooling/out/src/harness/run.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
+  }
+}

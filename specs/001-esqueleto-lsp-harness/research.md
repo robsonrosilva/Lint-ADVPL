@@ -128,9 +128,21 @@ dois pacotes finais (`extension.js` e `server.js`), formato CommonJS, `vscode` m
 ### Razão
 
 - A fronteira precisa ser **estrutural, não disciplinar**. `packages/server` não declara
-  `@types/vscode` nem `vscode` como dependência, então um import acidental da API do editor dentro do
-  motor **falha ao compilar**. O Princípio I ("a camada VS Code é fina e não analisa nada") vira
-  invariante verificada pelo compilador em vez de convenção.
+  `@types/vscode` nem `vscode` como dependência, e um import acidental da API do editor dentro do
+  motor **reprova no lint**. O Princípio I ("a camada VS Code é fina e não analisa nada") vira
+  invariante verificada por ferramenta em vez de convenção.
+
+  ⚠️ **Corrigido em 2026-08-19, durante a implementação.** A redação original desta decisão dizia que
+  o import "falha ao compilar". **Medido: não falha.** Com workspaces do npm, `@types/vscode` é içado
+  para o `node_modules` da raiz, e a resolução de módulo do TypeScript encontra
+  `node_modules/@types/vscode` de qualquer forma — `types: ["node"]` governa apenas a inclusão
+  **global** de pacotes `@types`, não a resolução de `import 'vscode'`. Um arquivo-sonda com
+  `import * as vscode from 'vscode'` dentro de `packages/server/src` compilou com saída 0.
+
+  O que realmente fecha a porta é `no-restricted-imports` no lint, restrito a
+  `packages/server/**`, verificado disparando sobre o mesmo arquivo-sonda. Continua sendo portão
+  automático — só é o lint, e não o compilador, que o executa. A ausência da dependência no
+  `package.json` permanece útil como sinal de intenção, mas **não** é o mecanismo.
 - `packages/tooling` fora do empacotamento garante que harness e verificações nunca entrem no `.vsix`
   nem no custo de ativação.
 - esbuild produz um arquivo por processo. A ativação carrega **um** módulo, não centenas — que é

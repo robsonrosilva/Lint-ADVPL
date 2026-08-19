@@ -57,25 +57,28 @@ escrito e não traduzido.
 **Purpose**: estrutura do monorepo e os portões que precisam existir antes do primeiro arquivo de
 teste.
 
-- [ ] T001 Criar `.gitattributes` na raiz com `* text=auto eol=lf`, `*.md text eol=lf` e
+- [X] T001 Criar `.gitattributes` na raiz com `* text=auto eol=lf`, `*.md text eol=lf` e
       `packages/*/test/fixtures/** -text` — **antes de qualquer fixture existir** (R4)
-- [ ] T002 Confirmar o efeito de T001 rodando `git check-attr text -- packages/server/test/fixtures/x.prw`
+- [X] T002 Confirmar o efeito de T001 rodando `git check-attr text -- packages/server/test/fixtures/x.prw`
       e conferir que devolve `text: unset` — sem isso as fixtures são normalizadas na entrada do repositório
-- [ ] T003 Criar `package.json` na raiz com `workspaces` e os scripts `build`, `typecheck`, `lint`,
+- [X] T003 Criar `package.json` na raiz com `workspaces` e os scripts `build`, `typecheck`, `lint`,
       `test`, `check:nls`, `check:corpus`, `check:docs`, `verify`, `baseline`. O script `test` já
       nasce com os limiares — `--experimental-test-coverage --test-coverage-lines=98
       --test-coverage-functions=98 --test-coverage-branches=98` — e lendo as exclusões de
       `coverage-exclusions.json` (FR-030, FR-031, FR-032)
-- [ ] T004 [P] Criar `tsconfig.base.json` com alvo `ES2022`, `strict: true`, e um `tsconfig.json` por workspace
-- [ ] T005 [P] Acrescentar ao `.gitignore`: `out/`, `dist/`, `corpus.local.json`, `.corpus-cache.json`,
+- [X] T004 [P] Criar `tsconfig.base.json` com alvo `ES2022`, `strict: true`, e um `tsconfig.json` por workspace
+- [X] T005 [P] Acrescentar ao `.gitignore`: `out/`, `dist/`, `corpus.local.json`, `.corpus-cache.json`,
       `.fp-review/`, `packages/*/test/fixtures/generated/` (FR-023, FR-026)
-- [ ] T006 [P] Criar `eslint.config.js` proibindo, em `packages/server/src/**`, todo identificador
-      terminado em `Sync` e toda chamada `console.*` (FR-007, Princípio I)
-- [ ] T007 Criar `packages/server/package.json` **sem** `vscode` e **sem** `@types/vscode` — a ausência
-      é o que faz um import da API do editor no motor não compilar (R2)
-- [ ] T008 [P] Criar `packages/extension/package.json` como manifesto da extensão, com identidade de
+- [X] T006 [P] Criar `eslint.config.js` proibindo, em `packages/server/src/**`, todo identificador
+      terminado em `Sync` e toda chamada `console.*`; e, em `packages/server/**`, o import de `vscode`
+      (FR-007, FR-002, Princípio I)
+- [X] T007 Criar `packages/server/package.json` **sem** `vscode` e **sem** `@types/vscode`, e proibir
+      o import de `vscode` em `packages/server/**` por `no-restricted-imports` no lint — medido em
+      2026-08-19: só omitir a dependência **não** impede o import, porque o içamento de workspaces
+      deixa `@types/vscode` visível à resolução do TypeScript (R2)
+- [X] T008 [P] Criar `packages/extension/package.json` como manifesto da extensão, com identidade de
       publicação própria e espaço de nomes `advplLint.*` (D1, FR-014a)
-- [ ] T009 [P] Criar `packages/tooling/package.json`, marcado como privado e fora do empacotamento
+- [X] T009 [P] Criar `packages/tooling/package.json`, marcado como privado e fora do empacotamento
 
 **Checkpoint**: `npm install` roda, os três workspaces existem, e o git não normaliza fixtures.
 
@@ -90,54 +93,54 @@ pode começar antes desta fase.**
 
 ### Codificação CP1252
 
-- [ ] T010 [P] Escrever `packages/server/test/unit/text/cp1252.test.ts`: ida e volta **exaustiva** dos
+- [X] T010 [P] Escrever `packages/server/test/unit/text/cp1252.test.ts`: ida e volta **exaustiva** dos
       256 bytes; os cinco sem definição (`0x81`, `0x8D`, `0x8F`, `0x90`, `0x9D`) mapeiam para os pontos
       de controle C1; e a divergência com `latin1` na faixa `0x80`–`0x9F` é explicitamente asserida (FR-003)
-- [ ] T011 Implementar `packages/server/src/text/cp1252.ts` — tabela local de 256 posições, decodificação
+- [X] T011 Implementar `packages/server/src/text/cp1252.ts` — tabela local de 256 posições, decodificação
       **e** codificação juntas, sem `iconv-lite` (R1, FR-003)
 
 ### Utilitário de asserção de diagnóstico
 
-- [ ] T012 [P] Escrever `packages/server/test/unit/support/assert-diagnostic.test.ts`: o utilitário
+- [X] T012 [P] Escrever `packages/server/test/unit/support/assert-diagnostic.test.ts`: o utilitário
       acusa divergência em `code`, em `severity`, em linha e em coluna, separadamente (FR-029)
-- [ ] T013 Implementar `packages/server/test/support/assert-diagnostic.ts` comparando o diagnóstico
+- [X] T013 Implementar `packages/server/test/support/assert-diagnostic.ts` comparando o diagnóstico
       **inteiro**. Não expor nenhuma forma de assertar contagem agregada (FR-029)
 
 ### Tabela de severidade
 
-- [ ] T014 [P] Escrever `packages/server/test/unit/severity/map.test.ts`: `MINOR` resolve para
+- [X] T014 [P] Escrever `packages/server/test/unit/severity/map.test.ts`: `MINOR` resolve para
       `Information`; severidade de catálogo sem entrada na tabela é **erro de registro**, não valor
       padrão silencioso (FR-014, D3)
-- [ ] T015 Implementar `packages/server/src/severity/map.ts` com a única entrada `MINOR → Information`
+- [X] T015 Implementar `packages/server/src/severity/map.ts` com a única entrada `MINOR → Information`
       e as demais deliberadamente ausentes (`TODO(SEVERITY_MAP)`)
 
 ### Registro de regras
 
-- [ ] T016 [P] Escrever `packages/server/test/unit/rules/registry.test.ts` cobrindo as seis invariantes
+- [X] T016 [P] Escrever `packages/server/test/unit/rules/registry.test.ts` cobrindo as seis invariantes
       de [contracts/regra.md](contracts/regra.md): unicidade de `id` e `configKey`; origem `totvs` exige
       `group` e `catalogSeverity`; origem `project` exige `id` em `/^PJ\d{4}$/` e `projectRationale` não
       vazio; `messageKey` nos quatro idiomas; documentação existente; severidade mapeável
       (FR-010, FR-010a, FR-012, FR-013)
-- [ ] T017 Implementar `packages/server/src/rules/registry.ts` como fonte única de identidade de regra
+- [X] T017 Implementar `packages/server/src/rules/registry.ts` como fonte única de identidade de regra
 
 ### Canal de log
 
-- [ ] T018 [P] Escrever `packages/server/test/unit/logging/channel.test.ts`: com nível `off` — o padrão —
+- [X] T018 [P] Escrever `packages/server/test/unit/logging/channel.test.ts`: com nível `off` — o padrão —
       nada é emitido (FR-007)
-- [ ] T019 Implementar `packages/server/src/logging/channel.ts` com nível, desligado por padrão
+- [X] T019 Implementar `packages/server/src/logging/channel.ts` com nível, desligado por padrão
 
 ### Idiomas — ponto único de declaração
 
-- [ ] T020 [P] Escrever `packages/tooling/test/locales.test.ts`: exatamente quatro idiomas
+- [X] T020 [P] Escrever `packages/tooling/test/locales.test.ts`: exatamente quatro idiomas
       (`en`, `pt-br`, `es`, `ru`), `en` como base, e nenhum outro arquivo do repositório enumerando
       idioma (FR-015a, D4)
-- [ ] T021 Implementar `packages/tooling/src/locales.ts` como ponto único de declaração dos idiomas
+- [X] T021 Implementar `packages/tooling/src/locales.ts` como ponto único de declaração dos idiomas
 
 ### Construção e portão
 
-- [ ] T022 Escrever o script de construção: `tsc` para `out/` (portão de tipagem) e `esbuild` gerando
+- [X] T022 Escrever o script de construção: `tsc` para `out/` (portão de tipagem) e `esbuild` gerando
       `extension.js` e `server.js`, CommonJS, `vscode` externo (R2)
-- [ ] T023 Escrever o orquestrador de `npm run verify` encadeando `typecheck`, `lint`, `test` (com o
+- [X] T023 Escrever o orquestrador de `npm run verify` encadeando `typecheck`, `lint`, `test` (com o
       limiar de 98%), `check:nls`, `check:corpus`, `check:docs` — **sem cano na saída**, para o código
       de saída ser o do comando e não o do `tail` (Portão 2 da constituição v2.2.0)
 
