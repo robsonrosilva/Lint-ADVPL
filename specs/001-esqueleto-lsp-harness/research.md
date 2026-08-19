@@ -191,11 +191,39 @@ inteiro do diagnóstico específico**:
 Um utilitário de teste faz essa comparação e **falha** se o teste tentar assertar apenas contagem.
 Contagem agregada é proibida pelo FR-029, e a proibição precisa de dente, não de recomendação.
 
+### Cobertura de 98% — como é medida
+
+A constituição v2.2.0 tornou **98% em linhas, funções e ramos** um portão de merge. A medição usa o
+mecanismo **nativo** do Node, confirmado disponível nesta máquina em 2026-08-19:
+
+```text
+node --test --experimental-test-coverage \
+     --test-coverage-lines=98 \
+     --test-coverage-functions=98 \
+     --test-coverage-branches=98
+```
+
+Abaixo do limiar, o processo sai com código de erro — o portão é o próprio runner, não um passo
+extra que alguém pode esquecer de encadear. **Zero dependência nova**, o que era condição: a
+constituição proíbe acrescentar dependência para medir cobertura.
+
+Exclusão sai por `--test-coverage-exclude`, alimentado por uma **lista versionada com a razão de
+cada item**. Baixar o limiar ou excluir sem justificativa é violação, não ajuste.
+
+Para `packages/extension`, a cobertura vem do `@vscode/test-cli`, que integra cobertura por V8. É
+onde a meta aperta de verdade — a camada de integração tem ramos que só ocorrem sob condição do
+próprio editor. A saída prevista pela constituição é exclusão **declarada com razão**, nunca limiar
+menor sem registro; a diferença é que a primeira deixa rastro auditável do que não está coberto.
+
 ### Alternativas rejeitadas
 
 - **Mocha** (o do legado) ou **Vitest**: ambos funcionam; ambos são dependência que `node:test`
   torna desnecessária no maior volume de testes.
 - **Só testes de integração**: laço lento demais, e não isolaria o motor.
+- **`c8` ou `nyc` para cobertura**: dependência para um problema que o Node 24 resolve nativamente,
+  e a constituição veda explicitamente.
+- **Cobertura como relatório informativo**: relatório que não bloqueia vira número que ninguém olha.
+  O limiar no próprio runner é o que faz a meta existir.
 
 ---
 
@@ -455,7 +483,7 @@ a distinção sobre comentários. Reverter depois passa a ser renomeação em ma
 | R0 | Codificação no caminho de edição é resolvida por `configurationDefaults` + aviso, não por decodificação própria |
 | R1 | Tabela CP1252 local de 256 posições; sem `iconv-lite`; sem `TextDecoder`, por causa da gravação |
 | R2 | Monorepo npm com `extension` / `server` / `tooling`; esbuild; fronteira garantida pelo compilador |
-| R3 | `node:test` no motor, `@vscode/test-cli` na integração; asserção de diagnóstico inteiro, contagem proibida |
+| R3 | `node:test` no motor, `@vscode/test-cli` na integração; asserção de diagnóstico inteiro, contagem proibida; cobertura de 98% pelo mecanismo nativo do Node, sem dependência |
 | R4 | `.gitattributes` com `-text` nas fixtures, criado antes da primeira fixture |
 | R5 | Inventário com cache, estratificação por tamanho, `worker_threads`, relatório em JSON e markdown |
 | R6 | Verificação de vazamento com três regras; fixture declara autoria; fixture grande é gerada, não versionada |

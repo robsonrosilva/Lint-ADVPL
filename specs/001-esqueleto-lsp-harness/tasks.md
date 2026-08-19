@@ -9,16 +9,23 @@ description: "Lista de tarefas — spec 001"
 **Prerequisites**: [plan.md](plan.md), [spec.md](spec.md), [research.md](research.md),
 [data-model.md](data-model.md), [contracts/](contracts/)
 
-## ⚠️ Testes NÃO são opcionais neste repositório
+## ⚠️ Testes NÃO são opcionais, e a cobertura mínima é 98%
 
 `.specify/templates/tasks-template.md` (linha 12) e `.claude/skills/speckit-tasks/SKILL.md`
 (linha 145) declaram testes opcionais. Isso é o padrão do spec-kit upstream e **contradiz o Princípio
-VI da constituição, que é NÃO NEGOCIÁVEL**. A constituição vence.
+VI**, que é NÃO NEGOCIÁVEL.
 
-Em toda tarefa abaixo, **a tarefa de teste vem antes da tarefa de código** e é escrita para **falhar
-primeiro**. Asserção sobre diagnóstico compara identificador, severidade, linha e coluna do
-diagnóstico específico; contagem agregada é proibida (FR-029). Corrigir os dois arquivos do template
-é a tarefa T081.
+Desde a **constituição v2.2.0** (2026-08-19) isso deixou de ser convenção e virou norma escrita: o
+Princípio VI diz que template, skill ou ferramenta que declare testes opcionais **está subordinado a
+ele e MUST ser contrariado**. Corrigir os dois arquivos é a tarefa **T081**.
+
+Em toda tarefa abaixo:
+
+- **A tarefa de teste vem antes da tarefa de código**, escrita para **falhar primeiro**.
+- Asserção sobre diagnóstico compara identificador, severidade, linha e coluna do diagnóstico
+  específico; contagem agregada é proibida (FR-029).
+- **Cobertura mínima de 98%** em linhas, funções e ramos, com o limiar no próprio runner — abaixo
+  dele o processo sai com erro (FR-030). Exclusão só por lista versionada com razão (FR-032).
 
 ## Format: `[ID] [P?] [Story] Descrição`
 
@@ -55,7 +62,10 @@ teste.
 - [ ] T002 Confirmar o efeito de T001 rodando `git check-attr text -- packages/server/test/fixtures/x.prw`
       e conferir que devolve `text: unset` — sem isso as fixtures são normalizadas na entrada do repositório
 - [ ] T003 Criar `package.json` na raiz com `workspaces` e os scripts `build`, `typecheck`, `lint`,
-      `test`, `check:nls`, `check:corpus`, `check:docs`, `verify`, `baseline`
+      `test`, `check:nls`, `check:corpus`, `check:docs`, `verify`, `baseline`. O script `test` já
+      nasce com os limiares — `--experimental-test-coverage --test-coverage-lines=98
+      --test-coverage-functions=98 --test-coverage-branches=98` — e lendo as exclusões de
+      `coverage-exclusions.json` (FR-030, FR-031, FR-032)
 - [ ] T004 [P] Criar `tsconfig.base.json` com alvo `ES2022`, `strict: true`, e um `tsconfig.json` por workspace
 - [ ] T005 [P] Acrescentar ao `.gitignore`: `out/`, `dist/`, `corpus.local.json`, `.corpus-cache.json`,
       `.fp-review/`, `packages/*/test/fixtures/generated/` (FR-023, FR-026)
@@ -127,9 +137,9 @@ pode começar antes desta fase.**
 
 - [ ] T022 Escrever o script de construção: `tsc` para `out/` (portão de tipagem) e `esbuild` gerando
       `extension.js` e `server.js`, CommonJS, `vscode` externo (R2)
-- [ ] T023 Escrever o orquestrador de `npm run verify` encadeando `typecheck`, `lint`, `test`,
-      `check:nls`, `check:corpus`, `check:docs` — **sem cano na saída**, para o código de saída ser o do
-      comando e não o do `tail`
+- [ ] T023 Escrever o orquestrador de `npm run verify` encadeando `typecheck`, `lint`, `test` (com o
+      limiar de 98%), `check:nls`, `check:corpus`, `check:docs` — **sem cano na saída**, para o código
+      de saída ser o do comando e não o do `tail` (Portão 2 da constituição v2.2.0)
 
 **Checkpoint**: contrato de regra, severidade, codificação e portão prontos. As histórias podem começar.
 
@@ -355,13 +365,29 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
       o que foi executado e o que passou
 - [ ] T079 Executar o [quickstart.md](quickstart.md) ponta a ponta, incluindo as validações manuais das
       três histórias
-- [ ] T080 **Emendar a constituição** por `/speckit-constitution`: Princípio V passa de "pt-BR e en"
-      para os quatro idiomas do Protheus. Bump **MINOR**. **Bloqueia o merge** (D4)
+- [x] T080 ~~**Emendar a constituição**~~ — **FEITO em 2026-08-19, constituição na v2.2.0.** Princípio
+      V passou a "Multilíngue por Construção" com os quatro idiomas do Protheus (D4); Princípio VI
+      passou a "Fixture, Teste e Medição Antes da Regra", com teste não-opcional escrito e cobertura
+      de 98% como portão (D5). Bump MINOR. Deixou de bloquear o merge
 - [ ] T081 [P] Corrigir a contradição do template: `.specify/templates/tasks-template.md` linha 12 e
       `.claude/skills/speckit-tasks/SKILL.md` linha 145 declaram testes opcionais contra o Princípio VI
 - [ ] T082 [P] Atualizar `specs/README.md` e `memoria/` com o que a implementação apurou — em especial
       os números medidos da linha de base
-- [ ] T083 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
+
+### Cobertura
+
+- [ ] T083 Criar `coverage-exclusions.json` versionado, com **a razão de cada exclusão** registrada.
+      Nasce vazio; item entra só quando um ramo for genuinamente inalcançável em teste (FR-032, SC-012)
+- [ ] T084 Levar a cobertura a **98% em linhas, funções e ramos** e conferir que o portão falha
+      abaixo disso — derrubar o limiar num teste de mesa e confirmar que o processo sai com erro
+      (FR-030, SC-011)
+- [ ] T085 Registrar em `coverage-exclusions.json` o que a camada de integração com o editor não
+      alcançar, **com razão por item**. Baixar o limiar em vez de declarar a exclusão é violação do
+      Princípio VI, não atalho
+
+### Fechamento
+
+- [ ] T086 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
 
 ---
 
@@ -391,7 +417,7 @@ Regra antes de orquestração. Motor antes de cliente.
 | US1 — fixtures | T024 a T028 juntas |
 | US2 — testes de harness | T047, T049, T051, T053, T055, T058 juntas |
 | US3 — traduções e testes | T067, T069, T070, T071 juntas |
-| Portões | T073 e T075 juntas |
+| Portões | T073 e T075 juntas; T081 e T082 juntas |
 
 ⚠️ **Um par teste/código nunca é paralelo consigo mesmo.** T010 e T011 são sequenciais por
 construção — o teste tem de estar vermelho antes de a implementação começar.
@@ -430,6 +456,9 @@ paralelizar mão de obra. Na prática, servem para escolher a próxima tarefa se
 
 - Um commit por tarefa ou por grupo lógico; um commit por etapa concluída do ciclo.
 - **Conferir que o teste falha antes de implementar.** Teste que nasce verde não testa nada.
+- **Cobertura é portão, não relatório.** O limiar de 98% vive no próprio runner: abaixo dele o
+  processo sai com erro. Se um ramo não for alcançável em teste, ele entra em
+  `coverage-exclusions.json` **com a razão escrita**. Baixar o limiar é violação do Princípio VI.
 - **Nunca canalizar a saída do teste.** `npm test | tail` devolve o código de saída do `tail` — já
   mascarou suíte que nem chegou a rodar.
 - O relatório ao usuário diz o que foi executado e nada além. "Suíte verde" só se a suíte rodou.

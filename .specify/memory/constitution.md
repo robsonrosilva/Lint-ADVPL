@@ -1,20 +1,66 @@
 <!--
 Sync Impact Report
 ==================
-Versão: 2.1.0 → 2.1.1
-Tipo de bump: PATCH — as referências normativas passaram a existir dentro do repositório
+Versão: 2.1.1 → 2.2.0
+Tipo de bump: MINOR — duas ampliações materiais de princípio, nenhuma remoção e nenhuma
+redefinição incompatível. Decisões do dono em 2026-08-19, durante a spec 001.
+
+Princípios alterados:
+  - V. Bilíngue por Construção → **V. Multilíngue por Construção**. O piso passa de dois idiomas
+    (pt-BR e en) para os **quatro em que o Protheus é localizado**: português do Brasil, espanhol,
+    inglês e russo. O nome deixou de ser verdadeiro quando dois viraram quatro. Acrescentado o
+    requisito de ponto único de declaração dos idiomas, para que o quinto seja configuração e não
+    código, e registrado o limite honesto: a verificação prova que as chaves batem, não que a
+    tradução presta.
+  - VI. Fixture e Medição Antes da Regra — ampliado em duas frentes. (a) "Teste nunca é opcional"
+    passa a estar **escrito**, não implícito, com a subordinação explícita de template, skill e
+    ferramenta que digam o contrário. (b) **Cobertura mínima de 98%** em linhas, funções e ramos
+    vira portão de merge, medida pelo mecanismo nativo do Node 24 — sem dependência nova,
+    verificado nesta máquina em 2026-08-19.
+
+Seções alteradas:
+  - Arquitetura e Restrições Técnicas: acrescentada a convenção de idioma do repositório.
+  - Fluxo de Desenvolvimento e Portões de Qualidade: portão 2 passa a exigir cobertura ≥ 98%;
+    portão 3 passa a citar os quatro idiomas.
+  - Princípio I: registrada a constatação de que o orçamento provisório está subdimensionado.
+
+Motivo da emenda 1 (Princípio VI): o template do spec-kit upstream declara testes opcionais em
+dois lugares — `.specify/templates/tasks-template.md` linha 12 e
+`.claude/skills/speckit-tasks/SKILL.md` linha 145 — e essa contradição já teve de ser neutralizada
+à mão na geração de tarefas da spec 001. Um princípio NÃO NEGOCIÁVEL que depende de alguém lembrar
+de contrariar o template não está protegido; agora a subordinação está no texto.
+
+TODOs atualizados nesta emenda:
+  - TODO(BENCHMARK_BASE): continua aberto, agora com a constatação de que o orçamento provisório
+    do Princípio I está **subdimensionado** — "p95 de fonte de 1.000 linhas" fica entre o p50 (309)
+    e o p90 (1.699) reais, e o p95 verdadeiro é 2.933 linhas. A spec 001 produz os números medidos
+    e a emenda definitiva.
+  - TODO(CORPUS): parcialmente resolvido e materialmente atualizado. O corpus existe e é robusto
+    (~27.139 `.prw`, 4.072 `.tlpp`, 3.210 `.prx`, 1.178 `.prg`), mas é **externo, local e nunca
+    versionável** — são fontes padrão do Protheus. Amostra de 3.000 fontes medida em 2026-08-19:
+    p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas. Consequência: a linha de base
+    não é reproduzível por terceiros.
+  - TODO(SEVERITY_MAP): continua aberto, com a **primeira entrada decidida** na spec 001 —
+    `MINOR` do catálogo é exibido como `Information`. Faltam as demais, em especial
+    `CA2050`/`CA2051`/`CA2052`, que são `INFO` no catálogo e alto impacto na prática.
+  - TODO(CI): intocado.
+  - TODO(REPO_LAYOUT): intocado.
+
+--- Histórico ---
+
+Versão 2.1.0 → 2.1.1 foi PATCH — as referências normativas passaram a existir dentro do repositório
 (`referencias/totvs/`, release v1.0.1, consultada em 2026-08-19, SHA-256 conferido). Nenhum
 princípio mudou; a seção Fontes de Referência passou a citar o caminho local ao lado da URL, e
 o TODO(CATALOG_VENDOR) foi fechado.
 
-Histórico: 2.0.0 → 2.1.0 foi MINOR — o catálogo oficial de regras da TOTVS passou a ser fonte normativa
+Versão 2.0.0 → 2.1.0 foi MINOR — o catálogo oficial de regras da TOTVS passou a ser fonte normativa
 (Princípio III e seção Fontes de Referência materialmente ampliados), e a restrição de encoding
 foi **corrigida** de `latin1` para CP1252 com base na documentação oficial.
 
-Emenda de 2026-08-19 (mesma data): o dono localizou o repositório por trás do site da TOTVS —
+Emenda de 2026-08-19: o dono localizou o repositório por trás do site da TOTVS —
 `github.com/totvs/engpro-advpl-tlpp-skills`, release v1.0.1 de 2026-06-01, com `skills.zip`
-(106 arquivos), `AGENTS.md` e `README.md` como ativos baixáveis. Isso resolve o
-TODO(TOTVS_SKILLS) da v2.0.0 e traz três consequências normativas:
+(106 arquivos), `AGENTS.md` e `README.md` como ativos baixáveis. Isso resolveu o
+TODO(TOTVS_SKILLS) da v2.0.0 e trouxe três consequências normativas:
   1. O catálogo `skills/advpl-tlpp/references/sonarqube-rules-reference.md` (grupos G1–G5, fonte
      `https://sonar-rules.engpro.totvs.com.br`) passa a ser a referência normativa de regra
      `totvs` — não mais o README deste repositório nem o SONNAR-RULES.md.
@@ -24,12 +70,12 @@ TODO(TOTVS_SKILLS) da v2.0.0 e traz três consequências normativas:
   3. O catálogo oficial contém regras que **não existem** no legado nem no README:
      BG1000, BG1100, BG1200, CS1000, CA2024, CA2025, CA2051, CA2053, CA1005.
 
-Histórico: 1.0.0 → 2.0.0 foi MAJOR — redefinição incompatível do produto governado. A v1.0.0
+Versão 1.0.0 → 2.0.0 foi MAJOR — redefinição incompatível do produto governado. A v1.0.0
 governava a biblioteca npm `advpl-lint`; a v2.0.0 passou a governar a **extensão VS Code**
 escrita do zero neste repositório. O contrato npm deixou de existir (decisão do dono,
 2026-08-19: `analise-advpl/` é referência de comportamento, não dependência).
 
-Princípios renomeados / remanejados:
+Princípios renomeados / remanejados na v2.0.0:
   - I. Toda Regra Tem Identidade Rastreável → IV. Toda Regra Tem Identidade, Severidade e
     Desligamento (ampliado: `Diagnostic.code`, `contributes.configuration`)
   - II. Bilíngue por Construção → V. Bilíngue por Construção (caminhos migrados para o
@@ -39,32 +85,15 @@ Princípios renomeados / remanejados:
   - V. Desempenho e Cache São Requisitos → I. O Editor Nunca Trava (promovido a primeiro
     princípio e endurecido em regras verificáveis)
 
-Princípios removidos:
+Princípio removido na v2.0.0:
   - IV. A API Pública é Contrato Versionado — o produto deixou de ser pacote npm consumido por
     terceiros. A política de SemVer migrou para os portões de qualidade.
 
-Princípios novos:
+Princípios novos na v2.0.0:
   - II. Formatação e Indentação São Produto
   - III. Valor Está no Que o Padrão Não Vê
 
-Seções adicionadas: Fontes de Referência.
-Seções mantidas: Restrições Técnicas (reescrita para extensão); Fluxo de Desenvolvimento e
-Portões de Qualidade; Governança.
-
-Follow-ups registrados (NÃO executados por /speckit-constitution):
-  - TODO(BENCHMARK_BASE): os orçamentos do Princípio I são provisórios. Não há harness de
-    medição nem linha de base. A primeira spec de código estabelece ambos e emenda os números.
-  - TODO(CORPUS): não existe corpus de fontes ADVPL reais para medir falso positivo (III) e
-    desempenho (I). O legado tem 5 arquivos em test/files/, o que não sustenta nenhum dos dois.
-  - TODO(CI): decisão em aberto (dono, 2026-08-19). Até existir CI, verificação é local.
-  - TODO(SEVERITY_MAP): a tabela SonarQube (CRITICAL/MAJOR/MINOR/INFO) → VS Code
-    (Error/Warning/Information/Hint) precisa ser definida e versionada. CA2050/CA2051/CA2052
-    são INFO no SonarQube e o próprio catálogo diz que representam alto impacto — mapear por
-    tradução literal produziria vulnerabilidade exibida como dica.
-  - TODO(REPO_LAYOUT): analise-advpl/ é repositório aninhado dentro deste. Definir se vira
-    submódulo, sai do diretório ou permanece como está.
-
-Resolvidos:
+Resolvidos ao longo do histórico:
   - TODO(TOTVS_SKILLS) — a fonte é `github.com/totvs/engpro-advpl-tlpp-skills`, com ativos de
     release baixáveis. O site `skills.engpro.totvs.io` continua sendo SPA sem API, mas deixou
     de ser o caminho de consulta.
@@ -102,6 +131,12 @@ Este é o primeiro princípio porque foi a falha que matou a versão anterior. R
 - **Não existe timeout que rejeita a análise.** Fonte grande demora mais; ela não falha.
 - **Orçamento provisório**, até a linha de base medida existir (ver TODO(BENCHMARK_BASE)):
   ativação da extensão ≤ 200 ms; reanálise p95 de fonte de 1.000 linhas ≤ 100 ms.
+
+⚠️ **O orçamento provisório está subdimensionado, e isso é sabido desde 2026-08-19.** No corpus
+real, uma fonte de 1.000 linhas fica **entre o p50 (309) e o p90 (1.699)**; o p95 verdadeiro é
+**2.933 linhas**, e a cauda vai a 24.636. Um orçamento ancorado em arquivo menor que o p95 real
+declara vitória num tamanho que boa parte dos fontes ultrapassa. Os números MUST ser emendados com
+base em medição, não ajustados por estimativa — é o que a spec 001 produz.
 
 Rationale — cada regra acima corresponde a um defeito medido em `analise-advpl/`, e é por isso que
 elas são específicas em vez de "escreva código rápido":
@@ -170,17 +205,38 @@ coluna, inicial e final) e mensagem internacionalizada.
 - O texto da mensagem é traduzido e reescrito; ele NEVER serve de contrato. Supressão, filtro e
   configuração se dão por identificador.
 
-### V. Bilíngue por Construção
+### V. Multilíngue por Construção
 
 Nenhuma string destinada ao usuário é escrita literalmente no código. Toda mensagem — diagnóstico,
-título de code action, rótulo de configuração, descrição de comando — MUST existir em **pt-BR e
-en**, pelo mecanismo de NLS da extensão. Conjuntos de chaves divergentes entre idiomas são falha
-de build, não pendência de tradução.
+título de code action, rótulo de configuração, descrição de comando — MUST existir nos **quatro
+idiomas em que o Protheus é localizado**, pelo mecanismo de NLS da extensão:
 
-Rationale: o produto atende equipes Protheus brasileiras e internacionais no mesmo pacote. Chave
-faltante não degrada elegantemente — ela vaza o identificador cru para dentro do editor.
+| Idioma | Identificador de localidade | Papel |
+| ------ | --------------------------- | ----- |
+| Inglês | `en` | **base** — é para onde todo idioma sem tradução recai |
+| Português do Brasil | `pt-br` | |
+| Espanhol | `es` | |
+| Russo | `ru` | |
 
-### VI. Fixture e Medição Antes da Regra (NÃO NEGOCIÁVEL)
+- Conjunto de chaves divergente entre **quaisquer dois** idiomas é **falha de build**, não
+  pendência de tradução.
+- Idioma sem tradução MUST recair no inglês. NEVER exibir o identificador cru da chave.
+- **O conjunto de idiomas MUST viver em ponto único de declaração.** Acrescentar o quinto idioma é
+  acrescentar um arquivo e uma entrada nessa lista — NEVER mexer em código. Nenhum outro lugar do
+  repositório enumera idioma.
+
+Rationale: o produto atende quem trabalha com Protheus, e o Protheus fala esses quatro idiomas.
+Parar em dois deixaria de fora as bases hispano-americana e russa, que usam o mesmo catálogo de
+regras da TOTVS. Chave faltante não degrada elegantemente — ela vaza o identificador cru para
+dentro do editor, e com quatro idiomas em dois mecanismos são oito arquivos de tradução, o que faz
+a verificação deixar de ser zelo e virar necessidade aritmética.
+
+⚠️ **Limite honesto deste princípio**: a verificação prova que as **chaves** batem. Ela não diz
+nada sobre a **qualidade** do texto. Tradução para espanhol e russo MUST ser revisada por quem fala
+o idioma antes da publicação. Nenhum portão automático substitui isso, e fingir o contrário
+entregaria texto que ninguém leu.
+
+### VI. Fixture, Teste e Medição Antes da Regra (NÃO NEGOCIÁVEL)
 
 Toda regra nova ou alterada MUST entrar com **três** coisas, nesta ordem:
 
@@ -192,10 +248,42 @@ Toda regra nova ou alterada MUST entrar com **três** coisas, nesta ordem:
 3. **Custo medido** — o quanto aquela regra acrescenta ao tempo de análise do corpus. Regra cujo
    custo não foi medido não pode ser ligada por padrão.
 
-Rationale: o legado assertava apenas totais de `error`/`warning`/`information`/`hint` sobre cinco
-arquivos. Com esse desenho, duas regras quebradas em direções opostas mantêm a suíte verde, e
-nenhum custo individual jamais aparece — que é exatamente como se chega a um motor que trava o
-editor sem ninguém saber qual regra o fez.
+#### Teste NEVER é opcional
+
+- **Toda tarefa de implementação MUST ser precedida pela sua tarefa de teste**, escrita para falhar
+  primeiro. Artefato de tarefas com implementação órfã de teste é artefato **a refazer**, não a
+  executar.
+- **Template, skill, gerador ou ferramenta que declare testes opcionais está subordinado a este
+  princípio e MUST ser contrariado.** Onde a ferramenta e esta constituição discordarem, esta vence
+  e a ferramenta MUST ser corrigida.
+
+Rationale desta cláusula: o template do spec-kit upstream declara testes opcionais em dois lugares
+— `.specify/templates/tasks-template.md` (linha 12) e `.claude/skills/speckit-tasks/SKILL.md`
+(linha 145) — e a contradição já teve de ser neutralizada à mão na geração de tarefas da spec 001.
+Um princípio NÃO NEGOCIÁVEL que depende de alguém lembrar de contrariar o padrão da ferramenta não
+está protegido. Agora a subordinação está escrita, e corrigir os dois arquivos é dívida registrada.
+
+#### Cobertura mínima de 98%
+
+- A suíte MUST atingir **98% de cobertura em linhas, em funções e em ramos**. Abaixo disso, o
+  merge está bloqueado.
+- A medição usa o mecanismo **nativo** do Node — `--experimental-test-coverage` com
+  `--test-coverage-lines`, `--test-coverage-functions` e `--test-coverage-branches`. Verificado
+  disponível em 2026-08-19. NEVER acrescentar dependência para medir cobertura.
+- **Exclusão de arquivo da medição MUST constar de lista versionada, com a razão de cada item.**
+  Baixar o limiar, excluir arquivo sem justificativa, ou desligar a verificação são violações —
+  não ajustes.
+
+⚠️ **Ressalva honesta**: a camada de integração com o editor tem ramos genuinamente difíceis de
+cobrir — caminhos que só ocorrem sob condição do próprio VS Code. A saída para isso é **exclusão
+declarada com razão registrada**, NEVER limiar mais baixo sem registro. A diferença importa: a
+primeira deixa rastro auditável do que não está coberto e por quê; a segunda apaga a informação.
+
+Rationale geral: o legado assertava apenas totais de `error`/`warning`/`information`/`hint` sobre
+cinco arquivos, e o pipeline instalava `mocha` sem nunca executar `npm test`. Com esse desenho, duas
+regras quebradas em direções opostas mantêm a suíte verde, nenhum custo individual jamais aparece, e
+a cobertura real é desconhecida — que é exatamente como se chega a um motor que trava o editor sem
+ninguém saber qual regra o fez.
 
 ## Arquitetura e Restrições Técnicas
 
@@ -220,6 +308,22 @@ editor sem ninguém saber qual regra o fez.
   Windows literal, e isso quebra fora do Windows.
 - **Segurança**: regra que detecta credencial ou SQL Injection NEVER ecoa o valor sensível na
   mensagem — apenas a localização.
+- **Idioma do repositório** (decisão do dono, 2026-08-19). A divisão NEVER é "código versus
+  documentação" — é **o que a máquina interpreta versus o que uma pessoa lê**:
+
+  | Em inglês | Em pt-BR |
+  | --------- | -------- |
+  | identificadores — variáveis, funções, tipos, classes | **comentários dentro do código** |
+  | nomes de arquivo e de diretório | nomes e descrições de teste |
+  | chaves de configuração e de tradução | documentação e mensagens de commit |
+
+  Rationale: a API do VS Code, o LSP e o npm são em inglês, e identificador em português produz
+  híbrido — defeito que o legado tinha (`validaAdvpl.ts` ao lado de `cache.ts`). Comentário é outra
+  coisa: existe para explicar **por que** o código é assim a quem for mantê-lo, e quem mantém este
+  repositório pensa em português. Comentário em inglês forçado sai mais raso e vira paráfrase da
+  linha seguinte — e o Princípio I depende de comentários que expliquem decisões contraintuitivas
+  de desempenho. Mensagem destinada ao usuário final NEVER entra nesta regra: ela passa pelo NLS e
+  existe nos quatro idiomas do Princípio V.
 
 ## Fluxo de Desenvolvimento e Portões de Qualidade
 
@@ -230,9 +334,10 @@ pontuais e ajustes de texto estão dispensados do ciclo completo.
 Portões obrigatórios antes de qualquer merge:
 
 1. Compilação TypeScript sem erros.
-2. Suíte de testes verde.
+2. **Suíte de testes verde E cobertura ≥ 98%** em linhas, funções e ramos. Exclusão da medição
+   apenas por lista versionada com razão registrada (Princípio VI).
 3. Regra nova acompanhada de fixture, asserção específica, custo medido, chave de configuração
-   própria e strings nos dois idiomas.
+   própria e strings nos **quatro** idiomas.
 4. **Nenhuma regressão de desempenho não justificada** contra a linha de base — e a linha de base
    é reconferida quando uma spec acrescenta regra, porque orçamento com ponto de partida
    envelhecido não limita nada.
@@ -243,7 +348,9 @@ Portões obrigatórios antes de qualquer merge:
    e ausente do código, bloqueia o merge. Vale nos dois sentidos.
 
 Enquanto não houver CI (decisão em aberto, ver TODO(CI)), os portões são verificados localmente e
-o relatório ao usuário MUST dizer exatamente o que foi executado.
+o relatório ao usuário MUST dizer exatamente o que foi executado. Saída de teste NEVER é canalizada
+— `npm test | tail` devolve o código de saída do `tail`, não do teste, e isso já mascarou suíte que
+nem chegou a rodar.
 
 ## Fontes de Referência
 
@@ -281,10 +388,27 @@ JavaScript, ou só na máquina de quem consultou, não é verificável em revis�
 **Atualizar as cópias é mudança de requisito, não de documentação.** Regra nova, removida ou com
 severidade alterada no catálogo MUST virar item de backlog na mesma entrega que atualiza o arquivo.
 
+## Corpus de Medição
+
+O corpus de fontes ADVPL/TLPP reais usado para medir desempenho e falso positivo é **externo,
+local e NEVER versionável** — são fontes padrão do Protheus, e versioná-las é problema de licença
+e de exposição.
+
+- O caminho do corpus MUST vir de configuração local não versionada.
+- Fonte padrão do Protheus NEVER entra no repositório, em nenhuma forma — nem como fixture, nem
+  como amostra, nem como trecho em relatório de medição.
+- O corpus serve como **material de leitura do qual se derivam fixtures autorais**. Fixture é
+  código escrito por nós que reproduz a construção observada, NEVER cópia literal.
+- A linha de base medida sobre ele **não é reproduzível por terceiros**. O relatório MUST ser
+  autoexplicativo o bastante para servir de comparativo mesmo sem nova execução.
+
+Estado apurado em 2026-08-19: ~27.139 `.prw`, 4.072 `.tlpp`, 3.210 `.prx`, 1.178 `.prg` e 35.103
+`.ch`. Amostra de 3.000 fontes: p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas.
+
 ## Governança
 
-Esta constituição prevalece sobre qualquer prática, convenção ou preferência adotada no
-repositório. Em conflito entre esta constituição e outro documento, esta vence e o outro MUST ser
+Esta constituição prevalece sobre qualquer prática, convenção, template ou ferramenta adotada no
+repositório. Em conflito entre esta constituição e outro artefato, esta vence e o outro MUST ser
 corrigido.
 
 **Emendas**: toda alteração MUST ser feita via `/speckit-constitution`, MUST declarar o tipo de
@@ -300,6 +424,7 @@ MUST ser documentada com a razão e o custo de fazer o contrário. Os itens `TOD
 Report são dívidas conhecidas: NEVER servem de precedente para novas violações.
 
 **Orientação de runtime**: `CLAUDE.md` para o modo de trabalhar no repositório; `README.md` para o
-comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD.
+comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
+`memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.1.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.2.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19

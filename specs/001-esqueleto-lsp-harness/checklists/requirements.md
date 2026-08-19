@@ -55,3 +55,15 @@ do dono e escritos de volta na spec como **D1**, **D2** e **D3**, cada um com a 
 **Resultado**: todos os itens do checklist passam. A spec está pronta para `/speckit-plan`.
 `/speckit-clarify` deixou de ser necessária — as três ambiguidades que a justificariam já foram
 respondidas e registradas.
+
+**Iteração 3 (2026-08-19)** — duas decisões tomadas durante o plano e as tarefas voltaram para a
+spec, e ambas produziram emenda da constituição (**v2.2.0**):
+
+| # | Decisão | Efeito na spec | Efeito na constituição |
+| - | ------- | -------------- | ---------------------- |
+| D4 | Quatro idiomas do Protheus (`en`, `pt-br`, `es`, `ru`) | FR-015, FR-015a; SC-005 | Princípio V → *Multilíngue por Construção* |
+| D5 | Teste nunca opcional + cobertura mínima de 98% | FR-028 a FR-032; SC-011, SC-012 | Princípio VI → *Fixture, **Teste** e Medição*; Portão 2 |
+
+A spec chegou a ficar deliberadamente **à frente** da constituição entre o plano e a emenda. Isso foi
+registrado no texto em vez de silenciado, e a emenda fechou a diferença antes da implementação
+começar — que era o ponto.

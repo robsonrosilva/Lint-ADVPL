@@ -9,7 +9,7 @@
 Fazer nascer o código da extensão pela fatia vertical mais fina que prova a arquitetura inteira: um
 fonte ADVPL aberto no editor, analisado por um servidor de linguagem em processo próprio, produz um
 diagnóstico `CA3001` com identificador, severidade mapeada e posição exata — desligável por chave de
-configuração e legível em dois idiomas. Junto vem o harness que mede quanto isso custa sobre ~35.000
+configuração e legível nos quatro idiomas do Protheus. Junto vem o harness que mede quanto isso custa sobre ~35.000
 fontes reais, estabelecendo a linha de base que ainda não existe.
 
 A abordagem técnica está detalhada em [research.md](research.md). Três pontos a destacar, porque
@@ -52,7 +52,9 @@ em arquivos locais **não versionados**.
 
 **Testing**: `node:test` (Node 24, nativo) em `server` e `tooling`; `@vscode/test-cli` com
 `@vscode/test-electron` em `extension`. Compilação por `tsc` para `out/`, testes sobre o JavaScript
-gerado.
+gerado. **Cobertura mínima de 98%** em linhas, funções e ramos, medida por
+`--experimental-test-coverage` com `--test-coverage-lines/-functions/-branches` — nativo, sem
+dependência nova (FR-030, FR-031).
 
 **Target Platform**: VS Code 1.85+ em desktop (Windows, Linux, macOS), servidor em Node. Ambiente web
 do VS Code **fora de escopo** — o servidor precisa de `worker_threads` e de sistema de arquivos.
@@ -73,7 +75,7 @@ p50 309, p90 1.699, p95 2.933, p99 7.951, máximo 24.636 linhas.
 
 ## Constitution Check
 
-*GATE: passou antes da Phase 0 e reavaliado após a Phase 1. Constituição v2.1.1.*
+*GATE: passou antes da Phase 0 e reavaliado após a Phase 1. Constituição v2.2.0.*
 
 ### I. O Editor Nunca Trava — **PASSA**
 
@@ -109,12 +111,11 @@ Contrato em [contracts/diagnostico.md](contracts/diagnostico.md) e
 de `contributes.configuration`, a exigência de documentação e a validação de que nenhum diagnóstico
 sai sem identificador.
 
-### V. Bilíngue por Construção — **EXCEDIDO; exige emenda MINOR antes do merge**
+### V. Multilíngue por Construção — **PASSA**
 
-A spec adota os **quatro idiomas do Protheus** (D4): `en` como base, mais `pt-br`, `es` e `ru`. O
-Princípio V hoje diz literalmente "pt-BR e en", então o desenho vai **além** do que a constituição
-exige — o que não é violação, mas também não é silêncio aceitável: ampliação material de escopo é
-bump **MINOR** e MUST ser feita por `/speckit-constitution` antes do merge.
+Os **quatro idiomas do Protheus** (D4): `en` como base, mais `pt-br`, `es` e `ru`. O princípio foi
+emendado para isso na constituição **v2.2.0** — antes dizia "pt-BR e en", e o desenho estava à frente
+dela.
 
 O mecanismo: dois pares de arquivos por idioma (manifesto e tempo de execução), oito arquivos ao
 todo, com **um único ponto** declarando a lista de idiomas (FR-015a) e verificação que **falha a
@@ -125,16 +126,21 @@ oito, a verificação deixa de ser zelo e vira necessidade.
 **Limite declarado**: o portão prova que as chaves batem, não que a tradução presta. `es` e `ru`
 precisam de revisão humana antes da publicação.
 
-### VI. Fixture e Medição Antes da Regra — **PASSA**
+### VI. Fixture, Teste e Medição Antes da Regra — **PASSA**
 
 A ordem das tarefas põe fixture e teste antes de cada implementação. A asserção compara o diagnóstico
 inteiro; contagem agregada é proibida pelo FR-029 e o utilitário de teste não a oferece. O custo de
 `CA3001` é medido isoladamente pelo harness antes de a regra ser declarada apta.
 
-⚠️ **Conflito conhecido com o template**: `.specify/templates/tasks-template.md` (linha 12) e
-`.claude/skills/speckit-tasks/SKILL.md` (linha 145) declaram testes opcionais. Isso contradiz o
-Princípio VI, que é NÃO NEGOCIÁVEL. Ao rodar `/speckit-tasks`, a tarefa de teste vem **antes** da
-tarefa de código, sempre.
+**Cobertura de 98%** em linhas, funções e ramos (D5, FR-030), pelo mecanismo nativo do Node — sem
+dependência nova, o que a constituição v2.2.0 passou a vedar explicitamente. O limiar vive no próprio
+runner, então abaixo dele o processo sai com erro; cobertura não é relatório que alguém consulta, é
+portão que fecha. Exclusão só por lista versionada com razão (FR-032).
+
+✅ **O conflito com o template deixou de ser convenção e virou norma.** A v2.2.0 escreveu no
+Princípio VI que template, skill ou ferramenta que declare testes opcionais **está subordinado a ele
+e MUST ser contrariado**. `.specify/templates/tasks-template.md` (linha 12) e
+`.claude/skills/speckit-tasks/SKILL.md` (linha 145) seguem errados e são corrigidos pela T081.
 
 ### Restrições Técnicas — **PASSA**
 
@@ -146,15 +152,15 @@ prevê.
 
 ### Portões de Qualidade — **PASSA, com uma ressalva**
 
-`npm run verify` reúne os portões executáveis: tipagem, lint, testes, divergência de NLS, vazamento
-de corpus, sincronismo de documentação. O portão 4 (regressão de desempenho contra a linha de base)
-**só passa a existir depois** desta spec — é ela que cria a linha de base. Registrado como esperado,
-não como violação.
+`npm run verify` reúne os portões executáveis: tipagem, lint, testes **com o limiar de cobertura de
+98%**, divergência de NLS, vazamento de corpus, sincronismo de documentação. O portão 4 (regressão de
+desempenho contra a linha de base) **só passa a existir depois** desta spec — é ela que cria a linha
+de base. Registrado como esperado, não como violação.
 
-**Resultado do portão: PASSA, com uma emenda pendente.** Nenhuma violação a justificar — a seção
-Complexity Tracking fica vazia. A única divergência com a constituição é o Princípio V sendo
-**excedido** (quatro idiomas onde ele exige dois), e a correção é emendar a constituição por
-`/speckit-constitution`, bump MINOR, antes do merge desta spec.
+**Resultado do portão: PASSA.** Nenhuma violação a justificar; a seção Complexity Tracking fica
+vazia. As duas divergências que existiam foram resolvidas emendando a constituição para a **v2.2.0**
+em 2026-08-19 — Princípio V para quatro idiomas, Princípio VI com teste não-opcional escrito e
+cobertura de 98% como portão.
 
 ## Project Structure
 
@@ -182,9 +188,10 @@ specs/001-esqueleto-lsp-harness/
 
 ```text
 .gitattributes                      # T001 — antes de qualquer fixture
-package.json                        # workspaces npm + scripts de portão
+package.json                        # workspaces npm + scripts de portão (limiar de cobertura no `test`)
 tsconfig.base.json
 eslint.config.js                    # regras que impõem o Princípio I no motor
+coverage-exclusions.json            # exclusões de cobertura, cada uma com a razão (FR-032)
 
 docs/
 └── regras/

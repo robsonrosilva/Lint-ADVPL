@@ -36,13 +36,28 @@ Reúne, em ordem:
 | ----- | ----------- | --------- |
 | `typecheck` | compila sem erro; e que o motor não importa `vscode` | Portão 1, Princípio I |
 | `lint` | sem `*Sync`, sem `console.*` em `packages/server/src` | FR-007 |
-| `test` | a suíte inteira | Portão 2 |
+| `test` | a suíte inteira **e cobertura ≥ 98%** em linhas, funções e ramos | Portão 2, FR-030 |
 | `check:nls` | as chaves batem nos quatro idiomas | FR-015, SC-005 |
 | `check:corpus` | nenhum fonte do corpus versionado; fixtures com autoria declarada | FR-027, SC-008 |
 | `check:docs` | toda regra tem documentação e vice-versa | Portão 6 |
 
 ⚠️ **Não canalizar a saída.** `npm test | tail` devolve o código de saída do `tail`, não do teste —
 um "exit code 0" já mascarou suíte que nem chegou a rodar. Rodar direto e ler o resultado.
+
+### Conferir que o portão de cobertura realmente fecha
+
+Um limiar que nunca reprovou ninguém não é portão. Para provar que ele fecha:
+
+```bash
+npm test -- --test-coverage-lines=100      # esperado: FALHA, e o processo sai com erro
+npm test                                    # esperado: passa, com cobertura >= 98%
+```
+
+Se a primeira linha passar, o limiar não está sendo aplicado e o Portão 2 é decorativo.
+
+Toda exclusão da medição vive em `coverage-exclusions.json`, **com a razão de cada item** (FR-032).
+Baixar o limiar em vez de declarar a exclusão é violação do Princípio VI, não atalho — a exclusão
+declarada deixa rastro auditável do que não está coberto e por quê; o limiar menor apaga a informação.
 
 ## Validar a User Story 1 — o diagnóstico aparece, o editor não trava
 

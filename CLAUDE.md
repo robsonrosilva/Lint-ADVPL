@@ -10,7 +10,7 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.1.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.2.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
@@ -85,9 +85,14 @@ fica administrável sem perder de vista como o todo está dividido.
 (linha 145) dizem _"Tests are OPTIONAL — only include them if explicitly requested"_. É o padrão do
 spec-kit upstream, e ele **contradiz o Princípio VI da constituição**, que é NÃO NEGOCIÁVEL.
 
-Enquanto os dois arquivos não forem corrigidos: **ao rodar `/speckit-tasks`, a task de teste vem
-ANTES da task de código, sempre** — escrita para falhar primeiro. `tasks.md` com implementação órfã de
-teste é artefato **a refazer**, não a executar.
+Desde a **v2.2.0** isso não é mais só uma nota deste arquivo: o Princípio VI passou a dizer, por
+escrito, que **template, skill ou ferramenta que declare testes opcionais está subordinado a ele e
+MUST ser contrariado**. A regra prática não muda, mas agora tem base normativa:
+
+**Ao rodar `/speckit-tasks`, a task de teste vem ANTES da task de código, sempre** — escrita para
+falhar primeiro. `tasks.md` com implementação órfã de teste é artefato **a refazer**, não a executar.
+
+Os dois arquivos seguem errados; corrigi-los é a tarefa T081 da spec 001.
 
 ## Branch e commit
 
@@ -109,6 +114,13 @@ Projeto de um desenvolvedor: sem coluna de responsável, sem disputa de numeraç
 
 - **`npm test` roda na máquina, antes do commit.** Num projeto TypeScript custa segundos; não há
   runner para poupar.
+- **Teste NUNCA é opcional** (Princípio VI, v2.2.0). Toda tarefa de código é precedida pela sua
+  tarefa de teste, escrita para falhar primeiro.
+- **Cobertura mínima de 98%** em linhas, funções e ramos. O limiar vive no próprio runner —
+  `--experimental-test-coverage` com `--test-coverage-lines/-functions/-branches`, nativo do Node 24,
+  **sem dependência nova**. Abaixo do limiar o processo sai com erro; cobertura é portão, não
+  relatório. Exclusão só por `coverage-exclusions.json` versionado, **com a razão de cada item** —
+  baixar o limiar em vez de declarar a exclusão é violação.
 - **Laço TDD sobre o arquivo-alvo daquele passo**, e só ele. Vermelho → verde → segue.
 - **O relatório ao usuário diz o que foi rodado, e nada além.** "Suíte verde" só se a suíte rodou.
 - ⚠️ **Cuidado ao interpretar execução com pipe**: `npm test | tail` devolve o código de saída do
@@ -133,11 +145,12 @@ português).
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | CI                             | não decidida — verificação local vale até lá                                |
-| `tasks-template` teste opcional| contradiz o Princípio VI; corrigir nos dois arquivos ou seguir a nota acima  |
-| Mapa de severidade             | SonarQube (CRITICAL/MAJOR/MINOR/INFO) → VS Code ainda não definido           |
-| Linha de base de desempenho    | os orçamentos do Princípio I são provisórios até existir harness e corpus    |
+| `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
+| Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
+| Linha de base de desempenho    | orçamento provisório **subdimensionado**: o p95 real é 2.933 linhas, não 1.000 |
 | `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
-| Índice de specs                | `specs/README.md` como fonte única de progresso — criar na primeira spec    |
+| Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
+| ~~Índice de specs~~            | ✅ resolvido — [specs/README.md](specs/README.md) é a fonte única de progresso |
 
 ## Fontes de Referência
 

@@ -13,7 +13,7 @@
 ## Contexto
 
 Este repositório não tem código. A extensão anterior existe em `analise-advpl/` (legado congelado)
-e foi abandonada porque **travava o editor**. A constituição v2.1.1 nasceu dessa falha: o Princípio I
+e foi abandonada porque **travava o editor**. A constituição nasceu dessa falha: o Princípio I
 lista, com arquivo e linha, os nove defeitos medidos que produziram o travamento.
 
 Esta é a primeira spec que gera código. Ela não entrega um linter útil — entrega o **menor caminho
@@ -110,7 +110,7 @@ consultor em Buenos Aires, um em Moscou e um em Londres leem a mesma violação,
 — os quatro em que o Protheus é localizado.
 
 **Why this priority**: é o contrato do Princípio IV (identidade, severidade e desligamento) e do
-Princípio V (bilíngue por construção). Ele precisa nascer com a primeira regra, senão a segunda regra
+Princípio V (multilíngue por construção). Ele precisa nascer com a primeira regra, senão a segunda regra
 já herda um formato improvisado. É P3 porque a fatia P1 já demonstra o diagnóstico; esta história
 demonstra o **controle** sobre ele.
 
@@ -244,9 +244,16 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
 ### Functional Requirements — ordem de trabalho
 
 - **FR-028**: Toda regra e todo comportamento MUST entrar com teste escrito antes do código e falhando
-  primeiro.
+  primeiro. Teste NUNCA é opcional — template ou ferramenta que diga o contrário está subordinado ao
+  Princípio VI.
 - **FR-029**: Toda asserção de teste sobre diagnóstico MUST verificar identificador, severidade, linha
   e coluna do diagnóstico específico. Asserção sobre contagem agregada de diagnósticos é proibida.
+- **FR-030**: A suíte MUST atingir **98% de cobertura em linhas, funções e ramos**. Abaixo disso, o
+  portão local falha e o merge está bloqueado.
+- **FR-031**: A medição de cobertura MUST usar o mecanismo nativo do ambiente de execução, sem
+  acrescentar dependência.
+- **FR-032**: Exclusão de arquivo da medição de cobertura MUST constar de lista versionada, com a
+  razão de cada item registrada. Baixar o limiar ou excluir sem justificativa é violação.
 
 ### Key Entities
 
@@ -285,6 +292,10 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
   cancelamento.
 - **SC-010**: Analisar o maior fonte do corpus (24.636 linhas) conclui sem erro e sem descarte por
   tempo-limite.
+- **SC-011**: A cobertura de testes é de no mínimo 98% em linhas, funções e ramos, e o portão falha
+  automaticamente abaixo disso.
+- **SC-012**: Toda exclusão da medição de cobertura tem razão registrada em lista versionada — zero
+  exclusões sem justificativa.
 
 ---
 
@@ -294,7 +305,7 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
 
 Ativação restrita; motor de análise fora do processo da interface; leitura CP1252 com preservação de
 fim de linha; cancelamento e reanálise espaçada; a regra `CA3001` ponta a ponta com identificador,
-severidade configurável, chave de desligamento própria e mensagem em dois idiomas; a medição sobre
+severidade configurável, chave de desligamento própria e mensagem nos quatro idiomas; a medição sobre
 corpus externo com relatório de linha de base versionado; e a estrutura de teste que o Princípio VI
 exige.
 
@@ -364,12 +375,13 @@ exige.
 | II — Formatação é Produto | fora de escopo, spec própria |
 | III — Valor no que o padrão não vê | FR-012 (origem declarada), FR-022 (falso positivo medido) |
 | IV — Identidade, Severidade e Desligamento | FR-010, FR-010a, FR-011 a FR-014, FR-014a; SC-004 |
-| V — Bilíngue por Construção | FR-015, FR-015a, FR-016; SC-005 — **excedido para quatro idiomas (D4); exige emenda MINOR** |
-| VI — Fixture e Medição Antes da Regra | FR-020 a FR-022, FR-026, FR-028, FR-029; SC-006, SC-007 |
+| V — Multilíngue por Construção | FR-015, FR-015a, FR-016; SC-005 |
+| VI — Fixture, Teste e Medição Antes da Regra | FR-020 a FR-022, FR-026, FR-028 a FR-032; SC-006, SC-007, SC-011, SC-012 |
 
-**Emenda constitucional pendente**: o Princípio V precisa passar de "pt-BR e en" para os quatro
-idiomas do Protheus (D4). Bump **MINOR**, por ampliação material de escopo. MUST ser feita por
-`/speckit-constitution` antes do merge desta spec.
+**Emendas constitucionais produzidas por esta spec** — feitas em 2026-08-19, constituição na
+**v2.2.0**: Princípio V passou a **Multilíngue por Construção**, com os quatro idiomas do Protheus
+(D4); Princípio VI passou a **Fixture, Teste e Medição Antes da Regra**, com "teste nunca é
+opcional" escrito e **cobertura mínima de 98%** como portão de merge (D5).
 
 **Dívidas da constituição tocadas por esta spec**: `TODO(BENCHMARK_BASE)` — fechada.
 `TODO(CORPUS)` — parcialmente fechada: o corpus existe e é robusto, mas é externo e não reproduzível
@@ -383,7 +395,7 @@ por terceiros. `TODO(SEVERITY_MAP)` — apenas a estrutura, uma entrada. `TODO(C
 | Fonte | O que forneceu | Data |
 | ----- | -------------- | ---- |
 | `referencias/totvs/sonarqube-rules-reference.md` (release v1.0.1), linha 53 | `CA3001`, grupo G3, severidade MINOR, padrão proibido e alternativa | 2026-08-19 |
-| `.specify/memory/constitution.md` v2.1.1 | os seis princípios e os orçamentos provisórios | 2026-08-19 |
+| `.specify/memory/constitution.md` v2.2.0 | os seis princípios e os orçamentos provisórios | 2026-08-19 |
 | `D:\Workspace\FONTES` (corpus local, não versionado) | distribuição de tamanho e volume por extensão | 2026-08-19 |
 | `analise-advpl/test/files/` | os 5 fontes de teste do legado, para dimensionar o que ele cobria | 2026-08-19 |
 
@@ -443,10 +455,9 @@ inglês e russo**. Identificadores de localidade do VS Code: `pt-br`, `es`, `ru`
 extensão bilíngue deixaria de fora as bases hispano-americana e russa, que existem e usam as mesmas
 regras de catálogo. Decidido pelo dono em 2026-08-19.
 
-> ⚠️ **Esta decisão excede a constituição e exige emenda.** O Princípio V diz literalmente que toda
-> mensagem "MUST existir em **pt-BR e en**". Quatro idiomas é ampliação material de escopo — bump
-> **MINOR** — e MUST ser feita por `/speckit-constitution` antes do merge desta spec. Até lá, a spec
-> está deliberadamente à frente da constituição, e isso está registrado aqui em vez de silenciado.
+> ✅ **Emenda feita.** A constituição foi para a **v2.2.0** em 2026-08-19: o Princípio V passou de
+> "Bilíngue por Construção" (pt-BR e en) para **"Multilíngue por Construção"**, com os quatro
+> idiomas do Protheus. A spec deixou de estar à frente da constituição.
 
 *Consequência de desenho*: o conjunto de idiomas vive em **um único ponto de declaração**
 (FR-015a). A verificação de divergência de chaves compara todos os pares, não um par. Acrescentar um
@@ -456,3 +467,33 @@ quinto idioma passa a ser acrescentar um arquivo e uma linha de configuração.
 atestada por quem escreve esta spec. As chaves e o mecanismo ficam corretos e verificados; **o texto
 em `es` e `ru` precisa de revisão por quem fala o idioma** antes da publicação. A verificação
 automática pega chave faltante, não tradução ruim.
+
+### D5 — Teste nunca é opcional, e a cobertura mínima é **98%**
+
+Decidido pelo dono em 2026-08-19. Duas partes:
+
+1. **Teste nunca é opcional.** Toda tarefa de implementação é precedida pela sua tarefa de teste,
+   escrita para falhar primeiro. Template, skill ou ferramenta que declare o contrário está
+   subordinado ao Princípio VI e MUST ser contrariado.
+2. **Cobertura mínima de 98%** em linhas, funções e ramos, como portão de merge.
+
+*Razão da parte 1*: o template do spec-kit declara testes opcionais em dois lugares, e essa
+contradição já teve de ser neutralizada à mão ao gerar as tarefas desta spec. Princípio NÃO
+NEGOCIÁVEL que depende de alguém lembrar de contrariar a ferramenta não está protegido.
+
+*Razão da parte 2*: o legado assertava totais sobre cinco arquivos e o pipeline instalava `mocha`
+sem executar `npm test` — cobertura real desconhecida. Um limiar que **falha o processo** é o que
+transforma cobertura de relatório decorativo em portão.
+
+*Mecanismo*: `--experimental-test-coverage` com `--test-coverage-lines`, `--test-coverage-functions`
+e `--test-coverage-branches`, nativo do Node 24 e confirmado disponível nesta máquina. **Sem
+dependência nova** — era condição, e a constituição passou a vedá-la explicitamente.
+
+*Ressalva registrada*: a camada de integração com o editor tem ramos que só ocorrem sob condição do
+próprio VS Code. A saída é **exclusão declarada com razão em lista versionada** (FR-032), nunca
+limiar mais baixo sem registro. A diferença importa: a primeira deixa rastro auditável do que não
+está coberto e por quê; a segunda apaga a informação.
+
+> ✅ **Emenda feita.** Constituição na **v2.2.0**, 2026-08-19: o Princípio VI passou a
+> "Fixture, **Teste** e Medição Antes da Regra", com as duas cláusulas acima escritas, e o portão 2
+> do fluxo passou de "suíte verde" para "suíte verde **E** cobertura ≥ 98%".

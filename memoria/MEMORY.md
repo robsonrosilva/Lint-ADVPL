@@ -10,3 +10,4 @@
 - [Severidade MINOR → Information](severidade-minor-information.md) — primeira e única entrada da tabela de mapeamento
 - [Idiomas do Protheus](idiomas-do-protheus.md) — quatro idiomas (pt-br, es, en, ru); excede o Princípio V e exige emenda MINOR
 - [Convenção de idioma no código](convencao-de-idioma-no-codigo.md) — inglês no que a máquina lê, pt-BR no que a pessoa lê (comentários inclusive)
+- [Cobertura mínima de 98%](cobertura-minima-98.md) — teste nunca é opcional; limiar no runner, exclusão só com razão registrada

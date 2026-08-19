@@ -7,14 +7,15 @@ Ciclo de cada spec: `specify` → `clarify` → `plan` → `tasks` → `implemen
 
 | Spec | Título | Estado | Etapa atual |
 | ---- | ------ | ------ | ----------- |
-| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | Draft | `tasks` concluído (83 tarefas); pronta para `implement` |
+| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | Draft | `tasks` concluído (86 tarefas); pronta para `implement` |
 
-**Pendência que bloqueia o merge da 001**: o Princípio V da constituição precisa ser emendado de
-"pt-BR e en" para os quatro idiomas do Protheus (bump MINOR, via `/speckit-constitution`).
+A spec 001 produziu duas emendas na constituição, ambas feitas em 2026-08-19 (**v2.2.0**): Princípio
+V passou a *Multilíngue por Construção* (quatro idiomas do Protheus) e Princípio VI passou a
+*Fixture, Teste e Medição Antes da Regra*, com cobertura mínima de 98% como portão de merge.
 
 ## Backlog de specs previstas
 
-Derivado da constituição v2.1.1 e das dívidas registradas nela. Ordem indicativa, não compromisso.
+Derivado da constituição v2.2.0 e das dívidas registradas nela. Ordem indicativa, não compromisso.
 
 | Tema | Origem | Observação |
 | ---- | ------ | ---------- |
