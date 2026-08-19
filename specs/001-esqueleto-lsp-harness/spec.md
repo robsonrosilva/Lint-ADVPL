@@ -106,7 +106,8 @@ avisa e encerra sem quebrar a suíte de testes.
 
 O desenvolvedor decide que `CA3001` não interessa ao time dele e desliga a regra por uma chave de
 configuração própria. Outro time prefere vê-la como aviso em vez de dica, e muda só a severidade. Um
-terceiro trabalha com o editor em inglês e lê a mesma mensagem traduzida.
+consultor em Buenos Aires, um em Moscou e um em Londres leem a mesma violação, cada um no seu idioma
+— os quatro em que o Protheus é localizado.
 
 **Why this priority**: é o contrato do Princípio IV (identidade, severidade e desligamento) e do
 Princípio V (bilíngue por construção). Ele precisa nascer com a primeira regra, senão a segunda regra
@@ -123,13 +124,16 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
    reiniciar o editor.
 2. **Given** a regra ligada, **When** o desenvolvedor muda a severidade configurada, **Then** o
    diagnóstico passa a ser exibido na nova severidade, mantendo identificador e posição.
-3. **Given** o editor em `pt-BR`, **When** o diagnóstico aparece, **Then** a mensagem está em
-   português; **Given** o editor em `en`, **Then** a mesma violação produz a mensagem em inglês, com
-   o mesmo identificador `CA3001`.
-4. **Given** o diagnóstico exibido, **When** o desenvolvedor aciona o link de documentação do
+3. **Given** o editor em `pt-br`, `es`, `en` ou `ru`, **When** o diagnóstico aparece, **Then** a
+   mensagem está no idioma do editor, com o mesmo identificador `CA3001` e a mesma posição nos
+   quatro.
+4. **Given** o editor em um idioma que a extensão não traduz, **When** o diagnóstico aparece,
+   **Then** a mensagem sai em inglês — o idioma base — e nunca como identificador cru de chave.
+5. **Given** o diagnóstico exibido, **When** o desenvolvedor aciona o link de documentação do
    identificador, **Then** ele chega à explicação daquela regra sem sair do fluxo de trabalho.
-5. **Given** o conjunto de mensagens dos dois idiomas, **When** uma chave existe em um idioma e falta
-   no outro, **Then** a construção do pacote falha — não é pendência de tradução, é erro.
+6. **Given** o conjunto de mensagens dos quatro idiomas, **When** uma chave existe em um idioma e
+   falta em qualquer outro, **Then** a construção do pacote falha — não é pendência de tradução, é
+   erro.
 
 ---
 
@@ -202,8 +206,11 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
   chaves de configuração MUST viver em espaço de nomes próprio (D1). Nenhuma configuração da
   extensão atual é lida ou migrada.
 - **FR-015**: Toda mensagem destinada ao usuário — diagnóstico, rótulo de configuração, descrição de
-  comando — MUST existir em pt-BR e en. Conjunto de chaves divergente entre os idiomas MUST falhar a
-  construção do pacote.
+  comando — MUST existir nos **quatro idiomas do Protheus**: português do Brasil, espanhol, inglês e
+  russo (D4). Conjunto de chaves divergente entre quaisquer dois idiomas MUST falhar a construção do
+  pacote.
+- **FR-015a**: Acrescentar um idioma MUST ser mudança de configuração, não de código. Nenhuma parte
+  do motor ou da extensão MUST enumerar os idiomas suportados fora do ponto único que os declara.
 - **FR-016**: Nenhuma mensagem MUST ser escrita literalmente no código; todas passam pelo mecanismo de
   tradução.
 
@@ -267,7 +274,8 @@ observar o painel de problemas reagir; trocar o idioma do editor e observar a me
 - **SC-003**: A extensão fica pronta para uso em no máximo 200 ms após ser ativada.
 - **SC-004**: 100% dos diagnósticos emitidos carregam identificador, severidade e posição inicial e
   final. Nenhum diagnóstico sem identificador é emitido.
-- **SC-005**: O conjunto de chaves de mensagem em pt-BR e em en é idêntico — zero divergências.
+- **SC-005**: O conjunto de chaves de mensagem é idêntico nos quatro idiomas (pt-BR, es, en, ru) —
+  zero divergências, em qualquer par.
 - **SC-006**: A linha de base é registrada com no mínimo 1.000 fontes reais medidos, cobrindo p50,
   p90, p95 e p99.
 - **SC-007**: A taxa de falso positivo de `CA3001`, medida sobre amostra revisada do corpus, é no
@@ -356,8 +364,12 @@ exige.
 | II — Formatação é Produto | fora de escopo, spec própria |
 | III — Valor no que o padrão não vê | FR-012 (origem declarada), FR-022 (falso positivo medido) |
 | IV — Identidade, Severidade e Desligamento | FR-010, FR-010a, FR-011 a FR-014, FR-014a; SC-004 |
-| V — Bilíngue por Construção | FR-015, FR-016; SC-005 |
+| V — Bilíngue por Construção | FR-015, FR-015a, FR-016; SC-005 — **excedido para quatro idiomas (D4); exige emenda MINOR** |
 | VI — Fixture e Medição Antes da Regra | FR-020 a FR-022, FR-026, FR-028, FR-029; SC-006, SC-007 |
+
+**Emenda constitucional pendente**: o Princípio V precisa passar de "pt-BR e en" para os quatro
+idiomas do Protheus (D4). Bump **MINOR**, por ampliação material de escopo. MUST ser feita por
+`/speckit-constitution` antes do merge desta spec.
 
 **Dívidas da constituição tocadas por esta spec**: `TODO(BENCHMARK_BASE)` — fechada.
 `TODO(CORPUS)` — parcialmente fechada: o corpus existe e é robusto, mas é externo e não reproduzível
@@ -421,3 +433,26 @@ usuário a ignorar o painel é exatamente o que o Princípio III proíbe. `Hint`
 inundar o painel, a entrada `MINOR → Information` é revista **com o número na mão** — e a revisão
 entra como emenda da tabela, não como ajuste silencioso. O critério de decisão é o dado do
 FR-022, não a impressão.
+
+### D4 — Idiomas: os **quatro do Protheus**, não dois
+
+A extensão acompanha os idiomas em que o Protheus é localizado: **português do Brasil, espanhol,
+inglês e russo**. Identificadores de localidade do VS Code: `pt-br`, `es`, `ru`, com `en` como base.
+
+*Razão*: o produto atende quem trabalha com Protheus, e o Protheus fala esses quatro idiomas. Uma
+extensão bilíngue deixaria de fora as bases hispano-americana e russa, que existem e usam as mesmas
+regras de catálogo. Decidido pelo dono em 2026-08-19.
+
+> ⚠️ **Esta decisão excede a constituição e exige emenda.** O Princípio V diz literalmente que toda
+> mensagem "MUST existir em **pt-BR e en**". Quatro idiomas é ampliação material de escopo — bump
+> **MINOR** — e MUST ser feita por `/speckit-constitution` antes do merge desta spec. Até lá, a spec
+> está deliberadamente à frente da constituição, e isso está registrado aqui em vez de silenciado.
+
+*Consequência de desenho*: o conjunto de idiomas vive em **um único ponto de declaração**
+(FR-015a). A verificação de divergência de chaves compara todos os pares, não um par. Acrescentar um
+quinto idioma passa a ser acrescentar um arquivo e uma linha de configuração.
+
+*Risco assumido, e é honesto declará-lo*: a qualidade das traduções de espanhol e russo não pode ser
+atestada por quem escreve esta spec. As chaves e o mecanismo ficam corretos e verificados; **o texto
+em `es` e `ru` precisa de revisão por quem fala o idioma** antes da publicação. A verificação
+automática pega chave faltante, não tradução ruim.

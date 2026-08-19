@@ -7,7 +7,10 @@ Ciclo de cada spec: `specify` → `clarify` → `plan` → `tasks` → `implemen
 
 | Spec | Título | Estado | Etapa atual |
 | ---- | ------ | ------ | ----------- |
-| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | Draft | `specify` concluído; pronta para `plan` |
+| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | Draft | `plan` concluído; pronta para `tasks` |
+
+**Pendência que bloqueia o merge da 001**: o Princípio V da constituição precisa ser emendado de
+"pt-BR e en" para os quatro idiomas do Protheus (bump MINOR, via `/speckit-constitution`).
 
 ## Backlog de specs previstas
 

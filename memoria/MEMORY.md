@@ -8,3 +8,4 @@
 - [Identificador de regra](identificador-de-regra.md) — id puro do catálogo (`CA3001`); regras próprias na faixa `PJ####`
 - [Identidade da extensão](identidade-da-extensao.md) — publica independente da atual; assumir a antiga é spec futura
 - [Severidade MINOR → Information](severidade-minor-information.md) — primeira e única entrada da tabela de mapeamento
+- [Idiomas do Protheus](idiomas-do-protheus.md) — quatro idiomas (pt-br, es, en, ru); excede o Princípio V e exige emenda MINOR
