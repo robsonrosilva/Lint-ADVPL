@@ -26,8 +26,13 @@ Derivado da constituição v2.2.0 e das dívidas registradas nela. Ordem indicat
 | Catálogo G3 — Legado e descontinuado | Princípio III | `CA3001` já entregue na 001 |
 | Catálogo G4 — Metadados | Princípio III | |
 | Catálogo G5 — Compilação / clean code | Princípio III | |
-| Regras `projeto` herdadas do legado | Princípio III, "dois pisos" | as 33 mensagens e 28 chaves do legado são o piso |
-| Regras de include obrigatório/obsoleto/duplicado | legado `src/include.ts` | |
+| **Críticas próprias herdadas do legado** | Princípio III, "dois pisos" | **inventariadas item a item em [docs/inventario-legado.md](../docs/inventario-legado.md)** — 28 chaves, zero implementadas |
+| Includes: falta `totvs.ch`, obsoleto, duplicado, faltante, desnecessário | legado `src/include.ts` | 5 regras que o catálogo **não** tem; ele só tem `CA3001` |
+| Portabilidade de include: caixa da referência vs arquivo no disco | medição de 2026-08-19 | já falha no AppServer Linux, em silêncio |
+| ProtheusDOC: função/classe/webservice/struct sem documentação | diretrizes TOTVS | ⚠️ norma TOTVS **sem id no catálogo** — taxonomia de origem precisa de decisão |
+| SQL: sem Embedded, `DELETE FROM`, `SELECT *`, schema, tabela fixa | legado | mais específicas que `CA2050`/`CS1000` |
+| Projeto: função e arquivo duplicados | legado | exige índice do projeto |
+| Higiene: conflito de merge esquecido, `CRLF`, parâmetro descontinuado | legado | |
 | Análise de projeto e cache incremental | Princípio I | varredura sob demanda, cancelável, nunca na ativação |
 | Ações de correção automática | — | depende do contrato de diagnóstico da 001 |
 
