@@ -390,7 +390,7 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
 
 ### Fechamento
 
-- [ ] T086 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
+- [X] T086 Rodar `/speckit-converge` — **obrigatória**, antes da `/security-review` e do merge
 
 ---
 
@@ -467,3 +467,67 @@ paralelizar mão de obra. Na prática, servem para escolher a próxima tarefa se
 - O relatório ao usuário diz o que foi executado e nada além. "Suíte verde" só se a suíte rodou.
 - Nada de `analise-advpl/` entra como código ou dependência. Consulta é leitura humana.
 - Nenhum fonte de `D:\Workspace\FONTES` entra no repositório, em nenhuma forma, em nenhuma tarefa.
+
+---
+
+## Phase 7: Convergence
+
+Anexado pela `/speckit-converge` em 2026-08-19, depois de `T001`–`T085` concluídas e com
+`npm run verify` verde. Cada item traz a origem e o tipo de lacuna.
+
+Avaliados: 35 requisitos funcionais, 12 critérios de sucesso, as decisões do plano e os seis
+princípios da constituição. O que **não** virou tarefa está registrado ao pé desta fase.
+
+- [ ] T087 Fazer `npm run verify` encadear a suíte **inteira**, e não apenas `test:unit`, por T023 e
+      pelo Portão 2 da constituição (contradicts). Hoje os 10 testes de integração ficam **de fora**
+      do portão de merge, enquanto o quickstart o chama de "portão local completo" — quem confia no
+      verify está confiando em menos do que pensa. Conferir o custo: `test:integration` reconstrói o
+      pacote e sobe um VS Code, então o verify passa de segundos a dezenas de segundos; se isso for
+      inaceitável para o laço de trabalho, a alternativa é um alvo separado explícito, **nunca**
+      deixar o portão incompleto em silêncio.
+- [ ] T088 Medir a ativação real da extensão dentro do editor e asserir o teto de 200 ms, por SC-003
+      (missing). O que existe hoje mede a **partida do motor** — subir o thread e carregar o código,
+      41 ms — e o relatório e o `CONFRONTO-2026-08-19.md` dizem isso com todas as letras. É outra
+      coisa: a ativação envolve o VS Code, e só o teste de integração alcança. Enquanto não existir,
+      metade do orçamento do Princípio I não tem verificação própria.
+- [ ] T089 Emendar o Princípio I com os números medidos, por `/speckit-constitution`, fechando o
+      `TODO(BENCHMARK_BASE)` (missing). A proposta, com margem de uma ordem de grandeza sobre o
+      medido, está em `baseline/CONFRONTO-2026-08-19.md`. Enquanto não for feita, a constituição
+      mantém "p95 de fonte de 1.000 linhas ≤ 100 ms" — tamanho que fica entre o p50 e o p90 reais, e
+      teto **109 vezes** maior que o custo medido. Orçamento que nunca reprova é decoração.
+      **Depende de decisão do dono**: emenda constitucional não se faz por conta própria.
+- [ ] T090 Asserir no teste de integração o teto de 300 ms entre abrir o fonte e ver o primeiro
+      diagnóstico, por SC-001 (missing). Hoje `waitForDiagnostics` espera até 15 s sem medir nada —
+      o teste prova que o diagnóstico chega, não que chega a tempo.
+- [ ] T091 Resolver o SC-002 — digitar 10 s num fonte do p99 sem interrupção perceptível (partial).
+      O automatizado hoje é a contagem determinística de cessões do laço de eventos, que é
+      necessária e não suficiente: ela prova que o motor cede, não que a digitação não engasga. Ou
+      se automatiza a medição de latência de tecla, ou se registra no quickstart que este critério é
+      **permanentemente manual**, com a razão escrita. O que não vale é deixá-lo parecendo coberto.
+- [ ] T092 Acrescentar asserção agregada de que **todo** diagnóstico emitido carrega identificador,
+      severidade e posição inicial e final, por SC-004 (missing). Cada teste verifica o seu
+      diagnóstico; nenhum varre o conjunto. É barato e fecha o critério.
+- [ ] T093 Escrever o teste que trava a segunda metade do FR-014a — nenhuma configuração da extensão
+      atual é lida ou migrada (missing). Conferido à mão em 2026-08-19: nada de `advpl.*` é lido. Um
+      teste impede que a conveniência de "aproveitar o que o usuário já configurou" entre sem
+      decisão.
+
+### O que foi avaliado e NÃO virou tarefa
+
+**Satisfeito por meio diferente do previsto** — o requisito está cumprido; o caminho é que mudou, e
+a mudança está justificada em commit e comentário:
+
+| Previsto | Entregue | Por quê |
+| -------- | -------- | ------- |
+| `T070`/`T071`: teste de idioma dentro do VS Code | teste de protocolo LSP em `packages/server/test/protocol/locale.test.ts` | o editor só honra `--locale` com pacote de idioma instalado; sem ele o teste provava o contrário do que dizia. O substituto cobre os **quatro** idiomas em vez de um e não depende de rede |
+| `T066`: geração das chaves do manifesto | `check:nls` absorveu a conferência manifesto ⟺ registro | uma verificação a mais no mesmo portão, não uma a menos |
+| Portão 6 sobre o README | `check:docs` passou a conferir também o README | o Portão 6 deixou de depender de disciplina |
+
+**Acréscimos não pedidos, todos com teste e alinhados a requisito existente** (unrequested, LOW —
+nenhuma ação recomendada): `config/settings.ts` (FR-013), `harness/tokens.ts`,
+`checks/manifest.ts` (Princípio IV), os quatro CLIs, `fixtures/large-cli.ts`,
+`scripts/test-unit.mjs` (FR-032) e a separação `measure-pool.ts`/`measure-worker.ts`.
+
+**`CA3001` mudou de severidade duas vezes** — `Information` → `Hint` → `Information`. Não é lacuna:
+FR-014 exige que a severidade saia da tabela versionada, e é o que acontece hoje. As duas mudanças
+estão registradas na D3 da spec, em `docs/regras/CA3001.md` e na memória.
