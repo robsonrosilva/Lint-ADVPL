@@ -15,12 +15,22 @@ Branch **`001-esqueleto-lsp-harness`**, cinco commits à frente da `renew`. Nada
 O **MVP da spec 001 está pronto e verde**: `T001`–`T046` de 86. Existe uma extensão de lint ADVPL
 funcionando, com uma regra real do catálogo, sobre a arquitetura que a constituição exige.
 
-**A spec 001 está implementada**: `T001`–`T085` de 86. Falta só a `T086`, a `/speckit-converge`,
-que é obrigatória antes do merge.
+**A spec 001 está COMPLETA**: 90 tarefas, nenhuma pendente. O ciclo inteiro rodou — `specify`,
+`plan`, `tasks`, `implement`, `converge` e `security-review`.
 
-`npm run verify` passa **inteiro** — foi a primeira vez em 2026-08-19. As três verificações que
-faltavam (`check:nls`, `check:corpus`, `check:docs`) existem e reprovam de verdade: cada uma foi
-testada com uma quebra proposital.
+`npm run verify` passa **inteiro**, em ~34 s: tipagem, lint, 351 testes unitários com cobertura
+99,81/98,80/99,47, as três verificações e 16 testes de integração em VS Code real. As verificações
+reprovam de verdade — cada uma foi testada com uma quebra proposital.
+
+A `/speckit-converge` anexou 7 tarefas (`T087`–`T093`) e todas foram fechadas. A mais séria era o
+`verify` não rodar a integração: dez testes ficavam fora do portão de merge enquanto o quickstart o
+chamava de completo.
+
+A **revisão de segurança** não encontrou vulnerabilidade no código entregue. O único risco real que
+ela apontou é futuro e pertence à spec 002 — ler `~/.totvsls/servers.json`, que guarda `savedTokens`.
+Virou FR-027b1, FR-027b2 e um SC-016 reforçado, já registrados naquela spec.
+
+**O que falta é a decisão de merge, e ela é sua.**
 
 Última execução, nesta máquina, sem cano na saída:
 

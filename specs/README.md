@@ -7,12 +7,21 @@ Ciclo de cada spec: `specify` → `clarify` → `plan` → `tasks` → `implemen
 
 | Spec | Título | Estado | Etapa atual |
 | ---- | ------ | ------ | ----------- |
-| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | **Implementada** | `T001`–`T085` de 86. Três histórias entregues, linha de base medida, `npm run verify` verde. Falta `T086` — a `/speckit-converge` |
-| 002 | Ações de correção + portabilidade de include | Não aberta | escopo já decidido em [memoria/spec-002-escopo-decidido.md](../memoria/spec-002-escopo-decidido.md) |
+| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | **Pronta para merge** | 90 tarefas, nenhuma pendente. Ciclo completo, incluindo `converge` (7 tarefas anexadas e fechadas) e `security-review` sem achados. `npm run verify` verde em ~34 s |
+| 002 | Ações de correção + portabilidade de include | **Especificada** | `spec.md` escrita na branch `002-correcao-e-portabilidade-include`, reforçada pela revisão de segurança. Pronta para `/speckit-plan` depois do merge da 001 |
 
-A spec 001 produziu duas emendas na constituição, ambas feitas em 2026-08-19 (**v2.2.0**): Princípio
-V passou a *Multilíngue por Construção* (quatro idiomas do Protheus) e Princípio VI passou a
-*Fixture, Teste e Medição Antes da Regra*, com cobertura mínima de 98% como portão de merge.
+A spec 001 produziu **quatro** emendas na constituição, todas em 2026-08-19:
+
+- **v2.2.0** — Princípio V passou a *Multilíngue por Construção* (os quatro idiomas do Protheus) e
+  Princípio VI passou a *Fixture, Teste e Medição Antes da Regra*, com cobertura mínima de 98% como
+  portão de merge.
+- **v2.2.1** — os dois encodings do projeto separados por escrito (CP1252 para o que é analisado,
+  UTF-8 sem BOM para o que é do repositório).
+- **v2.3.0** — o orçamento de desempenho do Princípio I trocado por números **medidos**, fechando o
+  `TODO(BENCHMARK_BASE)`. O teto anterior era 109× o custo real.
+- **v2.4.0** — a ativação virou **dois** orçamentos, depois de medida e reprovada: 50 ms para o
+  trabalho próprio do código e 1000 ms para a ativação completa, que inclui o editor carregar o
+  módulo. Um teto único reprovava o código correto pelo custo de uma dependência necessária.
 
 ## Backlog de specs previstas
 
