@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "ADVPL Lint",
+  "extension.description": "Lint and formatting for ADVPL/TLPP sources (TOTVS Protheus).",
+  "configuration.title": "ADVPL Lint",
+  "configuration.rules.CA3001.enabled": "CA3001 — report include directives that are not lowercase.",
+  "configuration.rules.CA3001.severity": "Severity shown for CA3001. \"default\" uses the versioned severity map.",
+  "configuration.trace.server": "Trace the communication with the language server. Off by default.",
+  "configuration.log.level": "Log level of the extension. Off by default."
+}

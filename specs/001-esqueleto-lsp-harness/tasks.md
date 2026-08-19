@@ -159,76 +159,76 @@ gerado de 24.636 linhas sem travamento.
 
 ### Fixtures — antes de qualquer regra (Princípio VI)
 
-- [ ] T024 [P] [US1] Criar `packages/server/test/fixtures/ca3001-basic.prw` com `#INCLUDE "TOTVS.CH"`
+- [X] T024 [P] [US1] Criar `packages/server/test/fixtures/ca3001-basic.prw` com `#INCLUDE "TOTVS.CH"`
       na linha 3, coluna 1, gravado em CP1252 com CRLF, abrindo com o cabeçalho de autoria obrigatório (FR-026)
-- [ ] T025 [P] [US1] Criar `packages/server/test/fixtures/ca3001-comment-and-string.prw` com `#INCLUDE`
+- [X] T025 [P] [US1] Criar `packages/server/test/fixtures/ca3001-comment-and-string.prw` com `#INCLUDE`
       dentro de comentário de linha, de comentário de bloco e de literal de texto (FR-018)
-- [ ] T026 [P] [US1] Criar `packages/server/test/fixtures/ca3001-cp1252-highrange.prw` com travessão,
+- [X] T026 [P] [US1] Criar `packages/server/test/fixtures/ca3001-cp1252-highrange.prw` com travessão,
       aspas tipográficas e euro (faixa `0x80`–`0x9F`) antes de um `#INCLUDE` em caixa alta (FR-003)
-- [ ] T027 [P] [US1] Criar `packages/server/test/fixtures/ca3001-eol-lf.prw` e
+- [X] T027 [P] [US1] Criar `packages/server/test/fixtures/ca3001-eol-lf.prw` e
       `ca3001-eol-mixed.prw` — LF puro e CRLF/LF misto no mesmo arquivo
-- [ ] T028 [P] [US1] Criar `packages/server/test/fixtures/ca3001-mixed-case.prw` com `#Include` e
+- [X] T028 [P] [US1] Criar `packages/server/test/fixtures/ca3001-mixed-case.prw` com `#Include` e
       `#InClUdE` (FR-017)
-- [ ] T029 [US1] Conferir, com `git check-attr`, que **nenhuma** das fixtures de T024–T028 está sujeita
+- [X] T029 [US1] Conferir, com `git check-attr`, que **nenhuma** das fixtures de T024–T028 está sujeita
       a normalização — se estiver, T001 não surtiu efeito e todo teste seguinte é falso
 
 ### Varredura de comentário e literal
 
-- [ ] T030 [P] [US1] Escrever `packages/server/test/unit/analysis/scanner.test.ts`: o classificador
+- [X] T030 [P] [US1] Escrever `packages/server/test/unit/analysis/scanner.test.ts`: o classificador
       marca comentário de linha, de bloco e literal de texto numa **única** passagem, e nunca revarre
       a lista de linhas (FR-008)
-- [ ] T031 [US1] Implementar `packages/server/src/analysis/scanner.ts`, rodando **uma vez por
+- [X] T031 [US1] Implementar `packages/server/src/analysis/scanner.ts`, rodando **uma vez por
       documento** — não uma vez por regra, senão o custo vira O(regras × linhas) já na segunda regra
 
 ### A regra CA3001
 
-- [ ] T032 [P] [US1] Escrever `packages/server/test/unit/rules/ca3001.test.ts` sobre as fixtures
+- [X] T032 [P] [US1] Escrever `packages/server/test/unit/rules/ca3001.test.ts` sobre as fixtures
       T024–T028: dispara em qualquer caixa que não seja toda baixa; **não** dispara em comentário nem em
       literal; o intervalo cobre o token do `#` ao fim da palavra, não a linha (FR-017, FR-018, FR-019)
-- [ ] T033 [US1] Implementar `packages/server/src/rules/ca3001.ts` e registrá-la com origem `totvs`,
+- [X] T033 [US1] Implementar `packages/server/src/rules/ca3001.ts` e registrá-la com origem `totvs`,
       grupo `G3`, catálogo `MINOR` (FR-012)
 
 ### Orquestração, cancelamento e tamanho
 
-- [ ] T034 [P] [US1] Escrever `packages/server/test/unit/analysis/analyze.test.ts`: a análise cede o
+- [X] T034 [P] [US1] Escrever `packages/server/test/unit/analysis/analyze.test.ts`: a análise cede o
       controle entre blocos e **para de fato** ao ser cancelada, medindo quando o trabalho cessou —
       não apenas que o resultado foi descartado (FR-004, FR-006, SC-009)
-- [ ] T035 [US1] Implementar `packages/server/src/analysis/cancellation.ts` e
+- [X] T035 [US1] Implementar `packages/server/src/analysis/cancellation.ts` e
       `packages/server/src/analysis/analyze.ts`
-- [ ] T036 [P] [US1] Escrever o teste do documento gigante: 24.636 linhas concluem sem erro e **sem
+- [X] T036 [P] [US1] Escrever o teste do documento gigante: 24.636 linhas concluem sem erro e **sem
       descarte por tempo-limite** — não existe tempo-limite no desenho (FR-009, SC-010)
-- [ ] T037 [US1] Implementar `packages/tooling/src/fixtures/generate-large.ts`, que **gera** o arquivo
+- [X] T037 [US1] Implementar `packages/tooling/src/fixtures/generate-large.ts`, que **gera** o arquivo
       em tempo de teste. Arquivo grande é gerado, nunca versionado (FR-026)
 
 ### O servidor de linguagem
 
-- [ ] T038 [P] [US1] Escrever `packages/server/test/unit/server.test.ts`: `didOpen` e `didChange`
+- [X] T038 [P] [US1] Escrever `packages/server/test/unit/server.test.ts`: `didOpen` e `didChange`
       produzem diagnóstico com `code`, `severity` e `range`; a reanálise é espaçada; e resultado de
       versão vencida **nunca** sobrescreve o da versão atual (FR-005, FR-010, SC-004)
-- [ ] T039 [US1] Implementar `packages/server/src/server.ts` — conexão LSP, ciclo de vida, debounce,
+- [X] T039 [US1] Implementar `packages/server/src/server.ts` — conexão LSP, ciclo de vida, debounce,
       publicação de diagnóstico
 
 ### Mensagem e documentação
 
-- [ ] T040 [P] [US1] Criar `packages/server/l10n/bundle.l10n.json` (en, base) com a mensagem de
+- [X] T040 [P] [US1] Criar `packages/server/l10n/bundle.l10n.json` (en, base) com a mensagem de
       `CA3001`, mais `bundle.l10n.pt-br.json`, `bundle.l10n.es.json` e `bundle.l10n.ru.json` (FR-015, D4)
-- [ ] T041 [P] [US1] Escrever `docs/regras/CA3001.md`: o que a regra pega, a chave de configuração, a
+- [X] T041 [P] [US1] Escrever `docs/regras/CA3001.md`: o que a regra pega, a chave de configuração, a
       severidade mapeada e a citação do catálogo com data de consulta (FR-011, FR-012)
 
 ### O cliente fino
 
-- [ ] T042 [P] [US1] Escrever o teste de integração em `packages/extension/test/integration/activation.test.ts`:
+- [X] T042 [P] [US1] Escrever o teste de integração em `packages/extension/test/integration/activation.test.ts`:
       abrir `.prw` produz `CA3001` no painel de problemas; abrir `.txt` **não** ativa a extensão
       (FR-001, US1 cenários 1 e 5)
-- [ ] T043 [US1] Preencher o manifesto em `packages/extension/package.json`: `activationEvents` por
+- [X] T043 [US1] Preencher o manifesto em `packages/extension/package.json`: `activationEvents` por
       linguagem — nunca `*` —, as extensões `prw`/`prx`/`prg`/`apw`/`apl`/`tlpp`, e
       `configurationDefaults` com `files.encoding: windows1252` para `[advpl]` e `[tlpp]`
       (FR-001, FR-003, [contracts/configuracao.md](contracts/configuracao.md))
-- [ ] T044 [US1] Implementar `packages/extension/src/extension.ts` e `packages/extension/src/client.ts` —
+- [X] T044 [US1] Implementar `packages/extension/src/extension.ts` e `packages/extension/src/client.ts` —
       ativação **sem nenhum I/O**, cliente LSP iniciado de forma assíncrona (SC-003)
-- [ ] T045 [P] [US1] Escrever o teste do guarda de codificação: documento ADVPL cuja codificação efetiva
+- [X] T045 [P] [US1] Escrever o teste do guarda de codificação: documento ADVPL cuja codificação efetiva
       não seja `windows1252` gera **um** aviso acionável, uma vez por sessão e nunca por arquivo (FR-003)
-- [ ] T046 [US1] Implementar `packages/extension/src/encoding-guard.ts`
+- [X] T046 [US1] Implementar `packages/extension/src/encoding-guard.ts`
 
 **Checkpoint**: US1 funciona ponta a ponta. Existe uma extensão de lint ADVPL com uma regra real do
 catálogo oficial, sobre a arquitetura que a constituição exige. **Este é o MVP.**

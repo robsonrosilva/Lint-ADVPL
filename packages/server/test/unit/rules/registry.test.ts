@@ -165,3 +165,33 @@ describe('Registro de regras — o que ele NÃO valida', () => {
     assert.ok(!/readFile|existsSync|statSync|require\(['"]node:fs/.test(source))
   })
 })
+
+describe('Registro de regras — rejeições de forma', () => {
+  it('rejeita identificador vazio', () => {
+    const registry = new RuleRegistry()
+    assert.throws(() => registry.register(totvsRule({ id: '' })), RuleDefinitionError)
+  })
+
+  it('rejeita chave de mensagem vazia ou só com espaço', () => {
+    // Sem chave de mensagem não há o que traduzir, e o Princípio V garante que
+    // o identificador cru nunca chega à tela — então a regra não pode existir.
+    const registry = new RuleRegistry()
+    assert.throws(() => registry.register(totvsRule({ messageKey: '' })), RuleDefinitionError)
+    assert.throws(() => registry.register(totvsRule({ messageKey: '   ' })), RuleDefinitionError)
+  })
+
+  it('rejeita chave de configuração só com espaço', () => {
+    const registry = new RuleRegistry()
+    assert.throws(() => registry.register(totvsRule({ configKey: '   ' })), RuleDefinitionError)
+  })
+
+  it('devolve undefined para identificador não registrado', () => {
+    const registry = new RuleRegistry()
+    assert.equal(registry.get('CA9999'), undefined)
+  })
+
+  it('a mensagem do erro nomeia a regra rejeitada', () => {
+    const registry = new RuleRegistry()
+    assert.throws(() => registry.register(totvsRule({ group: null })), /CA3001/)
+  })
+})

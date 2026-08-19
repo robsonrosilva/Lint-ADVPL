@@ -1,0 +1,4 @@
+{
+  "rule.CA3001.message": "La directiva de inclusión debe estar en minúsculas. Use \"#include\".",
+  "encoding.wrongEncoding": "Este fuente ADVPL/TLPP no se está leyendo como Windows-1252 (CP1252). Los diagnósticos pueden aparecer en la columna equivocada."
+}

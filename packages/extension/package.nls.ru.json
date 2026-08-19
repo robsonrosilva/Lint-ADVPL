@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "ADVPL Lint",
+  "extension.description": "Проверка и форматирование исходных файлов ADVPL/TLPP (TOTVS Protheus).",
+  "configuration.title": "ADVPL Lint",
+  "configuration.rules.CA3001.enabled": "CA3001 — отмечать директивы включения не в нижнем регистре.",
+  "configuration.rules.CA3001.severity": "Уровень серьёзности для CA3001. \"default\" использует версионированную таблицу серьёзности.",
+  "configuration.trace.server": "Трассировка обмена с языковым сервером. По умолчанию выключено.",
+  "configuration.log.level": "Уровень журналирования расширения. По умолчанию выключено."
+}

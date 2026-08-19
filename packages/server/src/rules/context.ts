@@ -30,6 +30,16 @@ export interface ScanResult {
 export interface RuleContext {
   readonly document: AnalyzedDocument
   /**
+   * Faixa de linhas desta fatia, `[startLine, endLine)`.
+   *
+   * A análise é fatiada para poder ceder o laço de eventos entre as fatias. Se
+   * a regra varresse o documento inteiro de uma vez, um fonte grande travaria a
+   * digitação por todo o tempo que ela levasse — e nenhum ponto de cessão
+   * externo consertaria isso, porque `run` é síncrono.
+   */
+  readonly startLine: number
+  readonly endLine: number
+  /**
    * Classificação de comentário e literal, feita UMA VEZ por documento e
    * compartilhada por todas as regras. Se cada regra refizesse a varredura, o
    * custo viraria O(regras × linhas) já na segunda regra.

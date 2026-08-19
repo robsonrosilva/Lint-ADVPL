@@ -4,7 +4,7 @@
     "rootDir": ".",
     "outDir": "out",
     "tsBuildInfoFile": "out/.tsbuildinfo",
-    "types": ["node", "vscode"]
+    "types": ["node", "vscode", "mocha"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }

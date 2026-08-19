@@ -7,6 +7,7 @@
 // nunca entram no .vsix nem no custo de ativação.
 
 import { build } from 'esbuild'
+import { cp, mkdir } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -26,6 +27,15 @@ const common = {
   sourcemap: production ? false : 'linked',
   logLevel: 'info',
 }
+
+// As traduções viajam JUNTO do servidor empacotado. Sem esta cópia, o servidor
+// procura os pacotes num caminho que não existe no .vsix, não acha, e o painel
+// de problemas exibe a chave crua — que foi exatamente o que aconteceu em
+// 2026-08-19, apanhado pelo teste de integração.
+await mkdir(join(REPO_ROOT, 'packages/extension/dist/l10n'), { recursive: true })
+await cp(join(REPO_ROOT, 'packages/server/l10n'), join(REPO_ROOT, 'packages/extension/dist/l10n'), {
+  recursive: true,
+})
 
 await Promise.all([
   build({

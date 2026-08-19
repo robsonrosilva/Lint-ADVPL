@@ -43,14 +43,33 @@ module.exports = tseslint.config(
     rules: {
       'no-restricted-syntax': [
         'error',
+        // `readFileSync`, `writeFileSync`, `statSync`, `existsSync`...
+        // Legado: validaProjeto.ts:124 e :189 chamavam readFileSync e statSync
+        // uma vez por fonte do projeto.
+        //
+        // Os três seletores casam CHAMADA e IMPORTAÇÃO, não identificador
+        // qualquer. A primeira versão desta regra usava `Identifier[name=/Sync$/]`
+        // e reprovava `textDocumentSync` — nome de capacidade do LSP, sem nada
+        // de I/O. Regra ruidosa treina o usuário a ignorar o painel inteiro
+        // (Princípio III), e uma regra de lint que ninguém leva a sério não
+        // protege princípio nenhum.
         {
-          // `readFileSync`, `writeFileSync`, `statSync`, `existsSync`...
-          // Legado: validaProjeto.ts:124 e :189 chamavam readFileSync e
-          // statSync uma vez por fonte do projeto.
-          selector: 'Identifier[name=/Sync$/]',
+          selector: 'CallExpression[callee.name=/Sync$/]',
           message:
             'I/O síncrono é proibido no caminho de análise (Princípio I). ' +
             'Use a variante assíncrona.',
+        },
+        {
+          selector: 'CallExpression[callee.property.name=/Sync$/]',
+          message:
+            'I/O síncrono é proibido no caminho de análise (Princípio I). ' +
+            'Use a variante assíncrona.',
+        },
+        {
+          selector: 'ImportSpecifier[imported.name=/Sync$/]',
+          message:
+            'I/O síncrono é proibido no caminho de análise (Princípio I). ' +
+            'Importe a variante assíncrona.',
         },
         {
           // Legado: 66 chamadas de console.log no motor, sem nível e sem chave
@@ -70,6 +89,17 @@ module.exports = tseslint.config(
     files: ['packages/*/test/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
+      // `const { campo: _omitido, ...resto }` é a forma idiomática de construir
+      // um objeto SEM um campo — usada para provar que o campo é obrigatório.
+      '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    // A própria configuração do lint é CommonJS, porque é assim que o ESLint a
+    // carrega neste projeto.
+    files: ['eslint.config.js'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 )

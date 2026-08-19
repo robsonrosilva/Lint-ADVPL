@@ -1,0 +1,4 @@
+{
+  "rule.CA3001.message": "A diretiva de inclusão deve estar em caixa baixa. Use \"#include\".",
+  "encoding.wrongEncoding": "Este fonte ADVPL/TLPP não está sendo lido como Windows-1252 (CP1252). Os diagnósticos podem aparecer na coluna errada."
+}

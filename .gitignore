@@ -20,3 +20,6 @@ corpus.local.json
 
 # Fixtures grandes são GERADAS em tempo de teste, nunca versionadas.
 packages/*/test/fixtures/generated/
+
+# Bundles gerados pelo esbuild
+dist

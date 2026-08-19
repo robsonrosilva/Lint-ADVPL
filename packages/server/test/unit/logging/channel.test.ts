@@ -93,3 +93,13 @@ describe('Canal de log', () => {
     assert.equal(lines.length, 1)
   })
 })
+
+describe('Canal de log — nível corrente', () => {
+  it('informa o nível em que está, começando por off', () => {
+    const { sink } = collector()
+    const log = createLogChannel(sink)
+    assert.equal(log.getLevel(), 'off')
+    log.setLevel('info')
+    assert.equal(log.getLevel(), 'info')
+  })
+})

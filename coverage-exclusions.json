@@ -1,0 +1,17 @@
+{
+  "$comment": [
+    "Exclusões da medição de cobertura. Constituição v2.2.0, Princípio VI:",
+    "exclusão só é admissível AQUI, com a razão de cada item registrada.",
+    "Baixar o limiar de 98% em vez de declarar a exclusão é violação, não atalho.",
+    "A exclusão declarada deixa rastro auditável do que não está coberto e por quê;",
+    "o limiar menor apagaria essa informação."
+  ],
+  "exclusions": [
+    {
+      "path": "packages/server/out/src/server.ts",
+      "reason": "Fiação do Language Server: createConnection e os manipuladores do protocolo. Só se exercita com um cliente LSP real do outro lado do cano — é trabalho dos testes de integração, não do teste unitário. O arquivo é mantido deliberadamente fino, sem decisão nenhuma: toda lógica que vale testar vive em service.ts, analysis/ e rules/, que rodam sem processo de editor.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/extension/test/integration"
+    }
+  ]
+}
