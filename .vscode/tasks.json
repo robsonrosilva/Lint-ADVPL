@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Usada como preLaunchTask do F5. `build` roda `typecheck` (tsc para
+      // out/, que é o portão de tipagem) e depois o esbuild para dist/.
+      // Os dois são necessários: o manifesto aponta para out/ e o cliente
+      // carrega o servidor de dist/.
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "group": { "kind": "build", "isDefault": true },
+      "label": "npm: build",
+      "detail": "tsc + esbuild"
+    },
+    {
+      "type": "npm",
+      "script": "typecheck",
+      "problemMatcher": ["$tsc"],
+      "label": "npm: typecheck",
+      "detail": "portão 1 — compila sem erro"
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "label": "npm: lint",
+      "detail": "proíbe I/O síncrono, log direto e import de vscode no motor"
+    },
+    {
+      "type": "npm",
+      "script": "test:unit",
+      "group": { "kind": "test", "isDefault": true },
+      "label": "npm: test:unit",
+      "detail": "portão 2 — suíte verde e cobertura >= 98%"
+    },
+    {
+      "type": "npm",
+      "script": "verify",
+      "label": "npm: verify",
+      "detail": "portão local completo (check:* ainda não existem — T073+)"
+    }
+  ]
+}

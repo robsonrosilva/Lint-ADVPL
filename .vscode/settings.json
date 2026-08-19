@@ -1,5 +1,15 @@
 {
   "files.encoding": "utf8",
+
+  // ⚠️ NÃO REMOVER. Configuração de workspace VENCE o `configurationDefaults`
+  // que a extensão declara no manifesto. Sem estas duas linhas, o `utf8` acima
+  // valeria também para os fontes ADVPL/TLPP deste repositório — inclusive as
+  // fixtures com bytes CP1252 na faixa 0x80-0x9F — e a instância de
+  // desenvolvimento leria errado exatamente o que a spec 001 existe para ler
+  // certo. O compilador Protheus só aceita CP1252.
+  "[advpl]": { "files.encoding": "windows1252" },
+  "[tlpp]": { "files.encoding": "windows1252" },
+
   "git.autofetch": true,
   "terminal.integrated.shell.windows": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
   "git.confirmSync": false,

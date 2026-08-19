@@ -1,0 +1,4 @@
+{
+  "rule.CA3001.message": "Include directive must be lowercase. Use \"#include\" instead.",
+  "encoding.wrongEncoding": "This ADVPL/TLPP source is not being read as Windows-1252 (CP1252). Diagnostics may be reported at the wrong column."
+}

@@ -1,0 +1,117 @@
+{
+  "name": "advpl-lint",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "robsonrosilva",
+  "author": "Robson Rogério Silva",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=24.0.0"
+  },
+  "categories": [
+    "Linters",
+    "Programming Languages"
+  ],
+  "main": "./out/src/extension.js",
+  "l10n": "./l10n",
+  "activationEvents": [
+    "onLanguage:advpl",
+    "onLanguage:tlpp"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "advpl",
+        "aliases": [
+          "AdvPL",
+          "advpl"
+        ],
+        "extensions": [
+          ".prw",
+          ".prx",
+          ".prg",
+          ".apw",
+          ".apl"
+        ]
+      },
+      {
+        "id": "tlpp",
+        "aliases": [
+          "TLPP",
+          "tlpp"
+        ],
+        "extensions": [
+          ".tlpp"
+        ]
+      }
+    ],
+    "configurationDefaults": {
+      "[advpl]": {
+        "files.encoding": "windows1252"
+      },
+      "[tlpp]": {
+        "files.encoding": "windows1252"
+      }
+    },
+    "configuration": {
+      "title": "%configuration.title%",
+      "properties": {
+        "advplLint.rules.CA3001.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.rules.CA3001.enabled%"
+        },
+        "advplLint.rules.CA3001.severity": {
+          "type": "string",
+          "enum": [
+            "default",
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "default",
+          "description": "%configuration.rules.CA3001.severity%"
+        },
+        "advplLint.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "%configuration.trace.server%"
+        },
+        "advplLint.log.level": {
+          "type": "string",
+          "enum": [
+            "off",
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "off",
+          "description": "%configuration.log.level%"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('out',{recursive:true,force:true})\""
+  },
+  "dependencies": {
+    "@vscode/l10n": "^0.0.18",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}

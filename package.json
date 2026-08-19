@@ -1,42 +1,39 @@
 {
-  "name": "advpl-lint",
-  "version": "7.0.3",
-  "description": "Extension for Lint advpl laguage.",
-  "types": "lib/src/index.d.ts",
-  "main": "lib/src/index.js",
-  "files": [
-    "lib"
+  "name": "advpl-lint-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Extensão VS Code de lint e formatação ADVPL/TLPP",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "workspaces": [
+    "packages/server",
+    "packages/extension",
+    "packages/tooling"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/robsonrosilva/Lint-ADVPL.git"
-  },
-  "bugs": {
-    "url": "https://github.com/robsonrosilva/Lint-ADVPL/issues"
-  },
-  "homepage": "https://github.com/robsonrosilva/Lint-ADVPL",
   "scripts": {
-    "compile": "tsc -p ./",
-    "build": "npm run compile && rimraf lib/package.json && cpy 'src/locales/**' 'lib/locales'",
-    "prepare": "npm run build"
-  },
-  "keywords": [],
-  "author": "Robson Rogério Silva",
-  "license": "ISC",
-  "dependencies": {
-    "file-system": "^2.2.2",
-    "globby": "^15.0.0",
-    "i18n": "^0.15.2"
+    "typecheck": "tsc --build",
+    "build": "npm run typecheck && node packages/tooling/scripts/bundle.mjs",
+    "lint": "eslint .",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "node packages/tooling/scripts/test-unit.mjs",
+    "test:integration": "npm run build && vscode-test",
+    "check:nls": "node packages/tooling/out/src/checks/nls-cli.js",
+    "check:corpus": "node packages/tooling/out/src/checks/corpus-cli.js",
+    "check:docs": "node packages/tooling/out/src/checks/docs-cli.js",
+    "verify": "npm run typecheck && npm run lint && npm run test:unit && npm run check:nls && npm run check:corpus && npm run check:docs && npm run test:integration",
+    "baseline": "node packages/tooling/out/src/harness/baseline-cli.js",
+    "fixture:large": "node packages/tooling/out/src/fixtures/large-cli.js"
   },
   "devDependencies": {
-    "@types/node": "^24.6.1",
-    "@types/vscode": "^1.104.0",
-    "asserts": "^4.0.2",
-    "chai": "^6.2.0",
-    "cpy": "^12.0.1",
-    "cpy-cli": "^6.0.0",
-    "mocha": "^11.7.3",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.9.3"
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.25.12": true
   }
 }

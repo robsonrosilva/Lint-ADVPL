@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "ADVPL Lint",
+  "extension.description": "Lint y formato de fuentes ADVPL/TLPP (TOTVS Protheus).",
+  "configuration.title": "ADVPL Lint",
+  "configuration.rules.CA3001.enabled": "CA3001 — señalar directivas de inclusión que no estén en minúsculas.",
+  "configuration.rules.CA3001.severity": "Severidad mostrada para CA3001. \"default\" usa la tabla versionada de severidad.",
+  "configuration.trace.server": "Rastrear la comunicación con el servidor de lenguaje. Desactivado por defecto.",
+  "configuration.log.level": "Nivel de registro de la extensión. Desactivado por defecto."
+}

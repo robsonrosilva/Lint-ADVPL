@@ -1,0 +1,54 @@
+{
+  "$comment": [
+    "Exclusões da medição de cobertura. Constituição v2.2.0, Princípio VI:",
+    "exclusão só é admissível AQUI, com a razão de cada item registrada.",
+    "Baixar o limiar de 98% em vez de declarar a exclusão é violação, não atalho.",
+    "A exclusão declarada deixa rastro auditável do que não está coberto e por quê;",
+    "o limiar menor apagaria essa informação.",
+    "",
+    "Este arquivo é a ÚNICA fonte das exclusões: packages/tooling/scripts/test-unit.mjs",
+    "o lê e monta os argumentos da medição. Antes disso o script repetia a lista à mão,",
+    "e as duas divergiram em silêncio — em 2026-08-19, três exclusões da camada de",
+    "extensão estavam no script e não estavam declaradas aqui, sem razão registrada.",
+    "",
+    "O caminho declarado é o do FONTE (.ts); o runner traduz para o compilado."
+  ],
+  "exclusions": [
+    {
+      "path": "packages/server/out/src/server.ts",
+      "reason": "Fiação do Language Server: createConnection e os manipuladores do protocolo. Só se exercita com um cliente LSP real do outro lado do cano — é trabalho dos testes de integração, não do teste unitário. O arquivo é mantido deliberadamente fino, sem decisão nenhuma: toda lógica que vale testar vive em service.ts, analysis/ e rules/, que rodam sem processo de editor.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/extension/test/integration"
+    },
+    {
+      "path": "packages/extension/out/src/extension.ts",
+      "reason": "Ponto de ativação da extensão. Só roda dentro do VS Code, sob condição do próprio editor — é a ressalva honesta que o Princípio VI registra sobre a camada de integração. Estava no script de teste sem declaração aqui até 2026-08-19.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/extension/test/integration"
+    },
+    {
+      "path": "packages/extension/out/src/client.ts",
+      "reason": "Cliente LSP do lado do editor: transporte, opções de servidor e reinício. Depende da API do VS Code e do processo filho. Estava no script de teste sem declaração aqui até 2026-08-19.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/extension/test/integration"
+    },
+    {
+      "path": "packages/extension/out/src/encoding-guard.ts",
+      "reason": "Aviso de codificação efetiva do documento. Depende de configuração viva do editor e da resposta do usuário ao aviso, que não existem fora do VS Code. Estava no script de teste sem declaração aqui até 2026-08-19.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/extension/test/integration"
+    },
+    {
+      "path": "packages/tooling/out/src/harness/measure-worker.ts",
+      "reason": "Corpo do trabalhador da medição. Roda em outro thread e é deliberadamente burro: recebe um caminho, chama measureSource, devolve o resultado. Seus únicos ramos são os `parentPort?.`, impossíveis de exercitar — dentro de um worker, parentPort nunca é nulo. Toda a lógica que merece asserção vive em measure.ts e measure-pool.ts, ambos a 100% de linhas.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/tooling/test/harness/measure-pool.test.ts"
+    },
+    {
+      "path": "packages/tooling/out/src/harness/baseline-cli.ts",
+      "reason": "Ponto de entrada de `npm run baseline`: resolve a raiz do repositório, chama runBaseline e define o código de saída. Não tem decisão nenhuma, e cobri-lo exigiria subir um processo só para observar process.exitCode. A lógica inteira está em run.ts, a 100% de linhas.",
+      "declaredAt": "2026-08-19",
+      "coveredBy": "packages/tooling/test/harness/run.test.ts"
+    }
+  ]
+}

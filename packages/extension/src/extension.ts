@@ -1,0 +1,59 @@
+import type { ExtensionContext } from 'vscode'
+import type { LanguageClient } from 'vscode-languageclient/node'
+
+import { createClient } from './client'
+import { registerEncodingGuard } from './encoding-guard'
+
+/**
+ * Ponto de entrada da extensão.
+ *
+ * Orçamento do Princípio I: ficar pronta em no máximo 200 ms. Por isso, o que
+ * NÃO acontece aqui importa tanto quanto o que acontece:
+ *
+ * - nenhuma leitura de arquivo;
+ * - nenhuma varredura de projeto;
+ * - nenhuma análise — isso é do servidor, em outro processo;
+ * - nenhum `await` do início do cliente: ele sobe o servidor em segundo plano.
+ *
+ * `activate` NÃO é `async` de propósito. Um `async` aqui convidaria alguém a
+ * pôr um `await` no caminho de ativação, e o custo entraria no orçamento sem
+ * ninguém perceber.
+ */
+
+let client: LanguageClient | undefined
+
+/**
+ * O que a extensão devolve a quem a ativa.
+ *
+ * `activationMs` é o tempo do trabalho PRÓPRIO da ativação — o corpo desta
+ * função, e nada mais. Ele existe porque o orçamento do Princípio I tem duas
+ * metades e só esta está sob controle do código: quem chama `activate()` mede a
+ * ativação COMPLETA, que inclui o editor ler, compilar e resolver os `require`
+ * do pacote. Medido em 2026-08-19: 18,4 ms de trabalho próprio contra 200 a
+ * 430 ms de carregamento.
+ *
+ * Sem este número, um `await` indevido acrescentado aqui se esconderia dentro da
+ * variação do carregamento — que depende do disco e do estado do editor — e
+ * nenhum portão pegaria.
+ */
+export interface AdvplLintApi {
+  readonly activationMs: number
+}
+
+export function activate(context: ExtensionContext): AdvplLintApi {
+  const started = performance.now()
+
+  client = createClient(context)
+  registerEncodingGuard(context)
+
+  // Sem await: a ativação retorna e o servidor sobe em paralelo.
+  void client.start()
+
+  return { activationMs: performance.now() - started }
+}
+
+export function deactivate(): Promise<void> | undefined {
+  const stopping = client?.stop()
+  client = undefined
+  return stopping
+}

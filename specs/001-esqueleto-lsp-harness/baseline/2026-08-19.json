@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-08-19T13:14:03.891Z",
+  "environment": {
+    "node": "v24.18.0",
+    "cpus": 16,
+    "os": "win32 Windows 11 Pro",
+    "extensionVersion": "0.1.0"
+  },
+  "corpus": {
+    "totalFiles": 35659,
+    "sampledFiles": 1012,
+    "sampling": "estratificada por tamanho em bytes, 16 faixas de igual contagem",
+    "repetitions": 5,
+    "note": "corpus externo, local, NÃO versionado"
+  },
+  "percentiles": [
+    {
+      "percentile": "p50",
+      "lines": 309,
+      "analysisMs": 0.08820000000002892
+    },
+    {
+      "percentile": "p90",
+      "lines": 1862,
+      "analysisMs": 0.4514000000000351
+    },
+    {
+      "percentile": "p95",
+      "lines": 3230,
+      "analysisMs": 0.913599999999974
+    },
+    {
+      "percentile": "p99",
+      "lines": 10155,
+      "analysisMs": 2.7566000000000486
+    },
+    {
+      "percentile": "max",
+      "lines": 27832,
+      "analysisMs": 4.707200000000057
+    }
+  ],
+  "ruleCost": [
+    {
+      "ruleId": "CA3001",
+      "incrementalMs": {
+        "p50": 0.019800000000032014,
+        "p95": 0.09429999999997563,
+        "max": 0.7532000000001062
+      }
+    }
+  ],
+  "falsePositives": [
+    {
+      "ruleId": "CA3001",
+      "hits": 1987,
+      "reviewed": 120,
+      "falsePositives": 0,
+      "rate": 0
+    }
+  ],
+  "activationMs": 41.36290000000001,
+  "cancellationStopMs": 0.09009999999989304
+}

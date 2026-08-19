@@ -1,0 +1,7 @@
+// FIXTURE AUTORAL - advpl-lint - NAO e copia de fonte padrao do Protheus.
+// Proposito: extensao de arquivo em CAIXA ALTA, como .PRX no corpus real
+#INCLUDE "PROTHEUS.CH"
+#INCLUDE "FWMVCDEF.CH"
+
+User Function ExemploCaixaAlta()
+Return Nil

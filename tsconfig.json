@@ -1,24 +1,8 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "lib": ["es6", "es5", "es7", "dom"],
-    "allowJs": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "commonjs",
-    "outDir": "lib",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "declaration": true,
-    "sourceMap": true,
-    "emitDecoratorMetadata": true, //for angular to be able to use metadata we specify in our components.
-    "experimentalDecorators": true, //angular needs decorators like @Component, @Injectable, etc.
-    "rootDir": "."
-  },
-  "exclude": ["node_modules", "lib"],
-  "include": ["src/**/*.ts", "src/test/**/*.ts"],
-  "compileOnSave": true
+  "files": [],
+  "references": [
+    { "path": "packages/server" },
+    { "path": "packages/tooling" },
+    { "path": "packages/extension" }
+  ]
 }

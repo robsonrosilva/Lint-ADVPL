@@ -1,0 +1,1 @@
+Arquivo que nao e ADVPL. Abrir isto NAO pode ativar a extensao.
