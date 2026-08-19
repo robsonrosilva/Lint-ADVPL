@@ -8,7 +8,7 @@ Ciclo de cada spec: `specify` → `clarify` → `plan` → `tasks` → `implemen
 | Spec | Título | Estado | Etapa atual |
 | ---- | ------ | ------ | ----------- |
 | [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | **Pronta para merge** | 90 tarefas, nenhuma pendente. Ciclo completo, incluindo `converge` (7 tarefas anexadas e fechadas) e `security-review` sem achados. `npm run verify` verde em ~34 s |
-| [002](002-correcao-e-portabilidade-include/) | Ações de correção + portabilidade de include | **Planejada** | `spec.md`, `plan.md`, `research.md` (9 decisões), `data-model.md`, três contratos e `quickstart.md` prontos. Constitution Check passa na v2.4.0. Etapa atual: `/speckit-tasks` |
+| [002](002-correcao-e-portabilidade-include/) | Ações de correção + portabilidade de include | **Planejada** | `spec.md`, `plan.md`, `research.md` (9 decisões), `data-model.md`, três contratos e `quickstart.md` prontos. Constitution Check passa na v2.4.0. **67 tarefas** em 8 fases, teste antes de código em todos os pares. Etapa atual: `/speckit-implement` |
 
 A spec 001 produziu **quatro** emendas na constituição, todas em 2026-08-19:
 
