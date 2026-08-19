@@ -17,7 +17,7 @@
     "build": "npm run typecheck && node packages/tooling/scripts/bundle.mjs",
     "lint": "eslint .",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "node --test --experimental-test-coverage --test-coverage-include=packages/server/out/src/** --test-coverage-include=packages/tooling/out/src/** --test-coverage-include=packages/extension/out/src/** --test-coverage-exclude=packages/server/out/src/server.js --test-coverage-exclude=packages/extension/out/src/extension.js --test-coverage-exclude=packages/extension/out/src/client.js --test-coverage-exclude=packages/extension/out/src/encoding-guard.js --test-coverage-exclude=packages/tooling/out/src/harness/measure-worker.js --test-coverage-exclude=packages/tooling/out/src/harness/baseline-cli.js --test-coverage-exclude=packages/tooling/out/src/checks/nls-cli.js --test-coverage-exclude=packages/tooling/out/src/checks/corpus-cli.js --test-coverage-exclude=packages/tooling/out/src/checks/docs-cli.js --test-coverage-exclude=packages/tooling/out/src/fixtures/large-cli.js --test-coverage-lines=98 --test-coverage-functions=98 --test-coverage-branches=98 \"packages/server/out/test/**/*.test.js\" \"packages/tooling/out/test/**/*.test.js\" \"packages/extension/out/test/unit/**/*.test.js\"",
+    "test:unit": "node packages/tooling/scripts/test-unit.mjs",
     "test:integration": "npm run build && vscode-test",
     "check:nls": "node packages/tooling/out/src/checks/nls-cli.js",
     "check:corpus": "node packages/tooling/out/src/checks/corpus-cli.js",

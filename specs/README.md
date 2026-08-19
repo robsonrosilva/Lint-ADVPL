@@ -7,7 +7,7 @@ Ciclo de cada spec: `specify` → `clarify` → `plan` → `tasks` → `implemen
 
 | Spec | Título | Estado | Etapa atual |
 | ---- | ------ | ------ | ----------- |
-| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | **Em implementação** | MVP entregue — `T001`–`T046` de 86. Faltam US2, US3 e os portões |
+| [001](001-esqueleto-lsp-harness/) | Esqueleto vertical da extensão + harness de medição | **Implementada** | `T001`–`T085` de 86. Três histórias entregues, linha de base medida, `npm run verify` verde. Falta `T086` — a `/speckit-converge` |
 | 002 | Ações de correção + portabilidade de include | Não aberta | escopo já decidido em [memoria/spec-002-escopo-decidido.md](../memoria/spec-002-escopo-decidido.md) |
 
 A spec 001 produziu duas emendas na constituição, ambas feitas em 2026-08-19 (**v2.2.0**): Princípio

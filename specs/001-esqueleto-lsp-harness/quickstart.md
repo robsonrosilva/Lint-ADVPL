@@ -49,25 +49,21 @@ um "exit code 0" já mascarou suíte que nem chegou a rodar. Rodar direto e ler 
 Um limiar que nunca reprovou ninguém não é portão. Para provar que ele fecha:
 
 ```bash
-# esperado: FALHA, com "does not meet threshold of 100%"
-node --test --experimental-test-coverage \
-  --test-coverage-include="packages/server/out/src/**" \
-  --test-coverage-branches=100 \
-  "packages/server/out/test/unit/**/*.test.js"
-
-npm run test:unit    # esperado: passa, com cobertura >= 98%
+npm run test:unit -- --test-coverage-branches=100   # esperado: FALHA
+npm run test:unit                                    # esperado: passa, cobertura >= 98%
 ```
 
 Se a primeira passar, o limiar não está sendo aplicado e o Portão 2 é decorativo.
 
-⚠️ **Duas armadilhas, as duas medidas em 2026-08-19 ao executar este guia:**
+⚠️ **Use o limiar de RAMOS, não o de linhas.** `--test-coverage-lines=100` **passaria**: a cobertura
+de linhas do motor é 100%, e um limiar que a suíte já atinge não prova nada.
 
-1. **`npm run test:unit -- --test-coverage-lines=100` NÃO funciona.** O `npm` anexa o argumento ao
-   fim do comando, e o script termina com os globs dos arquivos de teste — a flag cai depois deles e
-   é ignorada em silêncio. O comando sai com **sucesso**, dando a impressão de que o portão está
-   quebrado quando o quebrado é o comando. Por isso a forma acima invoca o `node` direto.
-2. **`--test-coverage-lines=100` não reprova**, porque a cobertura de linhas do motor **é** 100%. Um
-   limiar impossível de verdade precisa ser o de **ramos**.
+> Nota histórica: até 2026-08-19 esta conferência não funcionava. `npm run test:unit -- <flag>`
+> anexava o argumento ao **fim** do comando, depois dos globs de arquivo, e o Node o ignorava em
+> silêncio — o comando saía com sucesso e dava a impressão de que o portão estava quebrado, quando o
+> quebrado era a instrução. Hoje a suíte roda por
+> [`packages/tooling/scripts/test-unit.mjs`](../../packages/tooling/scripts/test-unit.mjs), que
+> coloca os argumentos extras na posição certa.
 
 Toda exclusão da medição vive em `coverage-exclusions.json`, **com a razão de cada item** (FR-032).
 Baixar o limiar em vez de declarar a exclusão é violação do Princípio VI, não atalho — a exclusão

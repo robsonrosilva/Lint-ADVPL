@@ -372,19 +372,19 @@ o idioma do editor e ver a mensagem mudar mantendo identificador e posição.
       V passou a "Multilíngue por Construção" com os quatro idiomas do Protheus (D4); Princípio VI
       passou a "Fixture, Teste e Medição Antes da Regra", com teste não-opcional escrito e cobertura
       de 98% como portão (D5). Bump MINOR. Deixou de bloquear o merge
-- [ ] T081 [P] Corrigir a contradição do template: `.specify/templates/tasks-template.md` linha 12 e
+- [X] T081 [P] Corrigir a contradição do template: `.specify/templates/tasks-template.md` linha 12 e
       `.claude/skills/speckit-tasks/SKILL.md` linha 145 declaram testes opcionais contra o Princípio VI
-- [ ] T082 [P] Atualizar `specs/README.md` e `memoria/` com o que a implementação apurou — em especial
+- [X] T082 [P] Atualizar `specs/README.md` e `memoria/` com o que a implementação apurou — em especial
       os números medidos da linha de base
 
 ### Cobertura
 
-- [ ] T083 Criar `coverage-exclusions.json` versionado, com **a razão de cada exclusão** registrada.
+- [X] T083 Criar `coverage-exclusions.json` versionado, com **a razão de cada exclusão** registrada.
       Nasce vazio; item entra só quando um ramo for genuinamente inalcançável em teste (FR-032, SC-012)
-- [ ] T084 Levar a cobertura a **98% em linhas, funções e ramos** e conferir que o portão falha
+- [X] T084 Levar a cobertura a **98% em linhas, funções e ramos** e conferir que o portão falha
       abaixo disso — derrubar o limiar num teste de mesa e confirmar que o processo sai com erro
       (FR-030, SC-011)
-- [ ] T085 Registrar em `coverage-exclusions.json` o que a camada de integração com o editor não
+- [X] T085 Registrar em `coverage-exclusions.json` o que a camada de integração com o editor não
       alcançar, **com razão por item**. Baixar o limiar em vez de declarar a exclusão é violação do
       Princípio VI, não atalho
 

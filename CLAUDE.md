@@ -9,10 +9,14 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 | [`memoria/estado-atual.md`](memoria/estado-atual.md) | onde o projeto parou, o que falta, o que espera decisão do dono |
 | [`memoria/armadilhas-do-ambiente.md`](memoria/armadilhas-do-ambiente.md) | erros de ferramenta que **já** custaram tempo aqui — leia antes de rodar qualquer comando |
 
-**Resumo de 2026-08-19**: branch `001-esqueleto-lsp-harness`, MVP da spec 001 pronto e verde
-(`T001`–`T046` de 86). 139 testes unitários e 6 de integração passando; cobertura 100/98,47/100.
-`npm run verify` **falha** de propósito — encadeia três verificações que ainda não foram escritas
-(`T067`, `T073`, `T075`). Nada mergeado.
+**Resumo de 2026-08-19**: a **spec 001 está implementada** — `T001`–`T085` de 86, na branch
+`001-esqueleto-lsp-harness`. Falta só a `T086`, a `/speckit-converge`, obrigatória antes do merge.
+`npm run verify` passa **inteiro**: 347 testes unitários com cobertura 99,81/98,80/99,47, mais 10 de
+integração em VS Code real e 7 de protocolo nos quatro idiomas. A linha de base foi medida sobre o
+corpus real e está versionada em `specs/001-esqueleto-lsp-harness/baseline/`.
+
+A **spec 002 já está escrita** (branch `002-correcao-e-portabilidade-include`), sem esclarecimento
+pendente, parada até a 001 fechar. Nada mergeado.
 
 ## Visão Geral
 
@@ -51,9 +55,10 @@ README.md          ⚠️ ainda descreve a lib LEGADA — reescrever é a tarefa
 SONNAR-RULES.md    detalhamento das regras TOTVS Code Analyzer (apoio, gerado por IA)
 ```
 
-**Comandos**: `npm run typecheck` · `lint` · `test:unit` (com o limiar de cobertura) ·
-`test:integration` (reconstrói antes) · `build` · `verify` (portão completo — hoje falha nas três
-verificações que faltam) · `baseline` (ainda não existe). **F5** abre a instância de desenvolvimento.
+**Comandos**: `npm run typecheck` · `lint` · `test:unit` (com o limiar de cobertura, lendo as
+exclusões de `coverage-exclusions.json`) · `test:integration` (reconstrói antes) · `build` ·
+`verify` (portão completo — **verde**) · `baseline` (mede o corpus) · `fixture:large` (gera o fonte
+de 24.636 linhas). **F5** abre a instância de desenvolvimento, com `--disable-extensions`.
 
 ## O legado — como consultar sem copiar
 
@@ -166,7 +171,7 @@ português).
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
-| **Ordem do trabalho**          | fechar a 001 (`T047`–`T086`) ou abrir a 002 antes? Escopo da 002 já decidido em [memoria/spec-002-escopo-decidido.md](memoria/spec-002-escopo-decidido.md) |
+| ~~**Ordem do trabalho**~~      | ✅ resolvido — especificar a 002 primeiro (feito), implementar a 001 primeiro (feito até `T085`). A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
 | CI                             | não decidida — verificação local vale até lá                                |
 | `tasks-template` teste opcional| a v2.2.0 subordinou o template ao Princípio VI; falta corrigir os 2 arquivos (T081) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |

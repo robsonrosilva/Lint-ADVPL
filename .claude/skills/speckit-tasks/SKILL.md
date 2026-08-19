@@ -81,7 +81,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
+   - Each phase includes: story goal, independent test criteria, tests (ALWAYS — see Principle VI), implementation tasks
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
@@ -142,7 +142,14 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**Tests are MANDATORY in this repository**: the constitution's Principle VI — NON-NEGOTIABLE —
+requires every implementation task to be preceded by its own test task, written to fail first, and
+explicitly subordinates any template, skill or tool that says otherwise. Always generate the test
+task before the implementation task it covers. A tasks artifact with an implementation orphaned from
+its test is an artifact **to redo**, not to execute.
+
+> This replaces the upstream spec-kit text ("Tests are OPTIONAL — only generate test tasks if
+> explicitly requested"). See `.specify/memory/constitution.md`, Principle VI.
 
 ### Checklist Format (REQUIRED)
 
@@ -206,7 +213,7 @@ Every task MUST strictly follow this format:
 - **Phase 1**: Setup (project initialization)
 - **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
 - **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
+  - Within each story: Tests (ALWAYS, written to fail first) → Models → Services → Endpoints → Integration
   - Each phase should be a complete, independently testable increment
 - **Final Phase**: Polish & Cross-Cutting Concerns
 

@@ -15,10 +15,12 @@ Branch **`001-esqueleto-lsp-harness`**, cinco commits à frente da `renew`. Nada
 O **MVP da spec 001 está pronto e verde**: `T001`–`T046` de 86. Existe uma extensão de lint ADVPL
 funcionando, com uma regra real do catálogo, sobre a arquitetura que a constituição exige.
 
-**A US2 também está pronta** — `T047`–`T062`, commit `cea5fe4`. O harness de medição existe e a
-**linha de base foi medida sobre o corpus real**: 35.659 fontes inventariados, 1.012 medidos em
-amostra estratificada. Relatório em `specs/001-esqueleto-lsp-harness/baseline/2026-08-19.{json,md}`,
-confronto com o orçamento do Princípio I em `CONFRONTO-2026-08-19.md`. Falta `T063` em diante.
+**A spec 001 está implementada**: `T001`–`T085` de 86. Falta só a `T086`, a `/speckit-converge`,
+que é obrigatória antes do merge.
+
+`npm run verify` passa **inteiro** — foi a primeira vez em 2026-08-19. As três verificações que
+faltavam (`check:nls`, `check:corpus`, `check:docs`) existem e reprovam de verdade: cada uma foi
+testada com uma quebra proposital.
 
 Última execução, nesta máquina, sem cano na saída:
 
@@ -47,15 +49,15 @@ outro processo, então depurá-lo exige anexar.
 
 ## O que falta na spec 001
 
-| Bloco | Tarefas | O que é |
-| ----- | ------- | ------- |
-| ~~US2~~ | ~~`T047`–`T062`~~ | ✅ feito em 2026-08-19 — harness, amostragem, linha de base medida |
-| US3 | `T063`–`T072` | configuração por regra, troca de idioma, verificação de NLS |
-| Portões | `T073`–`T079` | vazamento de corpus, sincronismo de docs, README, quickstart |
-| Cobertura | `T083`–`T085` | lista de exclusões e o 98% aferido no fim |
-| Fechamento | `T081`, `T082`, `T086` | corrigir o template, atualizar memória, `/speckit-converge` |
+| Bloco | Tarefas | Estado |
+| ----- | ------- | ------ |
+| ~~US2 — harness e linha de base~~ | ~~`T047`–`T062`~~ | ✅ |
+| ~~US3 — configuração e idiomas~~ | ~~`T063`–`T072`~~ | ✅ |
+| ~~Portões, README e quickstart~~ | ~~`T073`–`T079`~~ | ✅ |
+| ~~Template, memória e cobertura~~ | ~~`T081`–`T085`~~ | ✅ |
+| **`/speckit-converge`** | `T086` | **é o que falta** |
 
-`T080` (emenda da constituição) já está **feita**.
+`T080` (emenda da constituição) já estava feita.
 
 ## O que está aberto esperando decisão sua
 

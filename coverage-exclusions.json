@@ -6,10 +6,12 @@
     "A exclusão declarada deixa rastro auditável do que não está coberto e por quê;",
     "o limiar menor apagaria essa informação.",
     "",
-    "PENDÊNCIA CONHECIDA (T083): o script test:unit repete esta lista à mão, em",
-    "--test-coverage-exclude. Enquanto as duas não forem a mesma fonte, elas podem",
-    "divergir em silêncio — e já divergiram: em 2026-08-19, as três exclusões da",
-    "camada de extensão estavam no script e NÃO estavam declaradas aqui."
+    "Este arquivo é a ÚNICA fonte das exclusões: packages/tooling/scripts/test-unit.mjs",
+    "o lê e monta os argumentos da medição. Antes disso o script repetia a lista à mão,",
+    "e as duas divergiram em silêncio — em 2026-08-19, três exclusões da camada de",
+    "extensão estavam no script e não estavam declaradas aqui, sem razão registrada.",
+    "",
+    "O caminho declarado é o do FONTE (.ts); o runner traduz para o compilado."
   ],
   "exclusions": [
     {
