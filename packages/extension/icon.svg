@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="170 40 220 220" width="256" height="256" role="img">
+  <title>ADVPL Lint</title>
+  <desc>Quadrado escuro arredondado, duas chaves douradas envolvendo tres barras escalonadas e um sinal de confirmacao verde.</desc>
+  <rect x="170" y="40" width="220" height="220" rx="48" fill="#16202B"/>
+  <path d="M 251.7 90.3 C 232.8 90.3 232.8 106 232.8 128 C 232.8 143.7 220.3 150 214 150 C 220.3 150 232.8 156.3 232.8 172 C 232.8 194 232.8 209.7 251.7 209.7" fill="none" stroke="#EF9F27" stroke-width="14" stroke-linecap="round"/>
+  <path d="M 308.3 90.3 C 327.2 90.3 327.2 106 327.2 128 C 327.2 143.7 339.7 150 346 150 C 339.7 150 327.2 156.3 327.2 172 C 327.2 194 327.2 209.7 308.3 209.7" fill="none" stroke="#EF9F27" stroke-width="14" stroke-linecap="round"/>
+  <rect x="248" y="112" width="64" height="12" rx="6" fill="#5DCAA5"/>
+  <rect x="260" y="134" width="52" height="12" rx="6" fill="#85B7EB"/>
+  <rect x="272" y="156" width="40" height="12" rx="6" fill="#85B7EB"/>
+  <path d="M 260 187 L 268 195 L 286 176" fill="none" stroke="#97C459" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
