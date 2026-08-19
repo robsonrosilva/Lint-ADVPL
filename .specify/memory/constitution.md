@@ -1,6 +1,26 @@
 <!--
 Sync Impact Report
 ==================
+Versão: 2.2.0 → 2.2.1
+Tipo de bump: PATCH — esclarecimento de redação. Nenhum princípio novo, nenhum princípio
+alterado, nenhuma mudança de escopo.
+
+Motivo: o dono perguntou em 2026-08-19 se os arquivos da própria extensão precisam ser UTF-8, e a
+constituição não respondia. A seção "Arquitetura e Restrições Técnicas" dizia apenas "fontes são
+lidas e gravadas em CP1252", sem qualificar A QUE arquivos isso se aplica. Uma leitura desatenta
+aplicaria CP1252 ao repositório inteiro — e gravar `package.nls.ru.json` em CP1252 destruiria o
+texto em russo, cujo alfabeto não existe naquele code page. A pergunta ser possível já era o
+defeito.
+
+Seção alterada: Arquitetura e Restrições Técnicas — o item **Encoding** foi reescrito para separar
+explicitamente os DOIS encodings do projeto (CP1252 para o que é analisado, UTF-8 sem BOM para o
+que é do repositório) e para registrar que configuração de workspace do VS Code vence o
+`configurationDefaults` do manifesto.
+
+Nenhuma dívida `TODO` mudou de estado.
+
+--- Emenda anterior ---
+
 Versão: 2.1.1 → 2.2.0
 Tipo de bump: MINOR — duas ampliações materiais de princípio, nenhuma remoção e nenhuma
 redefinição incompatível. Decisões do dono em 2026-08-19, durante a spec 001.
@@ -294,12 +314,31 @@ ninguém saber qual regra o fez.
 - **Sem dependência do legado**: `advpl-lint` NEVER entra como dependência. `analise-advpl/` é
   consultado por leitura humana; o que for reaproveitado é **dado de domínio** (lista de funções
   restritas, catálogo de includes, mensagens), nunca código.
-- **Encoding**: fontes são lidas e gravadas em **CP1252 (Windows-1252)** — é o único code page
-  que os compiladores Protheus aceitam (TDN, citada pela skill `utf8-to-cp1252-conversion`).
-  `latin1` do Node é ISO-8859-1 e **não** é equivalente: os dois divergem em 0x80–0x9F, faixa
-  das aspas tipográficas, travessão e euro. O legado lia como `latin1`; isso é defeito a não
-  repetir. Node não traz CP1252 nativo, então a decodificação exige dependência dedicada —
-  justificada por esta restrição.
+- **Encoding — são DOIS, e eles nunca se confundem.**
+
+  **1. Fontes ADVPL/TLPP analisados** (`prw`, `prx`, `prg`, `apw`, `apl`, `tlpp`, `ch`): lidos e
+  gravados em **CP1252 (Windows-1252)** — é o único code page que os compiladores Protheus
+  aceitam (TDN, citada pela skill `utf8-to-cp1252-conversion`). `latin1` do Node é ISO-8859-1 e
+  **não** é equivalente: os dois divergem em 0x80–0x9F, faixa das aspas tipográficas, travessão e
+  euro. O legado lia como `latin1`; isso é defeito a não repetir.
+
+  **2. Arquivos do próprio repositório** — código TypeScript, JSON, Markdown e, em especial, os
+  arquivos de tradução `package.nls.*.json` e `l10n/bundle.l10n.*.json`: **UTF-8, sem marca de
+  ordem de byte (BOM)**. É requisito da plataforma, não preferência: JSON de interchange é UTF-8
+  por especificação, o VS Code lê os arquivos de NLS e de l10n como UTF-8, e o compilador
+  TypeScript assume UTF-8. Gravar um arquivo de tradução em CP1252 **destruiria o russo**, cujo
+  alfabeto não existe naquele code page. BOM é proibido porque quebra a análise de JSON em alguns
+  leitores e polui a comparação em revisão.
+
+  ⚠️ **Consequência prática, medida em 2026-08-19**: configuração de workspace do VS Code **vence**
+  o `configurationDefaults` que a extensão declara no manifesto. Um `"files.encoding": "utf8"` no
+  `.vscode/settings.json` do repositório sobrepõe o padrão CP1252 que a extensão empurra, e faz a
+  própria instância de desenvolvimento ler errado as fixtures. A correção é sobrepor **por
+  linguagem** no mesmo arquivo — `"[advpl]": { "files.encoding": "windows1252" }` e o equivalente
+  para `tlpp` — e essa configuração NEVER deve ser removida.
+
+  Verificação registrada em 2026-08-19: os 109 arquivos versionados de código, configuração e
+  documentação do repositório foram conferidos — zero com BOM, zero inválidos como UTF-8.
 - **Extensões reconhecidas**: `prw`, `prx`, `prg`, `apw`, `apl`, `tlpp`. Ampliar exige regra e
   fixture.
 - **Dependências**: conjunto mínimo. Toda dependência de runtime nova MUST ser justificada no PR
@@ -427,4 +466,4 @@ Report são dívidas conhecidas: NEVER servem de precedente para novas violaçõ
 comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
 `memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.2.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.2.1 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19

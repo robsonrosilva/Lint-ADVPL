@@ -10,7 +10,7 @@ Orientações ao Claude Code (claude.ai/code) ao trabalhar neste repositório.
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.2.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.2.1**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
