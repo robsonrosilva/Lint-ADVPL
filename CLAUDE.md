@@ -198,7 +198,20 @@ Proveniência e o que **não** foi trazido: [PROVENIENCIA.md](referencias/totvs/
 | `skill-code-review.md`, `skill-sql-code-review.md` | como a TOTVS revisa ADVPL/TLPP e SQL         |
 | `advpl-tlpp-skills-reference.md`             | índice do pacote — o que existe e não foi trazido |
 
-Fora do repositório: `https://code.visualstudio.com/api` (providers, LSP, ativação) e
+**Documentação oficial da linguagem, na TDN** (informada pelo dono em 2026-08-19). Na hierarquia da
+constituição, a TDN vem **logo abaixo do catálogo oficial** e **acima** das skills e dos documentos
+gerados por IA deste repositório:
+
+| Fonte | Para quê |
+| ----- | -------- |
+| `https://tdn.totvs.com/display/tec/AdvPL` | a linguagem ADVPL — sintaxe, funções, comportamento do pré-processador |
+| `https://tdn.totvs.com/display/tec/TLPP` | TLPP — orientação a objetos, anotações, o que difere do ADVPL |
+
+Use-as para **decidir comportamento de regra** quando o catálogo não responde: o catálogo diz o que
+apontar, a TDN diz como a linguagem funciona. Toda consulta que sustentar decisão de regra entra na
+spec **com a data**, como manda a constituição — página de wiki muda sem aviso.
+
+Fora do repositório, ainda: `https://code.visualstudio.com/api` (providers, LSP, ativação) e
 `github.com/totvs/engpro-advpl-tlpp-skills` (origem das cópias, caminho de atualização).
 
 ⚠️ **Não edite os arquivos de `referencias/totvs/`.** São cópia fiel; correção vive em documento
