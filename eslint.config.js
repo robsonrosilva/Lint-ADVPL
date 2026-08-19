@@ -6,7 +6,18 @@ const tseslint = require('typescript-eslint')
 
 module.exports = tseslint.config(
   {
-    ignores: ['**/out/**', '**/node_modules/**', '**/*.d.ts', 'analise-advpl/**'],
+    ignores: [
+      '**/out/**',
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/*.d.ts',
+      'analise-advpl/**',
+      // Instalação do VS Code que o teste de integração baixa. Sem esta linha
+      // o lint varre o editor inteiro e devolve 14 MB de erro sobre código que
+      // não é nosso — e um portão que grita sobre o que não interessa é um
+      // portão que se aprende a ignorar.
+      '.vscode-test/**',
+    ],
   },
   ...tseslint.configs.recommended,
   {

@@ -1,3 +1,5 @@
+import { DiagnosticSeverity } from 'vscode-languageserver-types'
+
 import type { RuleDefinition } from './registry'
 import type { RuleContext } from './context'
 import { rangeAt } from '../document/analyzed-document'
@@ -40,6 +42,25 @@ export const ca3001: RuleDefinition = {
   configKey: 'advplLint.rules.CA3001',
   messageKey: 'rule.CA3001.message',
   projectRationale: null,
+
+  // A tabela mapeia MINOR para Information, e continua certa como TRADUÇÃO da
+  // severidade de catálogo. Esta regra sobrepõe por VOLUME, que é outro eixo:
+  //
+  // Medido em 2026-08-19 sobre 6.000 fontes reais do corpus: das 15.306
+  // diretivas #include encontradas, 11.006 estão em caixa alta — 71,9%. Como
+  // Information, uma única regra MINOR de estilo dominaria o painel de
+  // problemas de qualquer projeto Protheus real, e o Princípio III é explícito
+  // em que regra ruidosa treina o usuário a ignorar o painel inteiro.
+  //
+  // Como Hint, a violação continua marcada no código e a ação de correção
+  // continua oferecida — só não entulha a lista.
+  severityOverride: {
+    severity: DiagnosticSeverity.Hint,
+    reason:
+      '71,9% das diretivas #include do corpus (11.006 de 15.306, medido em 2026-08-19 sobre ' +
+      '6.000 fontes) estão em caixa alta. Como Information, esta regra sozinha dominaria o ' +
+      'painel de problemas — o ruído que o Princípio III proíbe.',
+  },
 
   run(context: RuleContext): void {
     const { document, scan, token, report, startLine, endLine } = context

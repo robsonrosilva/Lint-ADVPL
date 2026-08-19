@@ -441,10 +441,20 @@ Primeira e única entrada da tabela de mapeamento nesta spec.
 `Warning` inflaria a contagem, e `#INCLUDE` em caixa alta é pervasivo em fonte legado — treinar o
 usuário a ignorar o painel é exatamente o que o Princípio III proíbe. `Hint` esconderia demais.
 
-*Ressalva registrada*: se a linha de base da US2 apurar volume de disparo alto o bastante para
-inundar o painel, a entrada `MINOR → Information` é revista **com o número na mão** — e a revisão
-entra como emenda da tabela, não como ajuste silencioso. O critério de decisão é o dado do
-FR-022, não a impressão.
+*Ressalva registrada*: se o volume de disparo ameaçar inundar o painel, a decisão é revista **com o
+número na mão**, nunca por impressão.
+
+> ⚠️ **A ressalva disparou, em 2026-08-19.** Medição sobre 6.000 fontes do corpus: das 15.306
+> diretivas `#include`, **11.006 estão em caixa alta — 71,9%**. Como `Information`, uma regra `MINOR`
+> de estilo dominaria o painel de qualquer projeto Protheus real.
+>
+> **Mas a tabela não mudou**, e não deveria mudar: ela mapeia severidade de CATÁLOGO, e rebaixar
+> `MINOR` rebaixaria junto toda regra `MINOR` futura — inclusive `CA1004`, que merece mais
+> visibilidade. O que exige `Hint` aqui é o **volume**, propriedade da regra e não da severidade.
+>
+> **Desenho adotado**: `CA3001` declara `severityOverride` para `Hint` com **razão obrigatória**
+> registrada no código; o registro rejeita sobreposição sem justificativa. A tabela segue
+> `MINOR → Information` para todas as demais.
 
 ### D4 — Idiomas: os **quatro do Protheus**, não dois
 

@@ -1,6 +1,6 @@
 ---
 name: severidade-minor-information
-description: Primeira entrada da tabela de mapeamento de severidade — MINOR do catálogo TOTVS é exibido como Information no editor
+description: A tabela mapeia MINOR para Information; CA3001 sobrepõe para Hint por volume medido, com razão obrigatória
 metadata:
   type: project
 ---
@@ -16,10 +16,27 @@ avisos. `Warning` inflaria a contagem — e `#INCLUDE` em caixa alta é pervasiv
 treinaria o usuário a ignorar o painel inteiro, exatamente o que o Princípio III proíbe. `Hint`
 esconderia demais.
 
-**How to apply:** severidade **nunca** é copiada literalmente do catálogo; sai sempre da tabela. Se a
-linha de base apurar volume de disparo alto o bastante para inundar o painel, a entrada é revista
-**com o número medido na mão**, como emenda explícita da tabela — nunca como ajuste silencioso. O
+**How to apply:** severidade **nunca** é copiada literalmente do catálogo; sai sempre da tabela. O
 caso difícil que ainda espera decisão é `CA2050`/`CA2051`/`CA2052`: são `INFO` no catálogo e o
 próprio catálogo declara que representam alto impacto.
+
+## Emenda de 2026-08-19: a tabela não bastava
+
+A ressalva desta decisão dizia que a entrada seria revista "com o número medido na mão" se o volume
+ameaçasse inundar o painel. O número chegou: **71,9% das diretivas `#include` do corpus estão em
+caixa alta** (ver [[medicao-includes-corpus]]).
+
+Mas mudar a tabela seria errado. Ela mapeia **severidade de catálogo**, e rebaixar `MINOR` para
+`Hint` rebaixaria junto toda regra `MINOR` futura — inclusive `CA1004` (proibição de `ConOut`), que
+merece bem mais visibilidade. O que exige `Hint` em `CA3001` não é a severidade: é o **volume**, e
+volume é propriedade da REGRA, não da severidade de catálogo.
+
+**Desenho adotado:** a tabela continua `MINOR → Information`. Regras `totvs` podem declarar
+`severityOverride`, com **razão obrigatória e não vazia** — o registro rejeita sobreposição sem
+justificativa, porque sobreposição silenciosa é a cópia literal disfarçada que o Princípio III veda.
+`CA3001` sobrepõe para `Hint` com a medição citada no próprio código.
+
+Regra de origem `projeto` **não** sobrepõe: ela não tem tabela de onde sair, declara a severidade
+direto.
 
 Ver [[identificador-de-regra]].

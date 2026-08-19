@@ -15,14 +15,23 @@ interface RuleDefinition {
   readonly configKey: string          // 'advplLint.rules.CA3001'
   readonly messageKey: string         // chave de tradução
   readonly projectRationale: string | null
+  readonly severityOverride?: { severity: DiagnosticSeverity; reason: string }
   run(ctx: RuleContext): void
 }
 ```
 
 `defaultSeverity` **não** é declarado: ele é derivado de `catalogSeverity` pela tabela versionada, no
-momento do registro. Registrar regra cuja severidade de catálogo não tem entrada na tabela é **erro
-de registro**, não valor padrão silencioso — é assim que a próxima spec fica impedida de "resolver" o
+momento do registro.
+
+Registrar regra cuja severidade de catálogo não tem entrada na tabela é **erro de registro**, não
+valor padrão silencioso — é assim que a próxima spec fica impedida de "resolver" o
 `TODO(SEVERITY_MAP)` por omissão.
+
+`severityOverride` é a **única** saída da tabela, e ela **exige razão escrita**. Existe porque a
+tabela mapeia severidade de CATÁLOGO e há um segundo eixo que ela não enxerga: o **volume**. Duas
+regras `MINOR` podem disparar uma vez por projeto e setenta vezes por arquivo, e a segunda inunda o
+painel sem que a primeira mereça ser rebaixada junto. Sobreposição sem justificativa é a cópia
+literal disfarçada que o Princípio III veda — por isso o registro a rejeita.
 
 ## Validação no registro
 
@@ -34,6 +43,7 @@ de registro**, não valor padrão silencioso — é assim que a próxima spec fi
 | 4 | `messageKey` existe nos quatro idiomas |
 | 5 | `docs/regras/<id>.md` existe |
 | 6 | `catalogSeverity` tem entrada na tabela de severidade |
+| 7 | `severityOverride`, se presente, tem `reason` NÃO VAZIA — e só existe em regra `totvs` |
 
 ## Execução
 

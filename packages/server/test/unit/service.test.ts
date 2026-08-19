@@ -42,7 +42,7 @@ describe('Serviço — publicação de diagnóstico', () => {
     assertDiagnostics(lastOf(published), [
       {
         code: 'CA3001',
-        severity: DiagnosticSeverity.Information,
+        severity: DiagnosticSeverity.Hint,
         range: { start: { line: 1, character: 0 }, end: { line: 1, character: 8 } },
       },
     ])

@@ -40,6 +40,22 @@ export interface RuleDefinition {
    * mapear. Em regra `totvs` NÃO é declarada: sai da tabela versionada.
    */
   readonly defaultSeverity?: DiagnosticSeverity
+  /**
+   * Sobreposição da tabela, para regra `totvs`, com a razão OBRIGATÓRIA.
+   *
+   * Existe porque a tabela mapeia severidade de CATÁLOGO, e há um segundo eixo
+   * que ela não enxerga: o VOLUME. Duas regras `MINOR` podem disparar uma vez
+   * por projeto e setenta vezes por arquivo, e a segunda inunda o painel — o
+   * que o Princípio III proíbe — sem que a primeira mereça ser rebaixada junto.
+   *
+   * A razão é obrigatória e não vazia porque sobreposição sem justificativa é
+   * exatamente a "cópia literal disfarçada" que o Princípio III veda. Quem
+   * sobrepõe precisa dizer, por escrito e com número, por quê.
+   */
+  readonly severityOverride?: {
+    readonly severity: DiagnosticSeverity
+    readonly reason: string
+  }
   run(context: RuleContext): void
 }
 
@@ -92,13 +108,21 @@ export class RuleRegistry {
       if (projectRationale !== null) {
         throw new RuleDefinitionError(id, 'regra de catálogo não leva justificativa de regra própria')
       }
-      try {
-        // A severidade exibida NUNCA é cópia da severidade do catálogo — ela
-        // sai da tabela versionada. Severidade não mapeada reprova AQUI.
-        defaultSeverity = resolveSeverity(catalogSeverity)
-      } catch (error) {
-        if (error instanceof UnmappedSeverityError) throw new RuleDefinitionError(id, error.message)
-        throw error
+      const override = definition.severityOverride
+      if (override !== undefined) {
+        if (!override.reason.trim()) {
+          throw new RuleDefinitionError(id, 'sobrepor a tabela de severidade exige razão registrada')
+        }
+        defaultSeverity = override.severity
+      } else {
+        try {
+          // A severidade exibida NUNCA é cópia da severidade do catálogo — ela
+          // sai da tabela versionada. Severidade não mapeada reprova AQUI.
+          defaultSeverity = resolveSeverity(catalogSeverity)
+        } catch (error) {
+          if (error instanceof UnmappedSeverityError) throw new RuleDefinitionError(id, error.message)
+          throw error
+        }
       }
     } else {
       if (!PROJECT_ID_PATTERN.test(id)) {
@@ -111,6 +135,9 @@ export class RuleRegistry {
           id,
           'regra própria precisa documentar o que pega que o padrão não pega (Princípio III)',
         )
+      }
+      if (definition.severityOverride !== undefined) {
+        throw new RuleDefinitionError(id, 'regra própria não sobrepõe tabela — ela declara a severidade direto')
       }
       if (definition.defaultSeverity === undefined) {
         throw new RuleDefinitionError(id, 'regra própria precisa declarar a severidade exibida')

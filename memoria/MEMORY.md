@@ -7,7 +7,8 @@
 - [Orçamento de desempenho subdimensionado](orcamento-desempenho-subdimensionado.md) — o "1.000 linhas" do Princípio I fica abaixo do p95 real
 - [Identificador de regra](identificador-de-regra.md) — id puro do catálogo (`CA3001`); regras próprias na faixa `PJ####`
 - [Identidade da extensão](identidade-da-extensao.md) — publica independente da atual; assumir a antiga é spec futura
-- [Severidade MINOR → Information](severidade-minor-information.md) — primeira e única entrada da tabela de mapeamento
-- [Idiomas do Protheus](idiomas-do-protheus.md) — quatro idiomas (pt-br, es, en, ru); excede o Princípio V e exige emenda MINOR
+- [Severidade MINOR → Information](severidade-minor-information.md) — a tabela mapeia por catálogo; volume se resolve por sobreposição com razão
+- [Medição de includes no corpus](medicao-includes-corpus.md) — 71,9% das diretivas em caixa alta; baixar a caixa do nome quebraria 706 referências
+- [Idiomas do Protheus](idiomas-do-protheus.md) — quatro idiomas (pt-br, es, en, ru); Princípio V emendado na v2.2.0
 - [Convenção de idioma no código](convencao-de-idioma-no-codigo.md) — inglês no que a máquina lê, pt-BR no que a pessoa lê (comentários inclusive)
 - [Cobertura mínima de 98%](cobertura-minima-98.md) — teste nunca é opcional; limiar no runner, exclusão só com razão registrada

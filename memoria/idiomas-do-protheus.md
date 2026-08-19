@@ -15,10 +15,10 @@ como idioma base.
 em pt-BR e inglês deixaria de fora as bases hispano-americana e russa, que usam o mesmo catálogo de
 regras da TOTVS.
 
-**Pendência constitucional — ainda aberta em 2026-08-19:** o Princípio V da constituição v2.1.1 diz
-literalmente que toda mensagem "MUST existir em **pt-BR e en**". Quatro idiomas é ampliação material
-de escopo, logo bump **MINOR**, e precisa ser feita por `/speckit-constitution` **antes do merge da
-spec 001**. Enquanto não for, a spec está deliberadamente à frente da constituição.
+**Emenda FEITA em 2026-08-19.** A v2.1.1 dizia literalmente que toda mensagem "MUST existir em
+pt-BR e en". Quatro idiomas era ampliação material de escopo, então a constituição foi para a
+**v2.2.0** e o Princípio V passou de "Bilíngue por Construção" a **"Multilíngue por Construção"**.
+A spec deixou de estar à frente da constituição.
 
 **How to apply:** o conjunto de idiomas vive em **um único ponto de declaração** (`tooling/locales.ts`,
 FR-015a) — nenhum outro lugar enumera idioma. São oito arquivos de tradução: quatro do NLS do

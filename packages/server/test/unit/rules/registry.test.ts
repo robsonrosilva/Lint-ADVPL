@@ -195,3 +195,59 @@ describe('Registro de regras — rejeições de forma', () => {
     assert.throws(() => registry.register(totvsRule({ group: null })), /CA3001/)
   })
 })
+
+describe('Registro de regras — sobreposição de severidade', () => {
+  it('aceita sobreposição com razão registrada e ela vence a tabela', () => {
+    // A tabela mapeia severidade de CATÁLOGO. Volume é outro eixo, que ela não
+    // enxerga: duas regras MINOR podem disparar uma vez por projeto e setenta
+    // vezes por arquivo.
+    const registry = new RuleRegistry()
+    registry.register(
+      totvsRule({
+        severityOverride: { severity: DiagnosticSeverity.Hint, reason: '71,9% das linhas medidas' },
+      }),
+    )
+    assert.equal(registry.get('CA3001')?.defaultSeverity, DiagnosticSeverity.Hint)
+  })
+
+  it('REJEITA sobreposição sem razão', () => {
+    // Sobreposição sem justificativa é a "cópia literal disfarçada" que o
+    // Princípio III veda. Quem sobrepõe diz por quê, por escrito.
+    const registry = new RuleRegistry()
+    assert.throws(
+      () => registry.register(totvsRule({ severityOverride: { severity: DiagnosticSeverity.Hint, reason: '' } })),
+      RuleDefinitionError,
+    )
+    assert.throws(
+      () => registry.register(totvsRule({ severityOverride: { severity: DiagnosticSeverity.Hint, reason: '   ' } })),
+      RuleDefinitionError,
+    )
+  })
+
+  it('sem sobreposição, a tabela continua mandando', () => {
+    const registry = new RuleRegistry()
+    registry.register(totvsRule())
+    assert.equal(registry.get('CA3001')?.defaultSeverity, DiagnosticSeverity.Information)
+  })
+
+  it('regra própria não sobrepõe tabela — ela não tem tabela de onde sair', () => {
+    const registry = new RuleRegistry()
+    assert.throws(
+      () =>
+        registry.register(
+          projectRule({ severityOverride: { severity: DiagnosticSeverity.Hint, reason: 'qualquer' } }),
+        ),
+      RuleDefinitionError,
+    )
+  })
+})
+
+describe('CA3001 — a sobreposição real', () => {
+  it('nasce como Hint, com a razão medida registrada no código', async () => {
+    const { ca3001 } = await import('../../../src/rules/ca3001')
+    const registry = new RuleRegistry()
+    registry.register(ca3001)
+    assert.equal(registry.get('CA3001')?.defaultSeverity, DiagnosticSeverity.Hint)
+    assert.match(ca3001.severityOverride?.reason ?? '', /71,9%/)
+  })
+})

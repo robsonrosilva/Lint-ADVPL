@@ -69,7 +69,7 @@ suite('Diagnóstico no painel de problemas', () => {
     const ca3001 = diagnostics.find((d) => codeValueOf(d) === 'CA3001')
 
     assert.ok(ca3001, `nenhum CA3001 veio; vieram: ${diagnostics.map(codeValueOf).join(', ')}`)
-    assert.equal(ca3001.severity, vscode.DiagnosticSeverity.Information)
+    assert.equal(ca3001.severity, vscode.DiagnosticSeverity.Hint)
     assert.equal(ca3001.source, 'advpl-lint')
     assert.equal(ca3001.range.start.line, 2)
     assert.equal(ca3001.range.start.character, 0)
