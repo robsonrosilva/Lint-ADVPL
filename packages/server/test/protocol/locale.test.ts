@@ -1,4 +1,4 @@
-import { describe, it, after } from 'node:test'
+import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { fork, type ChildProcess } from 'node:child_process'
 import { join } from 'node:path'
@@ -93,36 +93,43 @@ function startServer(locale: string): StartedServer {
   }
 }
 
-const rodando: StartedServer[] = []
-
-function start(locale: string): StartedServer {
+/**
+ * Sobe um servidor, colhe os diagnósticos e o DERRUBA em seguida.
+ *
+ * Derrubar já importa: a primeira versão guardava todos os servidores para
+ * matá-los no fim, e deixava uma dúzia de processos Node vivos ao mesmo tempo
+ * disputando CPU com o resto da suíte. O efeito colateral apareceu longe daqui
+ * — o teste de latência do laço de eventos, em `analysis/analyze.test.ts`,
+ * passou a acusar 290 ms de bloqueio, medindo a contenção da máquina e não o
+ * desenho do motor.
+ */
+async function diagnosticsFor(locale: string): Promise<Diagnostic[]> {
   const server = startServer(locale)
-  rodando.push(server)
-  return server
+  try {
+    return await server.diagnostics
+  } finally {
+    server.stop()
+  }
 }
-
-after(() => {
-  for (const server of rodando) server.stop()
-})
 
 describe('O idioma do editor chega à mensagem (US3, cenário 3)', () => {
   it('publica a mensagem em português quando o editor está em pt-br', async () => {
-    const [diagnostic] = await start('pt-br').diagnostics
+    const [diagnostic] = await diagnosticsFor('pt-br')
 
     assert.ok(diagnostic)
     assert.match(diagnostic.message, /caixa baixa/i)
   })
 
   it('publica em inglês quando o editor está em inglês', async () => {
-    const [diagnostic] = await start('en').diagnostics
+    const [diagnostic] = await diagnosticsFor('en')
 
     assert.ok(diagnostic)
     assert.match(diagnostic.message, /lowercase/i)
   })
 
   it('publica em espanhol e em russo', async () => {
-    const [es] = await start('es').diagnostics
-    const [ru] = await start('ru').diagnostics
+    const [es] = await diagnosticsFor('es')
+    const [ru] = await diagnosticsFor('ru')
 
     assert.ok(es)
     assert.ok(ru)
@@ -136,7 +143,7 @@ describe('O idioma do editor chega à mensagem (US3, cenário 3)', () => {
   it('os quatro idiomas produzem quatro mensagens distintas', async () => {
     const mensagens = new Set<string>()
     for (const locale of LOCALES) {
-      const [diagnostic] = await start(locale).diagnostics
+      const [diagnostic] = await diagnosticsFor(locale)
       assert.ok(diagnostic)
       mensagens.add(diagnostic.message)
     }
@@ -149,7 +156,7 @@ describe('O idioma nunca degrada para a chave crua (US3, cenário 4)', () => {
   it('idioma sem tradução nossa recai no inglês', async () => {
     // Alemão não está entre os quatro. O comportamento correto é o inglês —
     // NUNCA o identificador da chave.
-    const [diagnostic] = await start('de').diagnostics
+    const [diagnostic] = await diagnosticsFor('de')
 
     assert.ok(diagnostic)
     assert.match(diagnostic.message, /lowercase/i)
@@ -159,7 +166,7 @@ describe('O idioma nunca degrada para a chave crua (US3, cenário 4)', () => {
     // É o modo de falha que o Princípio V existe para impedir, e que já
     // aconteceu neste projeto: `rule.CA3001.message` no painel do usuário.
     for (const locale of ['pt-br', 'de', 'ru']) {
-      const [diagnostic] = await start(locale).diagnostics
+      const [diagnostic] = await diagnosticsFor(locale)
       assert.ok(diagnostic)
       assert.doesNotMatch(diagnostic.message, /^rule\..+\.message$/)
     }
@@ -171,8 +178,8 @@ describe('O idioma não mexe no que é contrato (US3, cenário 3)', () => {
     // A mensagem é traduzida e reescrita; ela NUNCA serve de contrato.
     // Supressão, filtro e configuração se dão por identificador — se ele
     // mudasse com o idioma, quebrariam ao trocar.
-    const [pt] = await start('pt-br').diagnostics
-    const [ru] = await start('ru').diagnostics
+    const [pt] = await diagnosticsFor('pt-br')
+    const [ru] = await diagnosticsFor('ru')
 
     assert.ok(pt)
     assert.ok(ru)
