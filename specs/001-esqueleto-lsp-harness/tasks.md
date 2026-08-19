@@ -499,15 +499,16 @@ princípios da constituição. O que **não** virou tarefa está registrado ao p
       A extensão passou a expor `activationMs` na sua API: sem esse número, um `await` indevido no
       caminho de ativação se esconderia dentro da variação do carregamento e nenhum portão pegaria.
 
-- [ ] T091 Resolver o SC-002 — digitar 10 s num fonte do p99 sem interrupção perceptível (partial).
+- [X] T091 ✅ **AUTOMATIZADO** (decisão do dono: automatizar, não assumir manual). O SC-002 — digitar
+      10 s num fonte do p99 sem interrupção perceptível.
       O automatizado hoje é a contagem determinística de cessões do laço de eventos, que é
       necessária e não suficiente: ela prova que o motor cede, não que a digitação não engasga. Ou
       se automatiza a medição de latência de tecla, ou se registra no quickstart que este critério é
       **permanentemente manual**, com a razão escrita. O que não vale é deixá-lo parecendo coberto.
-- [ ] T092 Acrescentar asserção agregada de que **todo** diagnóstico emitido carrega identificador,
+- [X] T092 Acrescentar asserção agregada de que **todo** diagnóstico emitido carrega identificador,
       severidade e posição inicial e final, por SC-004 (missing). Cada teste verifica o seu
       diagnóstico; nenhum varre o conjunto. É barato e fecha o critério.
-- [ ] T093 Escrever o teste que trava a segunda metade do FR-014a — nenhuma configuração da extensão
+- [X] T093 Escrever o teste que trava a segunda metade do FR-014a — nenhuma configuração da extensão
       atual é lida ou migrada (missing). Conferido à mão em 2026-08-19: nada de `advpl.*` é lido. Um
       teste impede que a conveniência de "aproveitar o que o usuário já configurou" entre sem
       decisão.

@@ -5,6 +5,9 @@ import * as vscode from 'vscode'
 const EXTENSION_ID = 'robsonrosilva.advpl-lint'
 const WORKSPACE = path.join(__dirname, '..', '..', '..', 'test', 'fixtures', 'workspace')
 
+/** Fim de linha das fixtures geradas — fonte Protheus é CRLF. */
+const CRLF = '\r\n'
+
 /**
  * O cliente LSP mapeia `code` + `codeDescription` do protocolo para um único
  * `code: { value, target }` do lado do VS Code. Estes dois ajudantes leem a
@@ -192,6 +195,104 @@ suite('Do arquivo aberto ao primeiro diagnóstico (SC-001)', () => {
   })
 })
 
+suite('Digitar num fonte grande não engasga (SC-002)', () => {
+  // O critério: "digitar continuamente por 10 segundos num fonte do percentil 99
+  // não produz nenhuma interrupção perceptível na digitação".
+  //
+  // A armadilha aqui já custou caro duas vezes neste projeto: teto absoluto de
+  // tempo mede a MÁQUINA, não o desenho, e reprova no dia em que o ambiente
+  // fica ocupado. A saída é a mesma que funcionou lá — comparar contra uma
+  // linha de base tirada no mesmo momento, na mesma máquina.
+  //
+  // Aqui a linha de base é a MESMA digitação com a regra DESLIGADA. Se a
+  // análise fosse a culpada por um engasgo, a latência subiria ao ligá-la. Se as
+  // duas sobem juntas, o custo é do editor e não nosso.
+  const GERADO = path.join(WORKSPACE, 'generated')
+  const P99 = path.join(GERADO, 'p99.prw')
+  const config = () => vscode.workspace.getConfiguration('advplLint')
+
+  /** Digita durante o tempo pedido e devolve a latência de cada tecla. */
+  async function digitarPor(editor: vscode.TextEditor, ms: number): Promise<number[]> {
+    const latencias: number[] = []
+    const fim = Date.now() + ms
+    while (Date.now() < fim) {
+      const started = performance.now()
+      await editor.edit((builder) => builder.insert(new vscode.Position(2, 0), 'x'))
+      latencias.push(performance.now() - started)
+      // ~20 teclas por segundo: digitação rápida de verdade.
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    }
+    return latencias
+  }
+
+  function mediana(valores: readonly number[]): number {
+    const ordenado = [...valores].sort((a, b) => a - b)
+    const meio = ordenado.length >> 1
+    return ordenado.length % 2 === 1
+      ? ordenado[meio]!
+      : (ordenado[meio - 1]! + ordenado[meio]!) / 2
+  }
+
+  suiteSetup(async () => {
+    const fs = await import('node:fs/promises')
+    await fs.mkdir(GERADO, { recursive: true })
+    // 10.155 linhas: o p99 medido do corpus.
+    const linhas = [
+      '// FIXTURE GERADA - advpl-lint - NAO e copia de fonte padrao do Protheus.',
+      '// Proposito: percentil 99 do corpus (10.155 linhas) para medir o SC-002',
+      '#INCLUDE "TOTVS.CH"',
+      ...Array.from({ length: 10_151 }, (_, i) =>
+        i % 50 === 0 ? '#INCLUDE "OUTRO.CH"' : `Local x${i} := "valor ${i}"  // enchimento`,
+      ),
+      'Return',
+    ]
+    await fs.writeFile(P99, Buffer.from(linhas.join(CRLF), 'latin1'))
+  })
+
+  teardown(async () => {
+    await config().update('rules.CA3001.enabled', undefined, true)
+  })
+
+  test('digitar 10 segundos no p99 não fica pior do que digitar sem análise', async () => {
+    const editor = await vscode.window.showTextDocument(
+      await vscode.workspace.openTextDocument(vscode.Uri.file(P99)),
+    )
+
+    // Linha de base: a mesma digitação, sem análise nenhuma por trás.
+    await config().update('rules.CA3001.enabled', false, true)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    const semAnalise = await digitarPor(editor, 2000)
+
+    // Agora com a regra ligada, pelos 10 segundos que o critério pede.
+    await config().update('rules.CA3001.enabled', true, true)
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    const comAnalise = await digitarPor(editor, 10_000)
+
+    const base = mediana(semAnalise)
+    const medida = mediana(comAnalise)
+    const pior = Math.max(...comAnalise)
+
+    assert.ok(comAnalise.length > 100, `só ${comAnalise.length} teclas em 10 s — a digitação parou?`)
+
+    // O piso de 20 ms existe porque a linha de base é pequena o bastante para
+    // uma razão pura ficar absurdamente sensível ao ruído de um único quadro.
+    const teto = Math.max(20, base * 3)
+    assert.ok(
+      medida <= teto,
+      `com análise, a mediana por tecla foi ${medida.toFixed(1)} ms contra ${base.toFixed(1)} ms ` +
+        `sem análise (teto ${teto.toFixed(1)} ms) — a análise está atrapalhando a digitação`,
+    )
+
+    // Nenhuma tecla isolada pode travar de forma perceptível. 100 ms é o limiar
+    // clássico em que a pessoa deixa de sentir a resposta como imediata.
+    assert.ok(
+      pior <= 100,
+      `a tecla mais lenta levou ${pior.toFixed(1)} ms (mediana ${medida.toFixed(1)} ms, ` +
+        `base sem análise ${base.toFixed(1)} ms)`,
+    )
+  })
+})
+
 suite('Extensão de arquivo em caixa alta', () => {
   test('reconhece a linguagem em arquivo .PRX, e não só .prx', async () => {
     // Fonte Protheus vem com a extensão nas duas caixas — no corpus real, boa
@@ -272,6 +373,75 @@ suite('Configuração por regra, sem reiniciar (US3)', () => {
     assert.equal(depois.severity, vscode.DiagnosticSeverity.Error)
     assert.equal(codeValueOf(depois), codeValueOf(antes))
     assert.deepEqual(depois.range, antes.range)
+  })
+})
+
+suite('Todo diagnóstico carrega o contrato completo (SC-004)', () => {
+  test('nenhum diagnóstico sai sem identificador, severidade e posição', async () => {
+    // Cada teste desta suíte confere o SEU diagnóstico. Este varre TODOS os que
+    // a extensão emitiu na sessão — em todos os arquivos abertos até aqui — e
+    // cobra o contrato de cada um. É a diferença entre "os que eu olhei estão
+    // certos" e "nenhum sai errado", que é o que o SC-004 pede.
+    const todos = vscode.languages
+      .getDiagnostics()
+      .filter(([, diagnostics]) => diagnostics.length > 0)
+
+    const nossos = todos.flatMap(([uri, diagnostics]) =>
+      diagnostics.filter((d) => d.source === 'advpl-lint').map((d) => ({ uri, d })),
+    )
+
+    assert.ok(nossos.length > 0, 'nenhum diagnóstico nosso na sessão — o teste não provaria nada')
+
+    for (const { uri, d } of nossos) {
+      const onde = `${path.basename(uri.fsPath)} linha ${d.range.start.line + 1}`
+
+      assert.ok(d.code !== undefined && d.code !== null, `diagnóstico sem identificador em ${onde}`)
+      assert.match(codeValueOf(d), /^(CA|BG|CS|PJ)\d{4}$/, `identificador fora do padrão em ${onde}`)
+      assert.ok(d.severity !== undefined, `diagnóstico sem severidade em ${onde}`)
+
+      // Posição inicial E final: um intervalo degenerado não sublinha nada, e um
+      // que cobre a linha toda esconde onde o problema está.
+      assert.ok(Number.isInteger(d.range.start.line), `linha inicial inválida em ${onde}`)
+      assert.ok(Number.isInteger(d.range.start.character), `coluna inicial inválida em ${onde}`)
+      assert.ok(
+        d.range.end.character > d.range.start.character || d.range.end.line > d.range.start.line,
+        `intervalo vazio em ${onde}`,
+      )
+
+      assert.ok(d.message.length > 10, `mensagem curta demais em ${onde}: "${d.message}"`)
+      assert.doesNotMatch(d.message, /^rule\..+\.message$/, `chave crua vazou em ${onde}`)
+    }
+  })
+})
+
+suite('Nenhuma configuração da extensão antiga é lida (FR-014a)', () => {
+  test('a extensão publica com identidade própria', async () => {
+    // D1 da spec: a extensão nova publica com identidade distinta da atual. Sem
+    // isso, instalar as duas seria conflito, e migrar seria obrigatório.
+    const extension = vscode.extensions.getExtension(EXTENSION_ID)
+
+    assert.ok(extension, `a extensão deveria se chamar ${EXTENSION_ID}`)
+    assert.notEqual(EXTENSION_ID, 'robsonrosilva.advpl-sintaxe')
+  })
+
+  test('todas as chaves contribuídas ficam sob advplLint', async () => {
+    // A segunda metade do FR-014a: "suas configurações não são lidas nem
+    // migradas". Não dá para provar uma ausência varrendo o código, mas dá para
+    // travar a superfície: se a extensão só declara chaves sob o próprio espaço
+    // de nomes, ler a configuração alheia exigiria código explícito — e passaria
+    // por revisão em vez de entrar pela conveniência.
+    const extension = vscode.extensions.getExtension(EXTENSION_ID)
+    assert.ok(extension)
+
+    const contributes = extension.packageJSON.contributes as {
+      configuration?: { properties?: Record<string, unknown> }
+    }
+    const chaves = Object.keys(contributes.configuration?.properties ?? {})
+
+    assert.ok(chaves.length > 0, 'a extensão não contribui configuração nenhuma')
+    for (const chave of chaves) {
+      assert.ok(chave.startsWith('advplLint.'), `a chave "${chave}" está fora do espaço advplLint`)
+    }
   })
 })
 
