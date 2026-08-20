@@ -274,6 +274,10 @@ desapareceu.
 
 - **FR-013**: O sistema MUST oferecer uma ação de "corrigir todas as ocorrências deste arquivo" que
   reúna, em **uma** operação de desfazer, as correções automáticas do documento.
+
+  > **Nome no protocolo**: esta ação é a `source.fixAll`, e a individual da lâmpada é a `quickfix`.
+  > Os nomes técnicos aparecem no plano, nos contratos e nas tarefas; aqui ficam registrados uma vez
+  > para que a tradução entre os dois níveis não precise ser inferida.
 - **FR-014**: Essa ação MUST ser exposta de forma que a correção automática ao salvar do editor possa
   acioná-la.
 - **FR-015**: "Corrigir tudo" em documento sem violações MUST produzir zero edições e MUST NOT marcar
