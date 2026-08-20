@@ -79,6 +79,27 @@ export function positionAt(document: AnalyzedDocument, offset: number): Position
   return { line: low, character: clamped - lineOffsets[low]! }
 }
 
+/**
+ * O caminho inverso: posição linha/caractere para deslocamento absoluto.
+ *
+ * Existe para o cálculo das correções, que precisa ler o texto que está DENTRO
+ * do intervalo de um diagnóstico — o intervalo chega em coordenadas do
+ * protocolo e o texto se fatia por deslocamento.
+ *
+ * Linha fora da faixa é grampeada em vez de lançar: a posição pode vir do
+ * editor, e uma edição recusada é resposta melhor que uma exceção no meio do
+ * cálculo da lâmpada.
+ */
+export function offsetAt(document: AnalyzedDocument, position: Position): number {
+  const { lineOffsets, text } = document
+  if (position.line < 0) return 0
+  if (position.line >= lineOffsets.length) return text.length
+
+  const lineStart = lineOffsets[position.line]!
+  const lineEnd = position.line + 1 < lineOffsets.length ? lineOffsets[position.line + 1]! : text.length
+  return Math.min(lineStart + Math.max(0, position.character), lineEnd)
+}
+
 /** Intervalo a partir de dois deslocamentos absolutos. */
 export function rangeAt(document: AnalyzedDocument, start: number, end: number): Range {
   return { start: positionAt(document, start), end: positionAt(document, end) }

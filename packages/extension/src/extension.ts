@@ -3,6 +3,10 @@ import type { LanguageClient } from 'vscode-languageclient/node'
 
 import { createClient } from './client'
 import { registerEncodingGuard } from './encoding-guard'
+import {
+  INCLUDE_DIRECTORIES_NOTIFICATION,
+  registerIncludeSources,
+} from './include-sources/vscode-adapters'
 
 /**
  * Ponto de entrada da extensão.
@@ -45,6 +49,31 @@ export function activate(context: ExtensionContext): AdvplLintApi {
 
   client = createClient(context)
   registerEncodingGuard(context)
+
+  // A cadeia de fontes de include (spec 002, FR-027). O registro é barato — um
+  // comando e dois ouvintes; a RESOLUÇÃO, que toca o disco, acontece fora do
+  // caminho de ativação, e o envio ao servidor espera o cliente estar de pé.
+  const lsp = client
+  /** Manda ao motor, esperando o cliente estar de pé — sem travar quem chamou. */
+  const notificar = (metodo: string, payload: unknown): void => {
+    void lsp
+      .start()
+      .then(() => lsp.sendNotification(metodo, payload))
+      .catch(() => {
+        // Servidor ainda subindo ou já encerrado. Sem diretórios, `PJ0001`
+        // cala — que é exatamente o comportamento previsto (FR-023).
+      })
+  }
+
+  registerIncludeSources(context, {
+    sendDirectories: (resolution) => notificar(INCLUDE_DIRECTORIES_NOTIFICATION, resolution),
+    // `workspace/didChangeWatchedFiles` é o método PADRÃO do protocolo, e o
+    // servidor já o atende. O que não é padrão é precisar mandá-lo à mão: o
+    // `LanguageClient` só encaminha os eventos dos watchers de
+    // `synchronize.fileEvents`, fixado na construção do cliente — antes de
+    // qualquer diretório de include existir.
+    sendFileEvents: (changes) => notificar('workspace/didChangeWatchedFiles', { changes }),
+  })
 
   // Sem await: a ativação retorna e o servidor sobe em paralelo.
   void client.start()

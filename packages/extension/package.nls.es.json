@@ -5,5 +5,10 @@
   "configuration.rules.CA3001.enabled": "CA3001 — señalar directivas de inclusión que no estén en minúsculas.",
   "configuration.rules.CA3001.severity": "Severidad mostrada para CA3001. \"default\" usa la tabla versionada de severidad.",
   "configuration.trace.server": "Rastrear la comunicación con el servidor de lenguaje. Desactivado por defecto.",
-  "configuration.log.level": "Nivel de registro de la extensión. Desactivado por defecto."
+  "configuration.log.level": "Nivel de registro de la extensión. Desactivado por defecto.",
+  "configuration.includePaths": "Directorios donde buscar los archivos de include ADVPL/TLPP. Solo valen cuando ni la extensión de TOTVS ni la de ADVPL indican alguno. Definible por workspace.",
+  "configuration.fixAll.includeRules": "Reglas que participan en \"corregir todo\" y en la corrección al guardar. Una regla fuera de esta lista sigue siendo señalada; solo no se corrige en masa.",
+  "command.showIncludeSources.title": "Mostrar los directorios de include en uso",
+  "configuration.rules.PJ0001.enabled": "PJ0001 — señalar referencias de include cuya caja difiere del archivo real en disco. Requiere que el árbol de includes sea alcanzable; verifíquelo con \"Mostrar los directorios de include en uso\".",
+  "configuration.rules.PJ0001.severity": "Severidad mostrada para PJ0001. \"default\" usa la severidad que la regla declara (Warning)."
 }

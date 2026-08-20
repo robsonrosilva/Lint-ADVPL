@@ -35,7 +35,7 @@ describe('Sincronismo de documentação — o repositório de verdade (Portão 6
     // Se a lista fosse escrita aqui, ela seria só mais um lugar para esquecer
     // de atualizar — e o portão passaria a proteger a si mesmo em vez do
     // produto.
-    assert.deepEqual(registeredRuleIds(), ['CA3001'])
+    assert.deepEqual(registeredRuleIds(), ['CA3001', 'PJ0001'])
   })
 })
 

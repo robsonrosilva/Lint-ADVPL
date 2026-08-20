@@ -1,3 +1,4 @@
+import { EMPTY_INCLUDE_INDEX } from '@advpl-lint/server/out/src/includes/index-store'
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
@@ -7,6 +8,8 @@ import {
   measureAnalysisMs,
   measureCancellationStopMs,
   measureSource,
+  buildStaticIndex,
+  useMeasurementIndex,
   median,
   workerCount,
 } from '../../src/harness/measure'
@@ -290,5 +293,75 @@ describe('Medição — parada após cancelamento (SC-009)', () => {
     const stopMs = await measureCancellationStopMs('Return\r\n')
 
     assert.ok(Number.isNaN(stopMs))
+  })
+})
+
+describe('Medição por REGRA, não do conjunto (FR-041)', () => {
+  const COM_AS_DUAS = ['#INCLUDE "acadef.ch"', 'Local x := 1', 'Return'].join('\r\n')
+
+  it('mede o custo incremental de cada regra separadamente', async () => {
+    // Com duas regras registradas, um `incrementalMs` único mediria as duas
+    // juntas e o relatório atribuiria o custo somado a uma delas. O Portão 4
+    // compara regra a regra; somá-las esconderia qual encareceu.
+    const measurement = await measureSource({
+      path: '/corpus/qualquer.prw',
+      repetitions: 1,
+      readSource: async () => COM_AS_DUAS,
+    })
+
+    assert.ok('CA3001' in measurement.perRuleMs, 'CA3001 não foi medida em separado')
+    assert.ok('PJ0001' in measurement.perRuleMs, 'PJ0001 não foi medida em separado')
+    for (const [ruleId, ms] of Object.entries(measurement.perRuleMs)) {
+      assert.equal(typeof ms, 'number', `${ruleId} sem número`)
+      assert.ok(Number.isFinite(ms), `${ruleId} com número não finito`)
+    }
+  })
+
+  it('conta os disparos por regra, não só o total', async () => {
+    // A taxa de falso positivo é apurada por regra. Um total agregado não
+    // responde "quantas vezes PJ0001 disparou".
+    const measurement = await measureSource({
+      path: '/corpus/qualquer.prw',
+      repetitions: 1,
+      readSource: async () => COM_AS_DUAS,
+    })
+
+    assert.equal(measurement.hitsByRule['CA3001'], 1)
+    // Sem índice, PJ0001 CALA — é o comportamento previsto quando não há
+    // diretório utilizável (FR-023), e é o estado padrão da medição.
+    assert.equal(measurement.hitsByRule['PJ0001'] ?? 0, 0)
+  })
+
+  it('com um índice montado, PJ0001 passa a ser medível', async () => {
+    // O índice da medição é montado a partir de entradas JÁ LIDAS: montar um de
+    // verdade dentro de cada trabalhador significaria varrer a árvore uma vez
+    // por trabalhador, e o custo da varredura é medido em separado, uma vez só.
+    const index = buildStaticIndex([{ realName: 'ACADEF.CH', directory: '/inc' }])
+    useMeasurementIndex(index)
+
+    try {
+      const measurement = await measureSource({
+        path: '/corpus/qualquer.prw',
+        repetitions: 1,
+        readSource: async () => COM_AS_DUAS,
+      })
+
+      assert.equal(measurement.hitsByRule['PJ0001'], 1)
+    } finally {
+      useMeasurementIndex(EMPTY_INCLUDE_INDEX)
+    }
+  })
+
+  it('o índice montado responde às três perguntas, sem tocar no disco', () => {
+    const index = buildStaticIndex([
+      { realName: 'ACADEF.CH', directory: '/a' },
+      { realName: 'acadef.ch', directory: '/b' },
+      { realName: 'TOTVS.CH', directory: '/a' },
+    ])
+
+    assert.equal(index.state, 'pronto')
+    assert.equal(index.lookup('totvs.ch').kind, 'encontrado')
+    assert.equal(index.lookup('acadef.ch').kind, 'ambíguo')
+    assert.equal(index.lookup('nao-existe.ch').kind, 'ausente')
   })
 })

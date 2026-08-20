@@ -1,4 +1,14 @@
 {
   "rule.CA3001.message": "La directiva de inclusión debe estar en minúsculas. Use \"#include\".",
-  "encoding.wrongEncoding": "Este fuente ADVPL/TLPP no se está leyendo como Windows-1252 (CP1252). Los diagnósticos pueden aparecer en la columna equivocada."
+  "encoding.wrongEncoding": "Este fuente ADVPL/TLPP no se está leyendo como Windows-1252 (CP1252). Los diagnósticos pueden aparecer en la columna equivocada.",
+  "action.CA3001.title": "CA3001: cambiar la directiva por \"#include\", en minúsculas",
+  "action.fixAll.title": "ADVPL Lint: corregir todo lo corregible en este archivo",
+  "includeSources.inUse": "ADVPL Lint — directorios de include en uso\n\nFuente: {source}\nDirectorios ({count}):\n{directories}",
+  "includeSources.none": "ADVPL Lint — no se encontró ninguna fuente utilizable de directorios de include. PJ0001 permanece en silencio. Indique el árbol de includes en \"advplLint.includePaths\".",
+  "includeSources.command.title": "ADVPL Lint: mostrar los directorios de include en uso",
+  "includes.unreadable": "ADVPL Lint no pudo leer {count} directorio(s) de include: {directories}. PJ0001 permanece en silencio sobre lo que hay allí. Este aviso aparece una vez por sesión.",
+  "rule.PJ0001.message": "La referencia de include \"{referenced}\" difiere en mayúsculas/minúsculas del archivo real en disco: \"{real}\". Compila en Windows y falla en el AppServer Linux.",
+  "action.PJ0001.title": "PJ0001: usar el nombre real del archivo en disco",
+  "includes.progress.title": "ADVPL Lint: indexando los archivos de include",
+  "includes.progress.scanned": "{lidos} directorio(s) leído(s)"
 }

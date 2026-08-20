@@ -34,6 +34,14 @@ export interface MeasureAllOptions {
    * caminho de erro que não se sabe se funciona.
    */
   readonly workerPath?: string
+  /**
+   * O índice de includes, PRONTO, para os trabalhadores usarem.
+   *
+   * Vai como dado e não como caminho: mandar cada trabalhador varrer a árvore
+   * significaria N varreduras de 35 mil arquivos, e o custo de indexação é
+   * medido uma vez, em separado (R8, FR-042).
+   */
+  readonly includeEntries?: readonly { readonly realName: string; readonly directory: string }[]
 }
 
 export async function measureAll(
@@ -68,7 +76,9 @@ export async function measureAll(
     }
 
     for (let index = 0; index < size; index += 1) {
-      const worker = new Worker(workerPath, { workerData: { repetitions } })
+      const worker = new Worker(workerPath, {
+        workerData: { repetitions, includeEntries: options?.includeEntries ?? [] },
+      })
       workers.push(worker)
 
       const assign = (): void => {

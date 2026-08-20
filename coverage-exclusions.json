@@ -49,6 +49,12 @@
       "reason": "Ponto de entrada de `npm run baseline`: resolve a raiz do repositório, chama runBaseline e define o código de saída. Não tem decisão nenhuma, e cobri-lo exigiria subir um processo só para observar process.exitCode. A lógica inteira está em run.ts, a 100% de linhas.",
       "declaredAt": "2026-08-19",
       "coveredBy": "packages/tooling/test/harness/run.test.ts"
+    },
+    {
+      "path": "packages/extension/out/src/include-sources/vscode-adapters.ts",
+      "reason": "A única parte da cadeia de fontes de include que toca a API do VS Code: leitura de configuração viva com escopo de recurso, registro de comando, ouvintes de mudança de configuração e de pasta de workspace. Nada aqui decide: a precedência, o critério de 'fonte utilizável', a separação do includeList e a extração de servers.json vivem em chain.ts, own-setting.ts, advpl-vscode.ts, tds-vscode.ts e workspace-scan.ts, todos em Node puro e cobertos pela suíte unitária — inclusive o SC-016. É a mesma fronteira que separa encoding-policy.ts de encoding-guard.ts.",
+      "declaredAt": "2026-08-20",
+      "coveredBy": "packages/extension/test/integration/pj0001.test.ts"
     }
   ]
 }

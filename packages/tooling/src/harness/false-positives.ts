@@ -16,6 +16,9 @@ import type { FalsePositiveAggregate } from './report'
  * identificador da regra, mais nada.
  */
 
+/** Quebra de linha do material gravado. */
+const EOL = String.fromCharCode(10)
+
 /** Diretório local do material de revisão. Ignorado pelo versionamento. */
 export const REVIEW_DIR = '.fp-review'
 
@@ -65,29 +68,53 @@ export async function writeReviewMaterial(
 ): Promise<WrittenReviewMaterial> {
   await mkdir(options.dir, { recursive: true })
 
-  const picked = pickForReview(hits, options.sampleSize)
-  const ruleId = hits[0]?.ruleId ?? 'disparos'
-  const path = join(options.dir, `${ruleId}.md`)
+  // Um arquivo POR REGRA, e a amostragem também é por regra.
+  //
+  // Juntar tudo num arquivo só sob o nome da primeira regra misturaria duas
+  // perguntas diferentes no mesmo material — o revisor julga uma regra de cada
+  // vez, com o critério daquela regra. E um teto global faria a regra que
+  // dispara dez vezes menos ficar com um punhado de casos, tornando a taxa
+  // dela inútil.
+  const byRule = new Map<string, RuleHit[]>()
+  for (const hit of hits) {
+    const bucket = byRule.get(hit.ruleId)
+    if (bucket) bucket.push(hit)
+    else byRule.set(hit.ruleId, [hit])
+  }
 
-  const linhas = [
-    `# Revisão de falso positivo — ${ruleId}`,
-    '',
-    '> ⚠️ Arquivo LOCAL. Contém trecho de fonte padrão do Protheus e **nunca**',
-    '> pode ser versionado. Do relatório sobe apenas o agregado (FR-022).',
-    '',
-    `Disparos no corpus: ${hits.length}. Nesta amostra: ${picked.length}.`,
-    '',
-    '| # | Arquivo | Linha | Trecho | Falso positivo? |',
-    '| - | ------- | ----- | ------ | --------------- |',
-    ...picked.map(
-      (hit, index) => `| ${index + 1} | ${hit.path} | ${hit.line} | \`${hit.excerpt.trim()}\` | |`,
-    ),
-    '',
-  ]
+  // Sem disparo nenhum ainda se grava um material — vazio, dizendo zero. Um
+  // diretório sem arquivo seria indistinguível de "a medição não rodou".
+  if (byRule.size === 0) byRule.set('disparos', [])
 
-  await writeFile(path, linhas.join('\n'), 'utf8')
+  let firstPath: string | undefined
+  let sampled = 0
 
-  return { path, sampled: picked.length }
+  for (const [ruleId, doRule] of [...byRule.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    const picked = pickForReview(doRule, options.sampleSize)
+    const path = join(options.dir, `${ruleId}.md`)
+    firstPath ??= path
+    sampled += picked.length
+
+    const linhas = [
+      `# Revisão de falso positivo — ${ruleId}`,
+      '',
+      '> ⚠️ Arquivo LOCAL. Contém trecho de fonte padrão do Protheus e **nunca**',
+      '> pode ser versionado. Do relatório sobe apenas o agregado (FR-022).',
+      '',
+      `Disparos no corpus: ${doRule.length}. Nesta amostra: ${picked.length}.`,
+      '',
+      '| # | Arquivo | Linha | Trecho | Falso positivo? |',
+      '| - | ------- | ----- | ------ | --------------- |',
+      ...picked.map(
+        (hit, index) => `| ${index + 1} | ${hit.path} | ${hit.line} | \`${hit.excerpt.trim()}\` | |`,
+      ),
+      '',
+    ]
+
+    await writeFile(path, linhas.join(EOL), 'utf8')
+  }
+
+  return { path: firstPath!, sampled }
 }
 
 export interface ReviewVerdict {

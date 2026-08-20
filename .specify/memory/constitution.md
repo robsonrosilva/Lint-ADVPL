@@ -1,6 +1,38 @@
 <!--
 Sync Impact Report
 ==================
+Versão: 2.4.0 → 2.5.0
+Tipo de bump: MINOR — o Princípio III ganha uma TERCEIRA origem de regra. Nenhum princípio removido
+nem redefinido de forma incompatível; `totvs` e `projeto` continuam com as mesmas exigências.
+Aprovada pelo dono em 2026-08-20.
+
+Motivo: a taxonomia de origem tinha duas casas e a realidade tem três.
+
+  totvs     regra do catálogo oficial — MUST citar id e grupo G1-G5
+  projeto   regra nossa, que o padrão não cobre — MUST dizer o que pega que o padrão não pega
+  ???       norma escrita da TOTVS que NÃO está no catálogo
+
+O terceiro caso é real e está documentado: as diretrizes oficiais de ADVPL/TLPP exigem ProtheusDOC
+em função, classe, webservice e struct — e **nenhuma dessas exigências tem identificador no catálogo
+SonarQube**. Ela não é `totvs`, porque não há id nem grupo a citar. E declará-la `projeto` seria
+mentir duas vezes: a regra não é invenção nossa, e a justificativa obrigatória do Princípio III —
+"o que ela pega que o padrão não pega" — não se aplica, porque o padrão MANDA fazer, ele só não
+oferece um id.
+
+A emenda cria `diretriz`: regra que vem de norma escrita da TOTVS sem entrada no catálogo. Ela MUST
+citar o documento e a data da consulta, no lugar do id — e é justamente essa citação que a separa de
+uma regra `projeto` disfarçada.
+
+O que NÃO muda: a exigência de identificador na faixa `PJ####` para regra que não é de catálogo, a
+severidade declarada com razão escrita, a chave própria de desligamento e a medição de falso positivo
+antes de ligar. `diretriz` herda as quatro.
+
+Débito registrado: `TODO(DIRETRIZ_REGISTRY)` — o registro de regras ainda NÃO implementa esta
+origem. A implementação vem com a primeira regra que a use, junto das invariantes que só aquela spec
+tem como fixar. Decidir a taxonomia agora é o que desbloqueia a spec de ProtheusDOC; implementá-la
+sem nenhum consumidor seria fixar invariantes no escuro.
+
+--- Emenda anterior ---
 Versão: 2.3.0 → 2.4.0
 Tipo de bump: MINOR — o item de ativação do orçamento do Princípio I passa de UM teto não aferido
 para DOIS tetos medidos. Nenhum princípio removido nem redefinido de forma incompatível. Aprovada
@@ -330,11 +362,32 @@ do linter. Regras:
 A outra força da versão anterior eram críticas que o TOTVS Code Analyzer não faz. Isso é a razão
 de a extensão existir, e MUST ser protegido explicitamente:
 
-- **Toda regra declara sua origem**: `totvs` — e então MUST citar o identificador e o grupo
-  (G1 Segurança, G2 Desempenho, G3 Legado, G4 Metadados, G5 Compilação) do catálogo oficial —
-  ou `projeto`, regra própria que o padrão não cobre.
+- **Toda regra declara sua origem**, e são **três**:
+
+  | Origem | O que é | O que ela MUST citar |
+  | ------ | ------- | -------------------- |
+  | `totvs` | regra do catálogo oficial | o **identificador** e o **grupo** (G1 Segurança, G2 Desempenho, G3 Legado, G4 Metadados, G5 Compilação) |
+  | `diretriz` | norma escrita da TOTVS **sem entrada no catálogo** | o **documento** de origem e a **data da consulta** |
+  | `projeto` | regra própria, que o padrão não cobre | **o que ela pega que o padrão não pega** |
+
 - **Regra `projeto` MUST documentar o que pega que o padrão não pega.** Sem essa frase, ela é
   duplicata não declarada e MUST ser rejeitada.
+- **Regra `diretriz` MUST citar o documento e a data.** Sem a citação, ela é indistinguível de uma
+  regra `projeto` — e é exatamente essa distinção que a origem existe para fazer.
+
+  A origem existe porque a taxonomia de duas casas não descrevia a realidade. As diretrizes oficiais
+  de ADVPL/TLPP exigem ProtheusDOC em função, classe, webservice e struct, e **nenhuma dessas
+  exigências tem id no catálogo SonarQube**. Não é `totvs`, porque não há id nem grupo a citar. E não
+  é `projeto`, porque a regra não é invenção nossa e a justificativa "o que ela pega que o padrão não
+  pega" não se aplica: o padrão MANDA fazer, ele só não oferece um identificador.
+
+  `diretriz` herda de `projeto` tudo o mais: identificador na faixa reservada, **severidade declarada
+  com razão escrita**, chave própria de desligamento, e medição de falso positivo antes de ser ligada.
+
+  ⚠️ `TODO(DIRETRIZ_REGISTRY)`: o registro de regras ainda **não** implementa esta origem. A
+  implementação vem com a primeira regra que a use, junto das invariantes que só aquela spec tem como
+  fixar. Decidir a taxonomia desbloqueia a spec de ProtheusDOC; implementá-la sem consumidor seria
+  fixar invariante no escuro.
 - **A severidade do SonarQube não é copiada; é mapeada por tabela versionada.** CA2050, CA2051 e
   CA2052 são `INFO` no catálogo, que ao mesmo tempo declara que representam alto impacto —
   tradução literal exibiria SQL Injection e senha em código como dica de estilo.
@@ -610,4 +663,4 @@ Report são dívidas conhecidas: NEVER servem de precedente para novas violaçõ
 comportamento do produto e o catálogo de regras; `.specify/` para templates e scripts do ciclo SDD;
 `memoria/` para a memória versionada entre sessões.
 
-**Version**: 2.4.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-19
+**Version**: 2.5.0 | **Ratified**: 2026-08-19 | **Last Amended**: 2026-08-20

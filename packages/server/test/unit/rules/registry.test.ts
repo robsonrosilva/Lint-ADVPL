@@ -151,6 +151,37 @@ describe('Registro de regras — origem project', () => {
     const { defaultSeverity: _omitted, ...withoutSeverity } = projectRule()
     assert.throws(() => registry.register(withoutSeverity as RuleDefinition), RuleDefinitionError)
   })
+
+  it('a recusa CITA o identificador da regra (FR-035)', () => {
+    // A mensagem é o que aparece a quem quebrou o registro. Dizer só "faltou
+    // severidade", com dezenas de regras carregando no mesmo laço, obriga quem
+    // lê a caçar qual delas — e o registro sabe exatamente qual é.
+    const registry = new RuleRegistry()
+    const { defaultSeverity: _omitted, ...withoutSeverity } = projectRule({ id: 'PJ4242' })
+
+    assert.throws(
+      () => registry.register({ ...withoutSeverity, configKey: 'advplLint.rules.PJ4242' } as RuleDefinition),
+      (error: unknown) => {
+        assert.ok(error instanceof RuleDefinitionError)
+        assert.match(error.message, /PJ4242/)
+        assert.match(error.message, /severidade/i)
+        return true
+      },
+    )
+  })
+
+  it('regra própria pode nascer DESLIGADA, e o padrão continua sendo ligada (FR-036)', () => {
+    // Princípio VI: regra sem taxa de falso positivo medida entra desligada.
+    // O registro é a fonte única disso — quem gera as chaves do manifesto e
+    // quem responde "está ligada?" leem daqui, não de duas listas paralelas.
+    const registry = new RuleRegistry()
+    registry.register(projectRule({ enabledByDefault: false }))
+    assert.equal(registry.get('PJ1001')?.enabledByDefault, false)
+
+    const outro = new RuleRegistry()
+    outro.register(projectRule())
+    assert.equal(outro.get('PJ1001')?.enabledByDefault, true, 'sem declarar, a regra nasce ligada')
+  })
 })
 
 describe('Registro de regras — o que ele NÃO valida', () => {

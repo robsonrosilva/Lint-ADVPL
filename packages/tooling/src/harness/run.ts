@@ -5,7 +5,13 @@ import { join } from 'node:path'
 import { CORPUS_CONFIG_FILE, CORPUS_ENV_VAR, resolveCorpus } from './corpus-config'
 import { CACHE_FILE, loadInventory } from './inventory'
 import { MINIMUM_SAMPLE, stratifiedSample } from './sample'
-import { collectHits, measureCancellationStopMs, type SourceMeasurement } from './measure'
+import {
+  buildStaticIndex,
+  collectHits,
+  measureCancellationStopMs,
+  useMeasurementIndex,
+  type SourceMeasurement,
+} from './measure'
 import { measureAll, measureEngineStartupMs } from './measure-pool'
 import {
   REVIEW_DIR,
@@ -14,7 +20,17 @@ import {
   writeReviewMaterial,
   type RuleHit,
 } from './false-positives'
-import { buildReport, writeReport, type PercentileMeasurement, type PercentileName } from './report'
+import { scanIncludeDirectories } from '@advpl-lint/server/out/src/includes/scan'
+import type { IncludeEntry } from '@advpl-lint/server/out/src/includes/index-store'
+
+import { neverCancelled } from './tokens'
+import {
+  buildReport,
+  writeReport,
+  type IndexMeasurement,
+  type PercentileMeasurement,
+  type PercentileName,
+} from './report'
 
 /**
  * O encadeamento da medição: inventário → amostra → medição → relatório.
@@ -34,6 +50,67 @@ export const DEFAULT_BASELINE_DIR = join('specs', '001-esqueleto-lsp-harness', '
 
 /** Quantos disparos entram no material de revisão de falso positivo. */
 export const DEFAULT_REVIEW_SAMPLE = 120
+
+/**
+ * As regras cujo custo o relatório publica.
+ *
+ * Escrito aqui e não derivado do registro de propósito: cada linha desta lista
+ * é uma coluna do relatório que a comparação do Portão 4 vai acompanhar ao
+ * longo das entregas, e acrescentar uma é decisão, não consequência.
+ */
+const REPORTED_RULES: readonly string[] = ['CA3001', 'PJ0001']
+
+/**
+ * O custo daquela regra naquele fonte.
+ *
+ * Zero quando a medição não traz a regra — e o zero é deliberado, não descuido:
+ * acontece quando `REPORTED_RULES` cita uma regra que o motor ainda não
+ * registra. Derrubar a medição inteira por isso puniria quem está justamente
+ * preparando a coluna do relatório para a regra que vem.
+ */
+export function costOf(measurement: SourceMeasurement, ruleId: string): number {
+  return measurement.perRuleMs[ruleId] ?? 0
+}
+
+/** Disparos daquela regra em toda a amostra — a taxa de falso positivo é POR REGRA. */
+export function hitsForRule(
+  measurements: readonly SourceMeasurement[],
+  ruleId: string,
+): number {
+  return measurements.reduce((total, measurement) => total + (measurement.hitsByRule[ruleId] ?? 0), 0)
+}
+
+/**
+ * Mede o custo de construir o índice de includes, e devolve o que ele leu.
+ *
+ * Duas coisas de uma vez, e é de propósito: a varredura acontece **uma vez** e
+ * serve tanto ao número do relatório (FR-042) quanto ao índice que os
+ * trabalhadores usam para medir `PJ0001`. Varrer duas vezes mediria o cache do
+ * sistema de arquivos na segunda.
+ *
+ * A raiz do corpus é usada como diretório de includes: é onde os `.ch` estão, e
+ * é a árvore sobre a qual a medição faz sentido.
+ */
+export async function measureIndexing(root: string): Promise<{
+  readonly measurement: IndexMeasurement
+  readonly entries: readonly IncludeEntry[]
+}> {
+  let directories = 0
+  const startedAt = performance.now()
+  const result = await scanIncludeDirectories({
+    directories: [root],
+    token: neverCancelled,
+    onDirectory: () => {
+      directories += 1
+    },
+  })
+  const scanMs = performance.now() - startedAt
+
+  return {
+    measurement: { directories, files: result.files.length, scanMs },
+    entries: result.files.map((file) => ({ realName: file.realName, directory: file.directory })),
+  }
+}
 
 export interface RunBaselineOptions {
   readonly repoRoot: string
@@ -133,10 +210,29 @@ export async function runBaseline(options: RunBaselineOptions): Promise<RunBasel
 
   const startupMs = await measureEngineStartupMs()
 
+  // A INDEXAÇÃO, medida em separado (R8, FR-042). Ela acontece uma vez por
+  // sessão; a análise, por documento. Somar os dois esconderia o caro dentro do
+  // barato — o mesmo erro que o `activationMs` quase cometeu na spec 001.
+  out('Indexando os arquivos de include do corpus…')
+  const indexing = await measureIndexing(root)
+  out(
+    `Indexação: ${indexing.measurement.files} include(s) em ${indexing.measurement.directories} ` +
+      `diretório(s), em ${indexing.measurement.scanMs.toFixed(0)} ms.`,
+  )
+
+  // O índice também vale NESTE processo: `collectHits` roda aqui, e sem ele
+  // `PJ0001` calaria — o material de revisão sairia sem uma linha da regra que
+  // esta spec existe para entregar.
+  useMeasurementIndex(buildStaticIndex(indexing.entries))
+
   let reported = 0
   const measurements = await measureAll(
     sample.entries.map((entry) => entry.path),
     {
+      // O índice vai PRONTO para os trabalhadores. Mandá-los construir o deles
+      // significaria varrer a árvore uma vez por trabalhador, e o número
+      // resultante não seria nem custo por documento nem custo de indexação.
+      includeEntries: indexing.entries,
       ...(options.repetitions === undefined ? {} : { repetitions: options.repetitions }),
       onProgress: (done, total) => {
         if (shouldReportProgress(done, reported, total)) {
@@ -164,18 +260,18 @@ export async function runBaseline(options: RunBaselineOptions): Promise<RunBasel
   // que as duas tabelas do relatório falem dos mesmos arquivos. Ordenar os
   // incrementais por conta própria produziria dois recortes diferentes do
   // corpus na mesma página.
-  const ruleCost = [
-    {
-      ruleId: 'CA3001',
-      incrementalMs: {
-        p50: at(bySize, 50).incrementalMs,
-        p95: at(bySize, 95).incrementalMs,
-        max: at(bySize, 100).incrementalMs,
-      },
+  const ruleCost = REPORTED_RULES.map((ruleId) => ({
+    ruleId,
+    incrementalMs: {
+      p50: costOf(at(bySize, 50), ruleId),
+      p95: costOf(at(bySize, 95), ruleId),
+      max: costOf(at(bySize, 100), ruleId),
     },
-  ]
+  }))
 
-  const hits = measurements.reduce((total, measurement) => total + measurement.hits, 0)
+  const hitsOf = (ruleId: string): number => hitsForRule(measurements, ruleId)
+  const hits = hitsOf('CA3001')
+  for (const ruleId of REPORTED_RULES) out(`Disparos de ${ruleId}: ${hitsOf(ruleId)}.`)
 
   // O material de revisão é LOCAL. Do relatório sobe apenas o agregado — e,
   // enquanto ninguém revisou, o agregado diz honestamente "zero revisados".
@@ -183,12 +279,18 @@ export async function runBaseline(options: RunBaselineOptions): Promise<RunBasel
   const reviewSampleSize = options.reviewSampleSize ?? DEFAULT_REVIEW_SAMPLE
   const comDisparo = measurements.filter((measurement) => measurement.hits > 0)
   if (comDisparo.length > 0) {
+    // Percorre os fontes com passo uniforme e coleta TUDO o que cada um
+    // disparou. O recorte por regra fica com `writeReviewMaterial`: cortar aqui
+    // um total global faria a regra que dispara menos ficar sem material —
+    // truncada justamente por ser a mais rara.
     const stride = Math.max(1, Math.floor(comDisparo.length / reviewSampleSize))
     const coletados: RuleHit[] = []
-    for (let index = 0; index < comDisparo.length && coletados.length < reviewSampleSize; index += stride) {
+    let visitados = 0
+    for (let index = 0; index < comDisparo.length && visitados < reviewSampleSize; index += stride) {
       coletados.push(...(await collectHits(comDisparo[index]!.path)))
+      visitados += 1
     }
-    const written = await writeReviewMaterial(coletados.slice(0, reviewSampleSize), {
+    const written = await writeReviewMaterial(coletados, {
       dir: reviewDir,
       sampleSize: reviewSampleSize,
     })
@@ -241,15 +343,30 @@ export async function runBaseline(options: RunBaselineOptions): Promise<RunBasel
     },
     percentiles,
     ruleCost,
-    falsePositives: [
-      aggregateHits('CA3001', {
-        hits,
-        reviewed: verdict.reviewed,
-        falsePositives: verdict.falsePositives,
+    falsePositives: await Promise.all(
+      REPORTED_RULES.map(async (ruleId) => {
+        const disparos = hitsOf(ruleId)
+        if (ruleId === 'CA3001') {
+          return aggregateHits(ruleId, {
+            hits: disparos,
+            reviewed: verdict.reviewed,
+            falsePositives: verdict.falsePositives,
+          })
+        }
+        // Sem veredito, o agregado diz honestamente "zero revisados" — que é
+        // diferente de uma taxa que ninguém mediu.
+        const outro = (await readVerdict(reviewDir, ruleId)) ?? { reviewed: 0, falsePositives: 0 }
+        const coerente = outro.reviewed > disparos ? { reviewed: 0, falsePositives: 0 } : outro
+        return aggregateHits(ruleId, {
+          hits: disparos,
+          reviewed: coerente.reviewed,
+          falsePositives: coerente.falsePositives,
+        })
       }),
-    ],
+    ),
     activationMs: startupMs,
     cancellationStopMs,
+    indexing: indexing.measurement,
   })
 
   const dir = options.baselineDir ?? join(options.repoRoot, DEFAULT_BASELINE_DIR)

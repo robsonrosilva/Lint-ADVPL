@@ -5,5 +5,10 @@
   "configuration.rules.CA3001.enabled": "CA3001 — apontar diretiva de inclusão que não esteja em caixa baixa.",
   "configuration.rules.CA3001.severity": "Severidade exibida para CA3001. \"default\" usa a tabela versionada de severidade.",
   "configuration.trace.server": "Rastrear a comunicação com o servidor de linguagem. Desligado por padrão.",
-  "configuration.log.level": "Nível de log da extensão. Desligado por padrão."
+  "configuration.log.level": "Nível de log da extensão. Desligado por padrão.",
+  "configuration.includePaths": "Diretórios onde procurar os arquivos de include ADVPL/TLPP. Só valem quando nem a extensão da TOTVS nem a ADVPL informam algum. Definível por workspace.",
+  "configuration.fixAll.includeRules": "Regras que participam do \"corrigir tudo\" e da correção ao salvar. Regra fora desta lista continua sendo apontada; ela só não é corrigida em massa.",
+  "command.showIncludeSources.title": "Mostrar os diretórios de include em uso",
+  "configuration.rules.PJ0001.enabled": "PJ0001 — apontar referência de include cuja caixa difere do arquivo real no disco. Exige que a árvore de includes esteja alcançável; confira com \"Mostrar os diretórios de include em uso\".",
+  "configuration.rules.PJ0001.severity": "Severidade exibida para PJ0001. \"default\" usa a severidade que a regra declara (Warning)."
 }

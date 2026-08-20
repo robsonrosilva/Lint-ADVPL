@@ -3,6 +3,9 @@ import assert from 'node:assert/strict'
 
 import { scanDocument } from '../../../src/analysis/scanner'
 
+/** Quebra de linha. */
+const NL = String.fromCharCode(10)
+
 /** Ajuda a apontar um deslocamento pelo trecho de texto que se quer testar. */
 function offsetOf(text: string, needle: string, occurrence = 1): number {
   let index = -1
@@ -117,23 +120,61 @@ describe('Varredura — custo', () => {
     // Oito vezes a entrada em desenho linear custa ~8x; em desenho quadrático,
     // ~64x. O limite de 20x deixa folga larga para variação de agendamento e
     // ainda reprova o quadrático sem ambiguidade.
-    const unit = 'Local x := 1 // comentario com "aspas" e /* bloco */\nLocal y := "texto"\n'
-    const small = unit.repeat(500)
-    const large = unit.repeat(4000)
+    //
+    // ⚠️ ESTE TESTE JÁ FOI INSTÁVEL, e a correção está no MÉTODO, não no limite.
+    //
+    // A primeira versão media 500 unidades contra 4.000 e protegia o lado
+    // pequeno com um piso de 0,05 ms. Numa máquina rápida o lado pequeno CAÍA no
+    // piso — ele não era medição, era o piso — enquanto o lado grande absorvia a
+    // contenção da suíte. A razão passava a comparar um número real com uma
+    // constante, e em 2026-08-20, com a suíte crescendo de 355 para 613 testes
+    // em processos paralelos, ela acusou 32x sobre um código que não mudou.
+    //
+    // É a mesma armadilha registrada em memoria/armadilhas-do-ambiente.md:
+    // teto absoluto — e piso absoluto — medem a MÁQUINA, não o desenho.
+    //
+    // Duas correções, e as duas importam:
+    //
+    //   1. os DOIS lados são grandes o bastante para ficar bem acima do ruído do
+    //      relógio, e nenhum precisa de piso;
+    //   2. cada lado é a MEDIANA de cinco passagens, para que uma pausa de
+    //      coleta de lixo não vire "regressão de desempenho" — a mesma decisão
+    //      que o harness de medição já tinha tomado.
+    const unit =
+      'Local x := 1 // comentario com "aspas" e /* bloco */' +
+      NL +
+      'Local y := "texto"' +
+      NL
+    const small = unit.repeat(4_000)
+    const large = unit.repeat(32_000)
 
-    const timeOf = (text: string): number => {
-      const started = performance.now()
-      scanDocument(text)
-      return performance.now() - started
+    const medianTimeOf = (text: string): number => {
+      const samples: number[] = []
+      for (let round = 0; round < 5; round += 1) {
+        const started = performance.now()
+        scanDocument(text)
+        samples.push(performance.now() - started)
+      }
+      samples.sort((a, b) => a - b)
+      return samples[2]!
     }
 
-    scanDocument(small) // aquece, para não medir a primeira compilação do JIT
-    const tSmall = Math.max(timeOf(small), 0.05)
-    const tLarge = timeOf(large)
+    // Aquece os dois, para não medir a primeira compilação do JIT em nenhum lado.
+    scanDocument(small)
+    scanDocument(large)
+
+    const tSmall = medianTimeOf(small)
+    const tLarge = medianTimeOf(large)
 
     assert.ok(
+      tSmall > 0.2,
+      `o lado pequeno levou ${tSmall.toFixed(3)} ms — perto demais do ruído do relógio ` +
+        'para servir de referência; aumente o tamanho em vez de pôr um piso',
+    )
+    assert.ok(
       tLarge / tSmall < 20,
-      `8x a entrada custou ${(tLarge / tSmall).toFixed(1)}x o tempo — cheira a passagem quadrática`,
+      `8x a entrada custou ${(tLarge / tSmall).toFixed(1)}x o tempo ` +
+        `(${tSmall.toFixed(2)} ms contra ${tLarge.toFixed(2)} ms) — cheira a passagem quadrática`,
     )
   })
 })

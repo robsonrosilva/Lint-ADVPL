@@ -326,3 +326,45 @@ describe('Serviço — configuração muda o resultado sem reiniciar (US3)', () 
     service.dispose()
   })
 })
+
+describe('Serviço — o que a lâmpada precisa saber (spec 002)', () => {
+  it('devolve o texto e a versão correntes do documento', async () => {
+    // O cálculo da correção acontece sobre o MESMO texto que produziu o
+    // diagnóstico. Sem este acesso, o provedor teria de receber o texto pelo
+    // protocolo a cada pedido de ação — trocando um `Map.get` por uma cópia do
+    // documento inteiro a cada movimento do cursor.
+    const { service } = serviceWith()
+    service.open({ ...DOC, text: '#INCLUDE "TOTVS.CH"\n' })
+    await service.whenIdle()
+
+    assert.equal(service.snapshotOf(DOC.uri)?.version, 1)
+    assert.equal(service.snapshotOf(DOC.uri)?.text, '#INCLUDE "TOTVS.CH"\n')
+    assert.equal(service.snapshotOf('file:///nunca-aberto.prw'), undefined)
+  })
+
+  it('guarda o que publicou, que é o insumo do "corrigir tudo"', async () => {
+    // A ação de arquivo inteiro precisa dos diagnósticos do DOCUMENTO; o
+    // pedido do editor traz só os do intervalo sob o cursor.
+    const { service } = serviceWith()
+    service.open({ ...DOC, text: '#INCLUDE "A.CH"\n#INCLUDE "B.CH"\n' })
+    await service.whenIdle()
+
+    const guardados = service.diagnosticsOf(DOC.uri)
+    assert.equal(guardados.length, 2)
+    assert.equal(guardados[0]?.code, 'CA3001')
+  })
+
+  it('fechar o documento apaga o que estava guardado', async () => {
+    // Senão a lâmpada ofereceria correção sobre o estado de um arquivo que já
+    // não está aberto — e o texto para calcular a edição também sumiu.
+    const { service } = serviceWith()
+    service.open({ ...DOC, text: '#INCLUDE "TOTVS.CH"\n' })
+    await service.whenIdle()
+    assert.equal(service.diagnosticsOf(DOC.uri).length, 1)
+
+    service.close(DOC.uri)
+
+    assert.deepEqual(service.diagnosticsOf(DOC.uri), [])
+    assert.equal(service.snapshotOf(DOC.uri), undefined)
+  })
+})

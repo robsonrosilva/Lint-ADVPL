@@ -5,5 +5,10 @@
   "configuration.rules.CA3001.enabled": "CA3001 — report include directives that are not lowercase.",
   "configuration.rules.CA3001.severity": "Severity shown for CA3001. \"default\" uses the versioned severity map.",
   "configuration.trace.server": "Trace the communication with the language server. Off by default.",
-  "configuration.log.level": "Log level of the extension. Off by default."
+  "configuration.log.level": "Log level of the extension. Off by default.",
+  "configuration.includePaths": "Directories searched for ADVPL/TLPP include files. Used only when neither the TOTVS nor the ADVPL extension provides one. Definable per workspace.",
+  "configuration.fixAll.includeRules": "Rules that take part in \"fix all\" and in fix-on-save. A rule left out of this list is still reported; it just is not fixed in bulk.",
+  "command.showIncludeSources.title": "Show include directories in use",
+  "configuration.rules.PJ0001.enabled": "PJ0001 — report include references whose case differs from the real file on disk. Requires the include tree to be reachable; check it with \"Show include directories in use\".",
+  "configuration.rules.PJ0001.severity": "Severity shown for PJ0001. \"default\" uses the severity the rule declares (Warning)."
 }

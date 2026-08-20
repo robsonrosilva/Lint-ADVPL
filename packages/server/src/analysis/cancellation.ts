@@ -34,6 +34,19 @@ export class TimeSlice {
     return performance.now() - this.startedAt >= YIELD_BUDGET_MS
   }
 
+  /**
+   * Recomeça a contagem, sem ceder.
+   *
+   * Para quem cedeu o laço por conta própria e não quer que a fatia anterior
+   * conte contra a próxima. É o caso do percurso do índice, que respira por
+   * CONTAGEM de entradas dentro de um diretório grande: sem recomeçar aqui, a
+   * primeira conferência de tempo depois disso já viria vencida e produziria uma
+   * segunda cessão imediata, sem trabalho nenhum entre as duas.
+   */
+  restart(): void {
+    this.startedAt = performance.now()
+  }
+
   async yieldIfNeeded(): Promise<void> {
     if (!this.shouldYield()) return
     await yieldToEventLoop()

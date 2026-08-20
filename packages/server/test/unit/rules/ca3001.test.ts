@@ -6,6 +6,7 @@ import { CancellationTokenSource } from 'vscode-languageserver'
 import { DiagnosticSeverity, type Diagnostic, type Range } from 'vscode-languageserver-types'
 
 import { ca3001 } from '../../../src/rules/ca3001'
+import { EMPTY_INCLUDE_INDEX } from '../../../src/includes/index-store'
 import { scanDocument } from '../../../src/analysis/scanner'
 import { createAnalyzedDocument } from '../../../src/document/analyzed-document'
 import { decodeCp1252 } from '../../../src/text/cp1252'
@@ -35,6 +36,7 @@ async function runOnFixture(name: string): Promise<Diagnostic[]> {
     endLine: document.lineOffsets.length,
     scan: scanDocument(text),
     token: source.token,
+    includes: EMPTY_INCLUDE_INDEX,
     report: (range: Range) => {
       collected.push({
         code: ca3001.id,
@@ -140,6 +142,7 @@ describe('CA3001 — cancelamento', () => {
       endLine: document.lineOffsets.length,
       scan: scanDocument(text),
       token: source.token,
+      includes: EMPTY_INCLUDE_INDEX,
       report: () => {
         reports += 1
       },
@@ -165,6 +168,7 @@ function runOnText(text: string): number {
     endLine: document.lineOffsets.length,
     scan: scanDocument(text),
     token: source.token,
+    includes: EMPTY_INCLUDE_INDEX,
     report: () => {
       reports += 1
     },

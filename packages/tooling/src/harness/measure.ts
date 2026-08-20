@@ -2,7 +2,14 @@ import { readFile } from 'node:fs/promises'
 
 import { analyze } from '@advpl-lint/server/out/src/analysis/analyze'
 import { createAnalyzedDocument } from '@advpl-lint/server/out/src/document/analyzed-document'
+import {
+  EMPTY_INCLUDE_INDEX,
+  type IncludeEntry,
+  type IncludeIndexReader,
+  type IncludeLookup,
+} from '@advpl-lint/server/out/src/includes/index-store'
 import { ca3001 } from '@advpl-lint/server/out/src/rules/ca3001'
+import { pj0001 } from '@advpl-lint/server/out/src/rules/pj0001'
 import { RuleRegistry } from '@advpl-lint/server/out/src/rules/registry'
 import { decodeCp1252 } from '@advpl-lint/server/out/src/text/cp1252'
 
@@ -33,12 +40,67 @@ export const DEFAULT_REPETITIONS = 5
 
 const registry = new RuleRegistry()
 registry.register(ca3001)
+registry.register(pj0001)
 
 /** As regras ligadas na medição "com regra". */
 const RULES = registry.all()
 
 /** Nenhuma regra: é a metade "sem regra" da subtração do FR-021. */
 const NO_RULES: typeof RULES = []
+
+/** A regra pedida, sozinha — é a outra metade da subtração POR REGRA. */
+function onlyRule(ruleId: string): typeof RULES {
+  return RULES.filter((rule) => rule.id === ruleId)
+}
+
+/**
+ * O índice de includes usado na medição.
+ *
+ * Começa VAZIO, e com ele `PJ0001` cala — que é o comportamento previsto quando
+ * não há diretório utilizável. Quem quiser medir a regra monta um índice com
+ * `buildStaticIndex` e o instala com `useMeasurementIndex`.
+ */
+let measurementIndex: IncludeIndexReader = EMPTY_INCLUDE_INDEX
+
+/**
+ * Um índice PRONTO, montado a partir de entradas já lidas — sem tocar no disco.
+ *
+ * Existe porque o custo da varredura é medido **uma vez, em separado** (R8,
+ * FR-042). Construir um índice de verdade dentro de cada trabalhador
+ * significaria varrer a árvore de 35 mil arquivos uma vez por trabalhador, e o
+ * número resultante não seria nem o custo por documento nem o custo de
+ * indexação — seria os dois embaralhados.
+ */
+export function buildStaticIndex(entries: readonly IncludeEntry[]): IncludeIndexReader {
+  const bySpelling = new Map<string, Map<string, IncludeEntry>>()
+
+  for (const entry of entries) {
+    const key = entry.realName.toLowerCase()
+    let bucket = bySpelling.get(key)
+    if (!bucket) {
+      bucket = new Map()
+      bySpelling.set(key, bucket)
+    }
+    if (!bucket.has(entry.realName)) bucket.set(entry.realName, entry)
+  }
+
+  return {
+    state: 'pronto',
+    ensureBuilt: () => {},
+    lookup: (fileName: string): IncludeLookup => {
+      const bucket = bySpelling.get(fileName.toLowerCase())
+      if (!bucket) return { kind: 'ausente' }
+      const spellings = [...bucket.values()]
+      if (spellings.length === 1) return { kind: 'encontrado', entry: spellings[0]! }
+      return { kind: 'ambíguo', candidates: spellings }
+    },
+  }
+}
+
+/** Instala o índice que a medição vai usar. Injeção, não estado global escondido. */
+export function useMeasurementIndex(index: IncludeIndexReader): void {
+  measurementIndex = index
+}
 
 /**
  * Quebra de linha em qualquer das três formas: CRLF, LF ou CR solto.
@@ -55,6 +117,8 @@ export interface MeasureAnalysisParams {
   readonly now?: () => number
   /** Quando falso, a análise roda sem nenhuma regra ligada. */
   readonly withRule?: boolean
+  /** Quando presente, roda SÓ aquela regra — a metade "com" da subtração por regra. */
+  readonly onlyRule?: string
 }
 
 export interface SourceMeasurement {
@@ -65,6 +129,16 @@ export interface SourceMeasurement {
   readonly withoutRuleMs: number
   readonly incrementalMs: number
   readonly hits: number
+  /**
+   * O custo incremental de CADA regra, medida sozinha contra a análise vazia.
+   *
+   * Com mais de uma regra registrada, um número único mediria todas juntas e o
+   * relatório atribuiria o custo somado a uma delas. O Portão 4 compara regra a
+   * regra.
+   */
+  readonly perRuleMs: Readonly<Record<string, number>>
+  /** Quantas vezes cada regra disparou. A taxa de falso positivo é POR REGRA. */
+  readonly hitsByRule: Readonly<Record<string, number>>
 }
 
 export interface MeasureSourceParams {
@@ -113,6 +187,7 @@ async function runOnce(text: string, rules: typeof RULES, now: () => number): Pr
     // análise, e montar texto de usuário não faz parte dela.
     translate: () => '',
     docHrefOf: () => '',
+    includes: measurementIndex,
     token: neverCancelled,
   })
   const elapsed = now() - startedAt
@@ -123,7 +198,12 @@ async function runOnce(text: string, rules: typeof RULES, now: () => number): Pr
 async function repeat(params: MeasureAnalysisParams): Promise<{ ms: number; hits: number }> {
   const repetitions = params.repetitions ?? DEFAULT_REPETITIONS
   const now = params.now ?? ((): number => performance.now())
-  const rules = params.withRule === false ? NO_RULES : RULES
+  const rules =
+    params.onlyRule !== undefined
+      ? onlyRule(params.onlyRule)
+      : params.withRule === false
+        ? NO_RULES
+        : RULES
 
   const samples: number[] = []
   let hits = 0
@@ -173,6 +253,21 @@ export async function measureSource(params: MeasureSourceParams): Promise<Source
     text,
   })
 
+  // O custo de cada regra, medida SOZINHA contra a análise vazia. É a mesma
+  // subtração do FR-021, feita uma vez por regra em vez de uma vez para o
+  // conjunto — sem isso, o relatório atribuiria a uma regra o custo de todas.
+  const perRuleMs: Record<string, number> = {}
+  for (const rule of RULES) {
+    const somenteEla = await repeat(
+      clock === undefined
+        ? { text, repetitions, onlyRule: rule.id }
+        : { text, repetitions, onlyRule: rule.id, now: clock },
+    )
+    perRuleMs[rule.id] = somenteEla.ms - withoutRule.ms
+  }
+
+  const hitsByRule = await countHitsByRule(text)
+
   return {
     path: params.path,
     lines: document.lineOffsets.length,
@@ -183,7 +278,43 @@ export async function measureSource(params: MeasureSourceParams): Promise<Source
     // inventar um número que ninguém consegue conferir.
     incrementalMs: withRule.ms - withoutRule.ms,
     hits: withRule.hits,
+    perRuleMs,
+    hitsByRule,
   }
+}
+
+/**
+ * Quantas vezes cada regra disparou neste fonte.
+ *
+ * Quem diz é o próprio motor, e não um segundo reconhecedor escrito aqui: uma
+ * regex paralela divergiria da regra no primeiro caso de borda, e a taxa
+ * apurada passaria a falar de outra coisa.
+ */
+async function countHitsByRule(text: string): Promise<Record<string, number>> {
+  const document = createAnalyzedDocument({
+    uri: 'file:///medicao.prw',
+    languageId: 'advpl',
+    version: 1,
+    text,
+  })
+  const result = await analyze({
+    document,
+    rules: RULES,
+    isEnabled: () => true,
+    severityOf: (rule) => rule.defaultSeverity,
+    translate: () => '',
+    docHrefOf: () => '',
+    includes: measurementIndex,
+    token: neverCancelled,
+  })
+
+  const byRule: Record<string, number> = {}
+  for (const rule of RULES) byRule[rule.id] = 0
+  for (const diagnostic of result.diagnostics) {
+    const ruleId = String(diagnostic.code)
+    byRule[ruleId] = (byRule[ruleId] ?? 0) + 1
+  }
+  return byRule
 }
 
 /**
@@ -211,6 +342,7 @@ export async function collectHits(
     severityOf: (rule) => rule.defaultSeverity,
     translate: () => '',
     docHrefOf: () => '',
+    includes: measurementIndex,
     token: neverCancelled,
   })
 

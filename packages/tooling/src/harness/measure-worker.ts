@@ -1,6 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads'
 
-import { measureSource } from './measure'
+import { buildStaticIndex, measureSource, useMeasurementIndex } from './measure'
 
 /**
  * O corpo de um trabalhador da medição.
@@ -18,6 +18,7 @@ import { measureSource } from './measure'
 
 interface WorkerSetup {
   readonly repetitions: number
+  readonly includeEntries: readonly { readonly realName: string; readonly directory: string }[]
 }
 
 export interface WorkerRequest {
@@ -29,6 +30,11 @@ export type WorkerResponse =
   | { readonly ok: false; readonly path: string; readonly reason: string }
 
 const setup = workerData as WorkerSetup
+
+// O índice chega PRONTO, montado a partir de entradas já lidas pelo processo
+// principal. Varrer o disco aqui faria cada trabalhador repetir a varredura da
+// árvore inteira, e o número medido deixaria de ser o custo por documento.
+useMeasurementIndex(buildStaticIndex(setup.includeEntries ?? []))
 
 parentPort?.on('message', (request: WorkerRequest) => {
   void measureSource({ path: request.path, repetitions: setup.repetitions })

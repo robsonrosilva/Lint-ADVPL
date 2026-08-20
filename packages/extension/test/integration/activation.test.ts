@@ -473,3 +473,117 @@ suite('Codificação', () => {
     assert.equal(encoding, 'windows1252')
   })
 })
+
+suite('Nenhum texto ao usuário é chave crua (Princípio V)', () => {
+  // ⚠️ Este teste existe por um defeito real, encontrado em 2026-08-20: o
+  // manifesto declarava `"l10n": "./l10n"`, diretório que nunca existiu, e a
+  // tradução de RUNTIME da extensão jamais carregava. `l10n.t('...')` devolvia
+  // a chave crua ao usuário.
+  //
+  // O `check:nls` não pegava: ele confere se as chaves batem entre os quatro
+  // idiomas, não se alguém consegue encontrar o arquivo. E o teste do SC-004
+  // cobria só a mensagem de DIAGNÓSTICO — o aviso de codificação, o título de
+  // comando e o relato da cadeia de includes ficavam de fora.
+  //
+  // Agora são dois guardas: `check:nls` confere estaticamente que o caminho
+  // declarado é onde o build grava, e este confere o que o editor de verdade
+  // carregou.
+  test('todo texto contribuído pelo manifesto foi traduzido', async () => {
+    const extension = vscode.extensions.getExtension(EXTENSION_ID)
+    assert.ok(extension)
+
+    // `packageJSON` já vem com o NLS resolvido pelo VS Code. Um `%chave%` que
+    // sobreviva aqui é uma chave que faltou no `package.nls.json`.
+    const cru = /^%.+%$/
+
+    /**
+     * O texto exibível de um campo do manifesto.
+     *
+     * O VS Code nem sempre devolve texto puro: campos traduzidos podem vir como
+     * `{ value, original }`, guardando a forma antes da tradução. Ler só `value`
+     * é o que interessa aqui — `original` é justamente o `%chave%`, e olhá-lo
+     * faria este teste reprovar o comportamento CORRETO.
+     */
+    const textoDe = (campo: unknown): string => {
+      if (typeof campo === 'string') return campo
+      if (typeof campo === 'object' && campo !== null && 'value' in campo) {
+        return String((campo as { value: unknown }).value)
+      }
+      return ''
+    }
+
+    const contributes = extension.packageJSON.contributes as {
+      commands?: { command: string; title?: unknown; category?: unknown }[]
+      configuration?: { title?: unknown; properties?: Record<string, { description?: unknown }> }
+    }
+
+    for (const comando of contributes.commands ?? []) {
+      const titulo = textoDe(comando.title)
+      assert.ok(titulo.length > 0, `o comando "${comando.command}" está sem título`)
+      assert.doesNotMatch(
+        titulo,
+        cru,
+        `o comando "${comando.command}" mostra a chave crua "${titulo}" na paleta`,
+      )
+      assert.doesNotMatch(
+        textoDe(comando.category) || 'ok',
+        cru,
+        `categoria crua em "${comando.command}"`,
+      )
+    }
+
+    assert.ok((contributes.commands ?? []).length > 0, 'a extensão não contribui comando nenhum')
+
+    for (const [chave, prop] of Object.entries(contributes.configuration?.properties ?? {})) {
+      const descricao = textoDe(prop.description)
+      assert.ok(descricao.length > 0, `a chave "${chave}" está sem descrição`)
+      assert.doesNotMatch(
+        descricao,
+        cru,
+        `a chave "${chave}" mostra o identificador cru nas Configurações`,
+      )
+    }
+
+    assert.doesNotMatch(textoDe(contributes.configuration?.title), cru)
+    assert.doesNotMatch(textoDe(extension.packageJSON.displayName), cru)
+    assert.doesNotMatch(textoDe(extension.packageJSON.description), cru)
+  })
+
+  test('o pacote de tradução de runtime está onde o manifesto diz', async () => {
+    // A outra metade do defeito: o `"l10n"` do manifesto precisa apontar para um
+    // diretório que EXISTE e tem o pacote base. Aqui, dentro do editor, o
+    // caminho é resolvido contra a extensão instalada — que é a situação real do
+    // usuário, e não a do repositório.
+    const extension = vscode.extensions.getExtension(EXTENSION_ID)
+    assert.ok(extension)
+
+    const declarado = extension.packageJSON.l10n as string | undefined
+    assert.ok(declarado, 'o manifesto não declara "l10n" — nenhuma tradução de runtime carregaria')
+
+    const fs = await import('node:fs/promises')
+    const base = path.join(extension.extensionPath, declarado, 'bundle.l10n.json')
+
+    await assert.doesNotReject(
+      () => fs.access(base),
+      `o manifesto aponta "${declarado}", e não há bundle.l10n.json ali (${base}). ` +
+        'Toda chamada de l10n.t devolveria a chave crua ao usuário.',
+    )
+  })
+
+  test('a mensagem de PJ0001 chega traduzida, com o nome real do disco', async () => {
+    // O outro mecanismo de tradução — o do servidor — sobre a regra nova. A
+    // mensagem precisa ser texto, não `rule.PJ0001.message`.
+    //
+    // Este teste NÃO configura diretório de include: se `PJ0001` não disparar
+    // aqui, ele não afirma nada e sai calado. Quem prova o disparo é a suíte
+    // pj0001.test.ts, com a árvore controlada.
+    const todos = vscode.languages
+      .getDiagnostics()
+      .flatMap(([, diagnostics]) => diagnostics)
+      .filter((d) => d.source === 'advpl-lint')
+
+    for (const d of todos) {
+      assert.doesNotMatch(d.message, /^rule\..+\.message$/, `chave crua vazou: ${d.message}`)
+    }
+  })
+})

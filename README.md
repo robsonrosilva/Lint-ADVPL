@@ -30,12 +30,37 @@ enquanto se digita, sem engasgo — em fonte de 300 linhas e em fonte de 27 mil.
 | Identificador | Origem | Grupo | Severidade | O que aponta |
 | ------------- | ------ | ----- | ---------- | ------------ |
 | [`CA3001`](docs/regras/CA3001.md) | catálogo TOTVS | G3 — Legacy and Deprecated Code | `Information` | diretiva de inclusão que não está em caixa baixa (`#INCLUDE` em vez de `#include`) |
+| [`PJ0001`](docs/regras/PJ0001.md) | **projeto** | — | `Information` | referência de include cuja **caixa** difere do nome real no disco — compila no Windows, falha no AppServer Linux |
 
 <!-- regras:fim -->
 
-Uma só, e é proposital: a spec que gerou o código entregou **o caminho completo** do arquivo aberto
-até o diagnóstico na tela, mais o instrumento que mede o custo disso, **antes** de qualquer regra
-cara existir. A régua tinha de existir primeiro.
+Duas, e a segunda é a razão de a extensão existir. `CA3001` veio do catálogo da TOTVS e prova o
+caminho completo — do arquivo aberto ao diagnóstico na tela, e de volta pela lâmpada que corrige.
+`PJ0001` é o que **o padrão não vê**: o TOTVS Code Analyzer não conhece o diretório de includes do
+projeto, e por isso não tem como comparar a referência com o arquivo que está no disco.
+
+As duas nascem **ligadas**, e as duas como `Information` — o que é o Princípio VI e o Princípio III
+funcionando juntos. `PJ0001` foi medida sobre o corpus antes de ser ligada: **0% de falso positivo**
+em 120 disparos revisados um a um. E é `Information` porque **72,9% dos fontes têm ao menos um
+disparo**: como `Warning`, ela inflaria a contagem de avisos de quase todo arquivo, e regra que
+aparece em todo lugar treina o usuário a ignorar o painel inteiro.
+
+### Corrigir, não só apontar
+
+A lâmpada 💡 conserta o que a extensão aponta:
+
+| Ação | Tipo | O que faz |
+| ---- | ---- | --------- |
+| Corrigir uma ocorrência | `quickfix` | troca só o trecho que está errado |
+| **Corrigir tudo neste arquivo** | `source.fixAll` | reúne as correções em **um** desfazer |
+
+`source.fixAll` é o tipo que o VS Code usa para `editor.codeActionsOnSave` — ligar
+`"editor.codeActionsOnSave": { "source.fixAll": true }` faz a correção acontecer ao salvar.
+
+⚠️ `PJ0001` fica **fora** da correção em massa por padrão. Trocar a diretiva é inerte; trocar o
+**nome do arquivo** muda o que o compilador vai procurar, e aplicar isso em massa, ao salvar, sem
+olhar, propagaria um índice errado pelo arquivo inteiro. Quem confia no índice inclui a regra em
+`advplLint.fixAll.includeRules`.
 
 ### Configuração
 
@@ -43,6 +68,10 @@ cara existir. A régua tinha de existir primeiro.
 | ----- | ------ | -------- |
 | `advplLint.rules.CA3001.enabled` | `true` | liga e desliga a regra |
 | `advplLint.rules.CA3001.severity` | `"default"` | severidade exibida; `default` usa a tabela versionada |
+| `advplLint.rules.PJ0001.enabled` | `true` | liga e desliga a regra |
+| `advplLint.rules.PJ0001.severity` | `"default"` | severidade exibida; `default` usa a que a regra declara (`Information`) |
+| `advplLint.includePaths` | `[]` | diretórios de include, quando nenhuma extensão de terceiro os informa; definível **por workspace** |
+| `advplLint.fixAll.includeRules` | `["CA3001"]` | quais regras participam do "corrigir tudo" e da correção ao salvar |
 | `advplLint.trace.server` | `"off"` | rastreamento do protocolo |
 | `advplLint.log.level` | `"off"` | nível do log da extensão |
 

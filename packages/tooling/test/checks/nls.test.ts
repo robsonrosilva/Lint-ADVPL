@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { LOCALES } from '../../src/locales'
-import { findNlsProblems, mechanismsOf } from '../../src/checks/nls'
+import { findL10nPathProblems, findNlsProblems, mechanismsOf } from '../../src/checks/nls'
 
 // __dirname aponta para packages/tooling/out/test/checks — cinco níveis até a raiz.
 const REPO_ROOT = join(__dirname, '..', '..', '..', '..', '..')
@@ -147,6 +147,57 @@ describe('Verificação de NLS — acusa a divergência e diz onde', () => {
       assert.deepEqual(await findNlsProblems(mechanismsOf(root)), [])
     } finally {
       await rm(root, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('O pacote de tradução da extensão precisa ser ENCONTRÁVEL (Princípio V)', () => {
+  const SCRIPT_REAL = "await mkdir(join(REPO_ROOT, 'packages/extension/dist/l10n'), { recursive: true })"
+
+  it('o repositório de verdade está consistente', async () => {
+    const { readFile } = await import('node:fs/promises')
+    const raiz = join(__dirname, '..', '..', '..', '..', '..')
+    const manifesto = JSON.parse(
+      await readFile(join(raiz, 'packages', 'extension', 'package.json'), 'utf8'),
+    ) as { l10n?: unknown }
+    const script = await readFile(
+      join(raiz, 'packages', 'tooling', 'scripts', 'bundle.mjs'),
+      'utf8',
+    )
+
+    const problems = findL10nPathProblems({ manifestValue: manifesto.l10n, bundleScript: script })
+
+    assert.deepEqual(problems, [], problems.join('\n'))
+  })
+
+  it('acusa o defeito real: manifesto apontando para onde o build NÃO grava', () => {
+    // Até 2026-08-20 o manifesto dizia `"./l10n"` e o build gravava em
+    // `dist/l10n`. A tradução de runtime nunca carregava, e `l10n.t` devolvia a
+    // chave crua ao usuário — o modo de falha que o Princípio V descreve.
+    const problems = findL10nPathProblems({
+      manifestValue: './l10n',
+      bundleScript: SCRIPT_REAL,
+    })
+
+    assert.equal(problems.length, 1)
+    assert.match(problems[0]!, /chave crua/i)
+  })
+
+  it('aceita a forma com e sem "./"', () => {
+    for (const valor of ['./dist/l10n', 'dist/l10n', 'dist/l10n/']) {
+      assert.deepEqual(
+        findL10nPathProblems({ manifestValue: valor, bundleScript: SCRIPT_REAL }),
+        [],
+        `com ${valor}`,
+      )
+    }
+  })
+
+  it('acusa manifesto sem a chave `l10n`', () => {
+    for (const ausente of [undefined, null, '', '   ', 42]) {
+      const problems = findL10nPathProblems({ manifestValue: ausente, bundleScript: SCRIPT_REAL })
+      assert.equal(problems.length, 1, `com ${JSON.stringify(ausente)}`)
+      assert.match(problems[0]!, /não declara/i)
     }
   })
 })

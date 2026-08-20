@@ -29,7 +29,7 @@ biblioteca legada e passou a ser a extensão. O `npm run verify` roda verde nela
 - **Governança**: a **constituição** (`.specify/memory/constitution.md`) é a autoridade — leia-a
   antes de propor código.
 
-  Vigente: **v2.4.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
+  Vigente: **v2.5.0**, seis princípios. O primeiro é **"O Editor Nunca Trava"** — leia-o antes de
   escrever qualquer código no caminho de análise; ele lista, com arquivo e linha, os defeitos do
   legado que produziram o travamento.
 
@@ -137,9 +137,23 @@ Projeto de um desenvolvedor: sem coluna de responsável, sem disputa de numeraç
 
 ## Testes
 
-> **Decisão em aberto: não há CI neste repositório** (a do `analise-advpl` só roda `npm run compile`).
-> Até existir, **a verificação é local** — e isso é o oposto da regra que vigora no outro projeto do
-> dono, onde um pipeline caro justificava proibir execução local.
+> **A CI existe desde 2026-08-20**: `.github/workflows/verify.yml`, a cada push e a cada pull
+> request. Ela **não substitui** a verificação local — as duas valem, e por razões diferentes.
+
+**O portão local continua sendo `npm run verify`, e ele é o completo.** Rode-o antes de commitar, em
+qualquer branch. A CI é a rede de segurança para o que a máquina do dono não pega: dependência
+resolvida diferente, caminho que só existe no Windows, arquivo esquecido fora do commit.
+
+**A CI quebra o `verify` em três jobs, e isso é deliberado.** Ela roda `estatico`, `unitario` e
+`integracao` em máquinas separadas em vez de encadear o `verify` inteiro, porque os testes de relógio
+da integração reprovam quando ela roda logo depois de centenas de testes unitários em processos
+paralelos — medido duas vezes aqui, está em `memoria/armadilhas-do-ambiente.md`. O job `portao` junta
+os três num resultado só. `packages/tooling/test/checks/verify-gate.test.ts` confere que nenhuma
+etapa do `verify` ficou de fora do pipeline.
+
+**A medição de linha de base NÃO roda na CI**, e não é esquecimento: ela exige o corpus, que é
+externo e que a constituição proíbe versionar. `npm run baseline` é local, e é o dono quem o roda
+antes de fechar uma spec.
 
 - **`npm test` roda na máquina, antes do commit.** Num projeto TypeScript custa segundos; não há
   runner para poupar.
@@ -154,7 +168,8 @@ Projeto de um desenvolvedor: sem coluna de responsável, sem disputa de numeraç
 - **O relatório ao usuário diz o que foi rodado, e nada além.** "Suíte verde" só se a suíte rodou.
 - ⚠️ **Cuidado ao interpretar execução com pipe**: `npm test | tail` devolve o código de saída do
   `tail`, não do teste. Um "exit code 0" já mascarou suíte que nem chegou a rodar.
-- Quando a CI existir, esta seção é reescrita e o portão de merge passa a ser dela.
+- **`npm ci` exige o `package-lock.json`, que é versionado desde 2026-08-20.** Mexeu em dependência?
+  Commite o lock junto, senão a CI reprova na instalação — que é exatamente o que ela deve fazer.
 
 ## Memória do projeto (versionada)
 
@@ -173,15 +188,16 @@ português).
 
 | Assunto                        | Estado                                                                     |
 | ------------------------------ | --------------------------------------------------------------------------- |
-| **Taxonomia de origem de regra** | ⚠️ **bloqueia a spec de ProtheusDOC.** As diretrizes da TOTVS exigem ProtheusDOC, mas isso **não tem id no catálogo SonarQube**. A taxonomia só prevê `totvs` (exige id) e `projeto` (regra nossa) — norma da TOTVS sem id não é nem uma nem outra. Criar terceira origem, ou aceitar como `projeto`? Ver [docs/inventario-legado.md](docs/inventario-legado.md) |
+| ~~**Taxonomia de origem de regra**~~ | ✅ resolvido em 2026-08-20 — constituição **v2.5.0** cria a terceira origem, `diretriz`: norma escrita da TOTVS sem entrada no catálogo. Ela cita **documento e data** no lugar do id. ⚠️ `TODO(DIRETRIZ_REGISTRY)`: o registro de regras ainda não a implementa — isso vem com a primeira regra que a use |
 | ~~**Ordem do trabalho**~~      | ✅ resolvido — especificar a 002 primeiro (feito), implementar a 001 primeiro (feito até `T085`). A [spec 002](specs/002-correcao-e-portabilidade-include/) espera pronta para `/speckit-plan` |
-| CI                             | não decidida — verificação local vale até lá                                |
+| ~~CI~~                         | ✅ resolvido em 2026-08-20 — `.github/workflows/verify.yml`, três jobs mais o portão. O `verify` local continua sendo o completo |
 | ~~`tasks-template` teste opcional~~ | ✅ resolvido — corrigido nos **seis** lugares onde a contradição estava, não nos dois citados (`T081`) |
 | Mapa de severidade             | 1ª entrada decidida (`MINOR` → `Information`); faltam as demais, em especial `CA2050`/`CA2051`/`CA2052` |
+| Cadeia de includes aponta a árvore CERTA? | ⚠️ `PJ0001` está ligada e depende disso. Hoje só o comando `advplLint.showIncludeSources` distingue "não dispara" de "dispara sobre a árvore errada" — e quem confere é o humano |
 | ~~Linha de base de desempenho~~ | ✅ resolvido — constituição **v2.4.0**, todos os itens do orçamento medidos e com teste. `TODO(BENCHMARK_BASE)` fechado |
-| `analise-advpl/` no repo raiz  | repo aninhado; definir se vira submódulo, sai do diretório ou fica assim    |
+| ~~`analise-advpl/` no repo raiz~~ | ✅ resolvido em 2026-08-20 — **fica como está**: repositório aninhado, não versionado, apenas fonte de conhecimento. NÃO vira submódulo. Lembre do `git add -A -- . ':!analise-advpl'` |
 | Revisão de tradução `es` e `ru`| chaves são verificadas por build; a **qualidade** do texto exige revisão humana antes de publicar |
-| `package-lock.json` ignorado   | herdado do legado; para extensão (não é lib publicada) versionar daria build reproduzível |
+| ~~`package-lock.json` ignorado~~ | ✅ resolvido em 2026-08-20 — **versionado**. `npm ci` na CI depende dele, e o build ficou reproduzível |
 | ~~Índice de specs~~            | ✅ resolvido — [specs/README.md](specs/README.md) é a fonte única de progresso |
 
 ## Fontes de Referência

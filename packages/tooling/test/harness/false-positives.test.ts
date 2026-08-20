@@ -200,3 +200,81 @@ describe('Revisão de falso positivo — do relatório sobe só o agregado (FR-0
     )
   })
 })
+
+describe('Revisão — um arquivo POR REGRA (spec 002)', () => {
+  const misturados: RuleHit[] = [
+    { ruleId: 'CA3001', path: 'D:\FONTES\A.PRW', line: 3, excerpt: '#INCLUDE "TOTVS.CH"' },
+    { ruleId: 'PJ0001', path: 'D:\FONTES\A.PRW', line: 4, excerpt: '#include "acadef.ch"' },
+    { ruleId: 'PJ0001', path: 'D:\FONTES\B.PRW', line: 9, excerpt: '#include "fwmvcdef.ch"' },
+  ]
+
+  it('separa os disparos por regra, um arquivo para cada', async () => {
+    // Com duas regras, um arquivo só juntaria os disparos das duas sob o nome
+    // da primeira — e a taxa apurada falaria de um material que mistura duas
+    // perguntas diferentes. O revisor precisa julgar uma regra de cada vez.
+    const dir = await mkdtemp(join(tmpdir(), 'advpl-fp-'))
+    try {
+      const written = await writeReviewMaterial(misturados, { dir, sampleSize: 10 })
+
+      const files = (await readdir(dir)).sort()
+      assert.deepEqual(files, ['CA3001.md', 'PJ0001.md'])
+
+      const ca = await readFile(join(dir, 'CA3001.md'), 'utf8')
+      const pj = await readFile(join(dir, 'PJ0001.md'), 'utf8')
+
+      assert.match(ca, /#INCLUDE "TOTVS\.CH"/)
+      assert.ok(!ca.includes('acadef.ch'), 'disparo de PJ0001 vazou para o material de CA3001')
+      assert.match(pj, /acadef\.ch/)
+      assert.match(pj, /fwmvcdef\.ch/)
+      assert.ok(!pj.includes('#INCLUDE "TOTVS.CH"'))
+
+      assert.equal(written.sampled, 3, 'a contagem devolvida deveria somar as duas regras')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('a amostragem é POR REGRA: a regra rara não some atrás da comum', async () => {
+    // Com um teto global, uma regra que dispara dez vezes menos que a outra
+    // ficaria com um punhado de casos — e a taxa dela não valeria nada.
+    const muitos: RuleHit[] = [
+      ...Array.from({ length: 50 }, (_, i) => ({
+        ruleId: 'CA3001',
+        path: `D:\FONTES\C${i}.PRW`,
+        line: 1,
+        excerpt: '#INCLUDE "TOTVS.CH"',
+      })),
+      ...Array.from({ length: 5 }, (_, i) => ({
+        ruleId: 'PJ0001',
+        path: `D:\FONTES\P${i}.PRW`,
+        line: 2,
+        excerpt: '#include "acadef.ch"',
+      })),
+    ]
+
+    const dir = await mkdtemp(join(tmpdir(), 'advpl-fp-'))
+    try {
+      await writeReviewMaterial(muitos, { dir, sampleSize: 10 })
+
+      const pj = await readFile(join(dir, 'PJ0001.md'), 'utf8')
+      const linhasDeTabela = pj.split('\n').filter((l) => l.startsWith('| ') && /\| \d+ \|/.test(l))
+
+      assert.equal(linhasDeTabela.length, 5, 'PJ0001 ficou com menos casos do que tinha para revisar')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('sem disparo nenhum, grava um material vazio e não quebra', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'advpl-fp-'))
+    try {
+      const written = await writeReviewMaterial([], { dir, sampleSize: 10 })
+
+      assert.equal(written.sampled, 0)
+      const raw = await readFile(written.path, 'utf8')
+      assert.match(raw, /0/)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+})

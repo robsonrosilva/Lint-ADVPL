@@ -3,6 +3,7 @@ import type { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types
 
 import { analyze } from './analysis/analyze'
 import { createAnalyzedDocument } from './document/analyzed-document'
+import type { IncludeIndexReader } from './includes/index-store'
 import type { RegisteredRule, RuleRegistry } from './rules/registry'
 
 /** Linguagens que este servidor analisa. Qualquer outra é ignorada. */
@@ -37,6 +38,8 @@ export interface DiagnosticsServiceOptions {
   readonly docHrefOf: (rule: RegisteredRule) => string
   readonly isEnabled: (rule: RegisteredRule, uri: string) => boolean
   readonly severityOf: (rule: RegisteredRule, uri: string) => DiagnosticSeverity
+  /** O índice de includes, para as regras que precisam dele (spec 002). */
+  readonly includes?: IncludeIndexReader
   readonly debounceMs?: number
 }
 
@@ -62,6 +65,15 @@ interface PendingWork {
 export class DiagnosticsService {
   private readonly documents = new Map<string, DocumentSnapshot>()
   private readonly pending = new Map<string, PendingWork>()
+  /**
+   * O que foi publicado por documento.
+   *
+   * Existe para a ação "corrigir todas deste arquivo": ela precisa dos
+   * diagnósticos do documento INTEIRO, e o pedido do editor só carrega os do
+   * intervalo sob o cursor. Reanalisar para descobri-los seria refazer, dentro
+   * do caminho da lâmpada, o trabalho que acabou de ser feito.
+   */
+  private readonly published = new Map<string, readonly Diagnostic[]>()
   private readonly debounceMs: number
 
   constructor(private readonly options: DiagnosticsServiceOptions) {
@@ -85,8 +97,19 @@ export class DiagnosticsService {
   close(uri: string): void {
     this.cancelPending(uri)
     this.documents.delete(uri)
+    this.published.delete(uri)
     // Documento fechado não deixa diagnóstico órfão no painel.
     this.options.publish({ uri, version: 0, diagnostics: [] })
+  }
+
+  /** O texto e a versão correntes daquele documento, como o motor os conhece. */
+  snapshotOf(uri: string): DocumentSnapshot | undefined {
+    return this.documents.get(uri)
+  }
+
+  /** O que está publicado para aquele documento. Vazio se nada foi publicado ainda. */
+  diagnosticsOf(uri: string): readonly Diagnostic[] {
+    return this.published.get(uri) ?? []
   }
 
   /**
@@ -160,6 +183,7 @@ export class DiagnosticsService {
         severityOf: (rule) => this.options.severityOf(rule, uri),
         translate: this.options.translate,
         docHrefOf: this.options.docHrefOf,
+        ...(this.options.includes ? { includes: this.options.includes } : {}),
         token: cancellation.token,
       })
 
@@ -175,6 +199,7 @@ export class DiagnosticsService {
       // publicado — e ramo redundante é ramo que ninguém consegue testar.
       if (this.documents.get(uri)?.version !== snapshot.version) return
 
+      this.published.set(uri, result.diagnostics)
       this.options.publish({ uri, version: snapshot.version, diagnostics: result.diagnostics })
     } finally {
       cancellation.dispose()
