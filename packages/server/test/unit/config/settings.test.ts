@@ -52,6 +52,25 @@ describe('Configuração — sem nada configurado, valem os padrões', () => {
 
     assert.equal(settings.severityOf(registered()), DiagnosticSeverity.Information)
   })
+
+  it('regra que o registro declara DESLIGADA nasce desligada (FR-036)', () => {
+    // Princípio VI: sem taxa de falso positivo medida, a regra entra desligada.
+    // Quem sabe disso é o registro; a configuração apenas obedece — se ela
+    // assumisse `true` aqui, a decisão do Princípio VI seria silenciosamente
+    // desfeita por quem nunca tocou na chave.
+    const settings = new Settings()
+    const desligada = { ...registered(), id: 'PJ0001', enabledByDefault: false }
+
+    assert.equal(settings.isEnabled(desligada), false)
+  })
+
+  it('o usuário RELIGA por chave a regra que nasce desligada', () => {
+    const settings = new Settings()
+    settings.update({ rules: { PJ0001: { enabled: true } } })
+    const desligada = { ...registered(), id: 'PJ0001', enabledByDefault: false }
+
+    assert.equal(settings.isEnabled(desligada), true)
+  })
 })
 
 describe('Configuração — o usuário manda (FR-013)', () => {
@@ -121,5 +140,51 @@ describe('Configuração — entrada inválida não derruba nem mente', () => {
     assert.doesNotThrow(() => settings.update({ rules: { CA3001: null } }))
 
     assert.equal(settings.isEnabled(registered()), true)
+  })
+})
+
+describe('Participação na correção em massa (FR-018, D9)', () => {
+  it('sem configuração, participa só quem está na lista padrão', () => {
+    // O padrão é uma LISTA, não "todas as regras ligadas": corrigir em massa é
+    // mais invasivo que apontar, e uma regra nova entra fora da correção
+    // automática até alguém decidir o contrário por escrito.
+    const settings = new Settings()
+
+    assert.equal(settings.participatesInFixAll('CA3001'), true)
+    assert.equal(settings.participatesInFixAll('PJ0001'), false)
+  })
+
+  it('o usuário escolhe quem participa', () => {
+    const settings = new Settings()
+    settings.update({ fixAll: { includeRules: ['CA3001', 'PJ0001'] } })
+
+    assert.equal(settings.participatesInFixAll('PJ0001'), true)
+  })
+
+  it('lista vazia significa NENHUMA regra na correção em massa', () => {
+    // Vazio precisa ser distinguível de "não configurado", senão desligar tudo
+    // seria impossível — a lista cairia no padrão e o usuário veria a correção
+    // acontecer mesmo tendo pedido que não.
+    const settings = new Settings()
+    settings.update({ fixAll: { includeRules: [] } })
+
+    assert.equal(settings.participatesInFixAll('CA3001'), false)
+  })
+
+  it('valor de tipo errado cai no padrão em vez de derrubar o servidor', () => {
+    // Configuração é ENTRADA EXTERNA. Um número onde deveria haver lista não
+    // pode virar exceção no meio do cálculo da lâmpada.
+    const settings = new Settings()
+    settings.update({ fixAll: { includeRules: 42 } })
+
+    assert.equal(settings.participatesInFixAll('CA3001'), true)
+  })
+
+  it('entrada que não é texto é ignorada, e o resto da lista continua valendo', () => {
+    const settings = new Settings()
+    settings.update({ fixAll: { includeRules: ['CA3001', 7, null] } })
+
+    assert.equal(settings.participatesInFixAll('CA3001'), true)
+    assert.equal(settings.participatesInFixAll('PJ0001'), false)
   })
 })

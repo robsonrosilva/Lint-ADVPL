@@ -41,6 +41,17 @@ export interface RuleDefinition {
    */
   readonly defaultSeverity?: DiagnosticSeverity
   /**
+   * A regra nasce ligada? Omitir significa SIM — é o caso da esmagadora
+   * maioria, e obrigar todas a declarar transformaria a exceção em cerimônia.
+   *
+   * Existe por causa do Princípio VI: regra sem taxa de falso positivo medida
+   * sobre o corpus entra DESLIGADA. `PJ0001` é a primeira nessa situação, e o
+   * lugar de dizer isso é aqui — o registro é a fonte única de onde saem as
+   * chaves do manifesto e a resposta de "esta regra está ligada?". Declarar o
+   * padrão em dois lugares é como as duas listas divergem.
+   */
+  readonly enabledByDefault?: boolean
+  /**
    * Sobreposição da tabela, para regra `totvs`, com a razão OBRIGATÓRIA.
    *
    * Existe porque a tabela mapeia severidade de CATÁLOGO, e há um segundo eixo
@@ -59,9 +70,10 @@ export interface RuleDefinition {
   run(context: RuleContext): void
 }
 
-/** Uma regra já validada, com a severidade padrão resolvida. */
+/** Uma regra já validada, com a severidade e o estado padrão resolvidos. */
 export interface RegisteredRule extends RuleDefinition {
   readonly defaultSeverity: DiagnosticSeverity
+  readonly enabledByDefault: boolean
 }
 
 export class RuleDefinitionError extends Error {
@@ -145,7 +157,7 @@ export class RuleRegistry {
       defaultSeverity = definition.defaultSeverity
     }
 
-    this.byId.set(id, { ...definition, defaultSeverity })
+    this.byId.set(id, { ...definition, defaultSeverity, enabledByDefault: definition.enabledByDefault ?? true })
     this.configKeys.add(configKey)
   }
 

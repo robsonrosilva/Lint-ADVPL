@@ -1,4 +1,14 @@
 {
   "rule.CA3001.message": "Include directive must be lowercase. Use \"#include\" instead.",
-  "encoding.wrongEncoding": "This ADVPL/TLPP source is not being read as Windows-1252 (CP1252). Diagnostics may be reported at the wrong column."
+  "encoding.wrongEncoding": "This ADVPL/TLPP source is not being read as Windows-1252 (CP1252). Diagnostics may be reported at the wrong column.",
+  "action.CA3001.title": "CA3001: change the directive to \"#include\" (lowercase)",
+  "action.fixAll.title": "ADVPL Lint: fix all auto-fixable problems in this file",
+  "includeSources.inUse": "ADVPL Lint — include directories in use\n\nSource: {source}\nDirectories ({count}):\n{directories}",
+  "includeSources.none": "ADVPL Lint — no usable source of include directories was found. PJ0001 stays silent. Set \"advplLint.includePaths\" to point at the include tree.",
+  "includeSources.command.title": "ADVPL Lint: Show include directories in use",
+  "includes.unreadable": "ADVPL Lint could not read {count} include directory(ies): {directories}. PJ0001 stays silent for what is there. This warning appears only once per session.",
+  "rule.PJ0001.message": "Include reference \"{referenced}\" differs in case from the real file on disk: \"{real}\". It compiles on Windows and fails on the Linux AppServer.",
+  "action.PJ0001.title": "PJ0001: use the real file name from disk",
+  "includes.progress.title": "ADVPL Lint: indexing include files",
+  "includes.progress.scanned": "{lidos} directory(ies) read"
 }

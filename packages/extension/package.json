@@ -16,12 +16,19 @@
     "Programming Languages"
   ],
   "main": "./out/src/extension.js",
-  "l10n": "./l10n",
+  "l10n": "./dist/l10n",
   "activationEvents": [
     "onLanguage:advpl",
     "onLanguage:tlpp"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "advplLint.showIncludeSources",
+        "title": "%command.showIncludeSources.title%",
+        "category": "%extension.displayName%"
+      }
+    ],
     "languages": [
       {
         "id": "advpl",
@@ -75,6 +82,43 @@
           ],
           "default": "default",
           "description": "%configuration.rules.CA3001.severity%"
+        },
+        "advplLint.rules.PJ0001.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.rules.PJ0001.enabled%"
+        },
+        "advplLint.rules.PJ0001.severity": {
+          "type": "string",
+          "enum": [
+            "default",
+            "error",
+            "warning",
+            "information",
+            "hint"
+          ],
+          "default": "default",
+          "description": "%configuration.rules.PJ0001.severity%"
+        },
+        "advplLint.includePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "description": "%configuration.includePaths%"
+        },
+        "advplLint.fixAll.includeRules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "CA3001"
+          ],
+          "scope": "resource",
+          "description": "%configuration.fixAll.includeRules%"
         },
         "advplLint.trace.server": {
           "type": "string",

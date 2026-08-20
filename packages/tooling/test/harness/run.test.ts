@@ -5,7 +5,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { CORPUS_ENV_VAR } from '../../src/harness/corpus-config'
-import { runBaseline, shouldReportProgress } from '../../src/harness/run'
+import {
+  costOf,
+  hitsForRule,
+  measureIndexing,
+  runBaseline,
+  shouldReportProgress,
+} from '../../src/harness/run'
 
 describe('Aviso de progresso', () => {
   it('avisa a cada fatia de 10%', () => {
@@ -405,5 +411,210 @@ describe('Medição com corpus — o encadeamento (T059)', () => {
     } finally {
       await rm(repoRoot, { recursive: true, force: true })
     }
+  })
+})
+
+describe('Custo da indexação, medido em separado (R8, FR-042)', () => {
+  it('conta diretórios, arquivos e tempo, e devolve o que leu', async () => {
+    // Uma varredura só, servindo a duas coisas: o número do relatório e o
+    // índice que os trabalhadores usam para medir PJ0001. Varrer duas vezes
+    // mediria o cache do sistema de arquivos na segunda.
+    const raiz = await mkdtemp(join(tmpdir(), 'advpl-idx-'))
+    try {
+      await mkdir(join(raiz, 'sub'), { recursive: true })
+      await writeFile(join(raiz, 'ACADEF.CH'), '// include\r\n', 'latin1')
+      await writeFile(join(raiz, 'sub', 'totvs.ch'), '// include\r\n', 'latin1')
+      await writeFile(join(raiz, 'programa.prw'), 'Return\r\n', 'latin1')
+
+      const { measurement, entries } = await measureIndexing(raiz)
+
+      assert.equal(measurement.files, 2, 'contou arquivo que não é include')
+      assert.equal(measurement.directories, 2)
+      assert.ok(Number.isFinite(measurement.scanMs) && measurement.scanMs >= 0)
+
+      // As entradas levam o nome REAL, que é o valor inteiro da varredura.
+      assert.deepEqual(
+        entries.map((e) => e.realName).sort(),
+        ['ACADEF.CH', 'totvs.ch'],
+      )
+    } finally {
+      await rm(raiz, { recursive: true, force: true })
+    }
+  })
+
+  it('árvore sem include nenhum devolve zero, não falha', async () => {
+    const raiz = await mkdtemp(join(tmpdir(), 'advpl-idx-'))
+    try {
+      const { measurement, entries } = await measureIndexing(raiz)
+
+      assert.equal(measurement.files, 0)
+      assert.deepEqual(entries, [])
+    } finally {
+      await rm(raiz, { recursive: true, force: true })
+    }
+  })
+
+  it('o relatório publica a indexação, e ela NÃO entra no custo por documento', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'advpl-run-'))
+    const corpus = join(repoRoot, 'fontes')
+    const baselineDir = join(repoRoot, 'baseline')
+    try {
+      await mkdir(corpus)
+      await mkdir(baselineDir)
+      await writeFile(join(corpus, 'ACADEF.CH'), '// include\r\n', 'latin1')
+      await writeFile(
+        join(corpus, 'a.prw'),
+        ['#INCLUDE "acadef.ch"', 'Return', ''].join('\r\n'),
+        'latin1',
+      )
+
+      const result = await runBaseline({
+        repoRoot,
+        env: { [CORPUS_ENV_VAR]: corpus },
+        baselineDir,
+        out: () => {},
+        repetitions: 1,
+        minimumSample: 1,
+        reviewSampleSize: 2,
+      })
+
+      const { readFile } = await import('node:fs/promises')
+      const json = JSON.parse(await readFile(result.jsonPath!, 'utf8')) as {
+        schemaVersion: number
+        indexing: { files: number; directories: number; scanMs: number } | null
+        ruleCost: { ruleId: string }[]
+        falsePositives: { ruleId: string; hits: number }[]
+      }
+
+      assert.equal(json.schemaVersion, 2)
+      assert.equal(json.indexing?.files, 1)
+      assert.ok(json.indexing!.scanMs >= 0)
+
+      // As duas regras aparecem, cada uma com o SEU custo.
+      assert.deepEqual(json.ruleCost.map((r) => r.ruleId), ['CA3001', 'PJ0001'])
+      assert.deepEqual(json.falsePositives.map((f) => f.ruleId), ['CA3001', 'PJ0001'])
+
+      // Com o índice pronto, PJ0001 enxerga a divergência de caixa: o fonte
+      // referencia `acadef.ch` e o disco guarda `ACADEF.CH`.
+      const pj = json.falsePositives.find((f) => f.ruleId === 'PJ0001')
+      assert.equal(pj?.hits, 1, 'PJ0001 não disparou — o índice não chegou aos trabalhadores')
+    } finally {
+      await rm(repoRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('leva ao relatório o veredito de PJ0001, quando existe', async () => {
+    const repoRoot = await mkdtemp(join(tmpdir(), 'advpl-run-'))
+    const corpus = join(repoRoot, 'fontes')
+    const baselineDir = join(repoRoot, 'baseline')
+    try {
+      await mkdir(corpus)
+      await mkdir(join(repoRoot, '.fp-review'), { recursive: true })
+      await writeFile(
+        join(repoRoot, '.fp-review', 'PJ0001.verdict.json'),
+        JSON.stringify({ reviewed: 1, falsePositives: 0 }),
+        'utf8',
+      )
+      await writeFile(join(corpus, 'ACADEF.CH'), '// include\r\n', 'latin1')
+      await writeFile(join(corpus, 'a.prw'), ['#include "acadef.ch"', ''].join('\r\n'), 'latin1')
+
+      const result = await runBaseline({
+        repoRoot,
+        env: { [CORPUS_ENV_VAR]: corpus },
+        baselineDir,
+        out: () => {},
+        repetitions: 1,
+        minimumSample: 1,
+        reviewSampleSize: 2,
+      })
+
+      const { readFile } = await import('node:fs/promises')
+      const json = JSON.parse(await readFile(result.jsonPath!, 'utf8')) as {
+        falsePositives: { ruleId: string; reviewed: number; rate: number }[]
+      }
+      const pj = json.falsePositives.find((f) => f.ruleId === 'PJ0001')
+
+      assert.equal(pj?.reviewed, 1)
+      assert.equal(pj?.rate, 0)
+    } finally {
+      await rm(repoRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('descarta veredito de PJ0001 apurado sobre outra medição', async () => {
+    // A mesma regra que já vale para CA3001: taxa apurada sobre mais disparos
+    // do que esta medição encontrou fala de outro material.
+    const repoRoot = await mkdtemp(join(tmpdir(), 'advpl-run-'))
+    const corpus = join(repoRoot, 'fontes')
+    const baselineDir = join(repoRoot, 'baseline')
+    try {
+      await mkdir(corpus)
+      await mkdir(join(repoRoot, '.fp-review'), { recursive: true })
+      await writeFile(
+        join(repoRoot, '.fp-review', 'PJ0001.verdict.json'),
+        JSON.stringify({ reviewed: 999, falsePositives: 12 }),
+        'utf8',
+      )
+      await writeFile(join(corpus, 'ACADEF.CH'), '// include\r\n', 'latin1')
+      await writeFile(join(corpus, 'a.prw'), ['#include "acadef.ch"', ''].join('\r\n'), 'latin1')
+
+      const result = await runBaseline({
+        repoRoot,
+        env: { [CORPUS_ENV_VAR]: corpus },
+        baselineDir,
+        out: () => {},
+        repetitions: 1,
+        minimumSample: 1,
+        reviewSampleSize: 2,
+      })
+
+      const { readFile } = await import('node:fs/promises')
+      const json = JSON.parse(await readFile(result.jsonPath!, 'utf8')) as {
+        falsePositives: { ruleId: string; reviewed: number; falsePositives: number }[]
+      }
+      const pj = json.falsePositives.find((f) => f.ruleId === 'PJ0001')
+
+      assert.equal(pj?.reviewed, 0, 'publicou uma taxa apurada sobre outro material')
+      assert.equal(pj?.falsePositives, 0)
+    } finally {
+      await rm(repoRoot, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('Custo e disparos por regra — o zero deliberado', () => {
+  function medicao(overrides: Record<string, unknown> = {}) {
+    return {
+      path: '/corpus/x.prw',
+      lines: 10,
+      bytes: 100,
+      withRuleMs: 2,
+      withoutRuleMs: 1,
+      incrementalMs: 1,
+      hits: 1,
+      perRuleMs: { CA3001: 0.5 },
+      hitsByRule: { CA3001: 3 },
+      ...overrides,
+    }
+  }
+
+  it('devolve o custo medido daquela regra', () => {
+    assert.equal(costOf(medicao(), 'CA3001'), 0.5)
+  })
+
+  it('devolve ZERO para regra que a medição não traz', () => {
+    // Acontece quando a lista de regras do relatório cita uma que o motor ainda
+    // não registra. Derrubar a medição inteira por isso puniria quem está
+    // justamente preparando a coluna do relatório para a regra que vem.
+    assert.equal(costOf(medicao(), 'PJ9999'), 0)
+  })
+
+  it('soma os disparos daquela regra em toda a amostra', () => {
+    assert.equal(hitsForRule([medicao(), medicao()], 'CA3001'), 6)
+  })
+
+  it('conta zero para regra ausente de alguns fontes', () => {
+    assert.equal(hitsForRule([medicao(), medicao({ hitsByRule: {} })], 'CA3001'), 3)
+    assert.equal(hitsForRule([medicao()], 'PJ9999'), 0)
   })
 })

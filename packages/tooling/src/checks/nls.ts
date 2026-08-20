@@ -118,3 +118,57 @@ export async function findNlsProblems(mechanisms: readonly NlsMechanism[]): Prom
 
 /** O idioma base é o recuo de todos os outros; existe para o relatório citá-lo. */
 export const NLS_BASE_LOCALE = BASE_LOCALE
+
+/**
+ * O caminho declarado em `"l10n"` do manifesto é onde o build grava os pacotes?
+ *
+ * ⚠️ **Isto já falhou em silêncio.** Até 2026-08-20 o manifesto declarava
+ * `"l10n": "./l10n"`, diretório que **nunca existiu** — o build sempre gravou em
+ * `dist/l10n`. Resultado: a tradução de runtime da extensão jamais carregava, e
+ * `l10n.t('encoding.wrongEncoding')` devolvia a CHAVE CRUA ao usuário.
+ *
+ * É exatamente o modo de falha que o Princípio V existe para impedir, e o portão
+ * `check:nls` não o pegava: ele confere se as chaves batem entre os quatro
+ * idiomas, não se alguém consegue encontrar o arquivo.
+ *
+ * A verificação é de CONSISTÊNCIA entre duas declarações — o manifesto e o
+ * script de empacotamento — e não depende de o build ter rodado. Comparar contra
+ * um diretório no disco daria verde num clone recém-feito, onde `dist/` não
+ * existe ainda, e é justamente aí que o defeito seria introduzido sem alarme.
+ */
+export interface L10nPathSources {
+  /** O valor de `"l10n"` no manifesto da extensão. */
+  readonly manifestValue: unknown
+  /** O conteúdo de `packages/tooling/scripts/bundle.mjs`. */
+  readonly bundleScript: string
+}
+
+export function findL10nPathProblems(sources: L10nPathSources): string[] {
+  const problems: string[] = []
+  const declared = sources.manifestValue
+
+  if (typeof declared !== 'string' || declared.trim().length === 0) {
+    return [
+      'o manifesto da extensão não declara `"l10n"` — sem ele o VS Code não carrega ' +
+        'pacote de tradução nenhum, e toda chamada de `l10n.t` devolve a CHAVE CRUA ao usuário',
+    ]
+  }
+
+  // `./dist/l10n` e `dist/l10n` são o mesmo lugar; o que interessa é o destino.
+  const normalized = declared.replace(/^\.\//, '').replace(/\/+$/, '')
+
+  // O script copia para um caminho que termina no destino declarado. Casar pelo
+  // FIM, e não pelo caminho inteiro, porque o script monta o caminho a partir da
+  // raiz do repositório e do nome do pacote.
+  const copiaPara = new RegExp(`packages/extension/${normalized.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`)
+
+  if (!copiaPara.test(sources.bundleScript)) {
+    problems.push(
+      `o manifesto declara \`"l10n": "${declared}"\`, e o script de empacotamento NÃO grava ali. ` +
+        'O VS Code não acharia os pacotes, e toda chamada de `l10n.t` devolveria a chave crua — ' +
+        'foi assim, exatamente, entre a spec 001 e 2026-08-20.',
+    )
+  }
+
+  return problems
+}

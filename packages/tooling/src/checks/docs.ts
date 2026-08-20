@@ -3,6 +3,7 @@ import { join } from 'node:path'
 
 import { RuleRegistry } from '@advpl-lint/server/out/src/rules/registry'
 import { ca3001 } from '@advpl-lint/server/out/src/rules/ca3001'
+import { pj0001 } from '@advpl-lint/server/out/src/rules/pj0001'
 
 /**
  * O Portão 6 da constituição, na parte que dá para automatizar.
@@ -22,6 +23,7 @@ export const DOCS_DIR = 'docs/regras'
 export function registeredRuleIds(): string[] {
   const registry = new RuleRegistry()
   registry.register(ca3001)
+  registry.register(pj0001)
   return registry.all().map((rule) => rule.id)
 }
 

@@ -1,6 +1,7 @@
 import type { CancellationToken } from 'vscode-languageserver'
 import type { Range } from 'vscode-languageserver-types'
 import type { AnalyzedDocument } from '../document/analyzed-document'
+import type { IncludeIndexReader } from '../includes/index-store'
 
 /**
  * O que a varredura léxica entrega às regras.
@@ -46,11 +47,34 @@ export interface RuleContext {
    */
   readonly scan: ScanResult
   readonly token: CancellationToken
+  /**
+   * O que existe no disco, em memória (spec 002).
+   *
+   * ⚠️ Isto NÃO contradiz o parágrafo acima, e a distinção é a spec inteira: o
+   * que a regra recebe é um MAPA JÁ LIDO, com consulta síncrona. Ela não abre
+   * arquivo, não lista diretório e não tem como esperar por disco — `lookup`
+   * responde na hora e `ensureBuilt` dispara a varredura sem aguardá-la.
+   *
+   * Quem faz I/O é o índice, no seu próprio tempo, fora do caminho de análise.
+   * Se este campo fosse uma promessa, a primeira abertura de arquivo esperaria
+   * por dezenas de milhares de leituras de disco — e é exatamente essa a porta
+   * que o contrato síncrono fecha.
+   */
+  readonly includes: IncludeIndexReader
 
   /**
    * Reporta uma violação. A regra informa ONDE; quem monta a mensagem
    * traduzida é o emissor, porque a tradução depende do idioma efetivo e a
    * regra não tem por que conhecê-lo.
+   *
+   * `data` viaja com o diagnóstico até a ação de correção — é como `PJ0001`
+   * leva o nome real lido do disco até quem vai escrever a substituição, sem
+   * que o conserto tenha de consultar o índice de novo sobre um estado que já
+   * pode ter mudado.
    */
-  report(range: Range, args?: Readonly<Record<string, string | number>>): void
+  report(
+    range: Range,
+    args?: Readonly<Record<string, string | number>>,
+    data?: unknown,
+  ): void
 }

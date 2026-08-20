@@ -2,6 +2,7 @@ import type { CancellationToken } from 'vscode-languageserver'
 import type { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types'
 
 import type { AnalyzedDocument } from '../document/analyzed-document'
+import { EMPTY_INCLUDE_INDEX, type IncludeIndexReader } from '../includes/index-store'
 import type { RegisteredRule } from '../rules/registry'
 import { scanDocument } from './scanner'
 import { AnalysisCancelledError, TimeSlice, throwIfCancelled } from './cancellation'
@@ -33,6 +34,16 @@ export interface AnalyzeRequest {
   readonly translate: (rule: RegisteredRule, args?: Readonly<Record<string, string | number>>) => string
   /** Endereço da documentação daquela regra, para o usuário chegar lá do editor. */
   readonly docHrefOf: (rule: RegisteredRule) => string
+  /**
+   * O índice de includes, para as regras que precisam saber o que existe no
+   * disco (spec 002).
+   *
+   * Opcional, e o padrão é o índice VAZIO: quem analisa sem cadeia resolvida —
+   * o harness de medição, os testes das outras regras — não precisa saber que
+   * ele existe, e `PJ0001` simplesmente cala, que é o comportamento previsto
+   * quando não há diretório utilizável (FR-023).
+   */
+  readonly includes?: IncludeIndexReader
   readonly token: CancellationToken
 }
 
@@ -62,6 +73,7 @@ export interface AnalyzeResult {
  */
 export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
   const { document, rules, isEnabled, severityOf, translate, docHrefOf, token } = request
+  const includes = request.includes ?? EMPTY_INCLUDE_INDEX
   const diagnostics: Diagnostic[] = []
 
   try {
@@ -109,7 +121,8 @@ export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
           endLine: end,
           scan,
           token,
-          report: (range: Range, args) => {
+          includes,
+          report: (range: Range, args, data) => {
             diagnostics.push({
               // O identificador é o do catálogo, puro, sem prefixo nem
               // qualificação de origem (D2 da spec 001).
@@ -119,6 +132,11 @@ export async function analyze(request: AnalyzeRequest): Promise<AnalyzeResult> {
               range,
               message: translate(rule, args),
               source: DIAGNOSTIC_SOURCE,
+              // `data` viaja com o diagnóstico até a ação de correção. É como
+              // `PJ0001` leva o nome real do disco até quem escreve a
+              // substituição. Omitido quando a regra não manda nada: um campo
+              // `undefined` no protocolo é ruído no cano.
+              ...(data === undefined ? {} : { data }),
             })
           },
         })

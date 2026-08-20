@@ -1,6 +1,7 @@
 import { SEVERITY_CHOICES, ruleConfigKey } from '@advpl-lint/server/out/src/config/settings'
 import { RuleRegistry } from '@advpl-lint/server/out/src/rules/registry'
 import { ca3001 } from '@advpl-lint/server/out/src/rules/ca3001'
+import { pj0001 } from '@advpl-lint/server/out/src/rules/pj0001'
 
 /**
  * As chaves de `contributes.configuration` saem do REGISTRO DE REGRAS.
@@ -18,6 +19,7 @@ import { ca3001 } from '@advpl-lint/server/out/src/rules/ca3001'
 function registry(): RuleRegistry {
   const instance = new RuleRegistry()
   instance.register(ca3001)
+  instance.register(pj0001)
   return instance
 }
 
@@ -38,7 +40,12 @@ export async function buildRuleProperties(): Promise<ManifestProperties> {
 
     properties[`${base}.enabled`] = {
       type: 'boolean',
-      default: true,
+      // O padrão sai do REGISTRO, não de um `true` escrito aqui. Regra sem taxa
+      // de falso positivo medida nasce desligada (Princípio VI, FR-036), e um
+      // literal neste lugar desfaria essa decisão em silêncio — o manifesto
+      // diria "ligada" enquanto o motor diz "desligada", e o usuário veria a
+      // caixa marcada com a regra calada.
+      default: rule.enabledByDefault,
       // Nenhuma string ao usuário é literal (Princípio V). `%chave%` é como o
       // manifesto do VS Code referencia a tradução.
       description: `%${enabledKey}%`,

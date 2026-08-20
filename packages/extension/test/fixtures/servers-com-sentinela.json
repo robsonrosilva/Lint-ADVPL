@@ -1,0 +1,37 @@
+{
+  "$comment": [
+    "FIXTURE AUTORAL - advpl-lint - NAO e copia de arquivo real de ninguem.",
+    "Proposito: provar o SC-016. Reproduz a FORMA de ~/.totvsls/servers.json do",
+    "totvs.tds-vscode v2.0.16 - a chave `includes`, que e a unica que nos",
+    "interessa, ao lado de `savedTokens`, `permissions` e `connectedServer`, que",
+    "guardam credencial e NUNCA podem sair desta leitura.",
+    "",
+    "O valor sentinela abaixo aparece nas tres chaves sensiveis. O teste afirma",
+    "que ele nao surge no retorno, nem no canal de log, nem no texto de excecao.",
+    "",
+    "Os diretorios de `includes` sao substituidos em tempo de teste por diretorios",
+    "temporarios de verdade: a cadeia so aceita fonte com diretorio EXISTENTE."
+  ],
+  "version": "0.2.0",
+  "includes": ["C:/totvs/protheus/includes", "C:/projeto/includes"],
+  "configurations": [
+    {
+      "id": "servidor-de-mentira",
+      "type": "totvs_server_protheus",
+      "name": "servidor-de-mentira",
+      "address": "127.0.0.1",
+      "port": 1234,
+      "buildVersion": "7.00.191205P",
+      "secure": false,
+      "includes": ["C:/nao-deve-vencer/includes"]
+    }
+  ],
+  "savedTokens": [
+    { "id": "servidor-de-mentira", "token": "SENTINELA-NAO-DEVE-VAZAR-8f3a2b1c" }
+  ],
+  "permissions": { "authorizationtoken": "SENTINELA-NAO-DEVE-VAZAR-8f3a2b1c" },
+  "connectedServer": {
+    "id": "servidor-de-mentira",
+    "token": "SENTINELA-NAO-DEVE-VAZAR-8f3a2b1c"
+  }
+}

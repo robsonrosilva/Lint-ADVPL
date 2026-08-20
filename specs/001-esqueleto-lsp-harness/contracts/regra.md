@@ -15,13 +15,30 @@ interface RuleDefinition {
   readonly configKey: string          // 'advplLint.rules.CA3001'
   readonly messageKey: string         // chave de tradução
   readonly projectRationale: string | null
+  readonly defaultSeverity?: DiagnosticSeverity          // OBRIGATÓRIA em regra `project`
+  readonly enabledByDefault?: boolean                    // omitir = nasce ligada
   readonly severityOverride?: { severity: DiagnosticSeverity; reason: string }
   run(ctx: RuleContext): void
 }
 ```
 
-`defaultSeverity` **não** é declarado: ele é derivado de `catalogSeverity` pela tabela versionada, no
-momento do registro.
+Em regra `totvs`, `defaultSeverity` **não** é declarado: ele é derivado de `catalogSeverity` pela
+tabela versionada, no momento do registro.
+
+> **Ampliação da spec 002** (2026-08-19, R5): em regra `origin: 'project'` o caminho acima **não
+> existe** — `catalogSeverity` é `null` por definição, e a tabela mapeia severidade de CATÁLOGO.
+> Regra sem catálogo não tem o que traduzir. Por isso ela **declara** `defaultSeverity`, e o registro
+> **exige** a declaração: ausência é erro de registro, com o identificador citado na mensagem.
+>
+> Não é exceção ao Princípio IV; é o princípio alcançando um caso que ainda não existia. A tabela
+> continua sendo a única fonte para regra de catálogo — forçar uma regra sem catálogo a inventar uma
+> entrada nela faria a tabela mentir sobre o que ela mapeia.
+
+`enabledByDefault` também chegou pela spec 002, e pela razão do **Princípio VI**: regra sem taxa de
+falso positivo medida sobre o corpus entra **desligada** (FR-036). Omiti-lo significa "ligada", que é
+o caso da esmagadora maioria. O lugar de dizer isso é o registro, porque é dele que saem tanto as
+chaves de `contributes.configuration` quanto a resposta de "esta regra está ligada?" — declarar o
+padrão em dois lugares é exatamente como duas listas divergem.
 
 Registrar regra cuja severidade de catálogo não tem entrada na tabela é **erro de registro**, não
 valor padrão silencioso — é assim que a próxima spec fica impedida de "resolver" o
@@ -40,6 +57,7 @@ literal disfarçada que o Princípio III veda — por isso o registro a rejeita.
 | 1 | `id` único; `configKey` única |
 | 2 | `origin === 'totvs'` ⟹ `group` e `catalogSeverity` preenchidos, `projectRationale === null` |
 | 3 | `origin === 'project'` ⟹ `id` casa `/^PJ\d{4}$/`, `group` e `catalogSeverity` nulos, e `projectRationale` **não vazio** — o que ela pega que o padrão não pega (Princípio III) |
+| 3a | `origin === 'project'` ⟹ `defaultSeverity` **declarada**; ausência é erro de registro, e a mensagem cita o identificador (spec 002, FR-035) |
 | 4 | `messageKey` existe nos quatro idiomas |
 | 5 | `docs/regras/<id>.md` existe |
 | 6 | `catalogSeverity` tem entrada na tabela de severidade |

@@ -35,6 +35,7 @@ function input(): BaselineReportInput {
     falsePositives: [{ ruleId: 'CA3001', hits: 11_006, reviewed: 120, falsePositives: 0, rate: 0 }],
     activationMs: 84.2,
     cancellationStopMs: 1.3,
+    indexing: { directories: 412, files: 35_103, scanMs: 1840.5 },
   }
 }
 
@@ -43,7 +44,7 @@ describe('Relatório — esquema (contracts/relatorio-baseline.md)', () => {
     const report = buildReport(input())
 
     assert.equal(report.schemaVersion, SCHEMA_VERSION)
-    assert.equal(SCHEMA_VERSION, 1)
+    assert.equal(SCHEMA_VERSION, 2)
   })
 
   it('é datado e registra o ambiente da medição (FR-025)', () => {
@@ -204,5 +205,85 @@ describe('Relatório — as duas saídas (FR-025)', () => {
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
+  })
+})
+
+
+describe('Relatório — o custo da INDEXAÇÃO, medido em separado (R8, FR-042)', () => {
+  it('o esquema subiu para 2 porque o formato mudou', () => {
+    // O `schemaVersion` existe exatamente para isto: uma mudança de formato não
+    // pode ser lida como regressão de desempenho na comparação do Portão 4.
+    // Comparar campos que mudaram de significado produz alarme falso, e alarme
+    // falso é como um portão deixa de ser levado a sério.
+    assert.equal(SCHEMA_VERSION, 2)
+  })
+
+  it('grava o custo da varredura ao lado do que ela varreu', () => {
+    // Um tempo sozinho não é comparável entre duas medições: a árvore pode ter
+    // crescido. Guardar quantos diretórios e quantos arquivos foi preciso ler
+    // é o que torna o número interpretável na comparação seguinte.
+    const report = buildReport(input())
+
+    assert.equal(report.indexing?.scanMs, 1840.5)
+    assert.equal(report.indexing?.files, 35_103)
+    assert.equal(report.indexing?.directories, 412)
+  })
+
+  it('NÃO soma a indexação ao custo por documento', () => {
+    // São orçamentos diferentes: a indexação acontece uma vez por sessão; a
+    // análise, por documento. Somar os dois esconderia o caro dentro do barato
+    // — que é exatamente o erro que o `activationMs` da spec 001 quase cometeu
+    // ao misturar carregamento de módulo com trabalho próprio.
+    const report = buildReport(input())
+
+    for (const percentil of report.percentiles) {
+      assert.ok(
+        percentil.analysisMs < report.indexing!.scanMs,
+        `o percentil ${percentil.percentile} carregou o custo da indexação junto`,
+      )
+    }
+    for (const custo of report.ruleCost) {
+      assert.ok(custo.incrementalMs.max < report.indexing!.scanMs)
+    }
+  })
+
+  it('aceita NULO quando a indexação não foi medida, e não inventa zero', () => {
+    // Zero seria um número que ninguém mediu, e ele entraria na comparação do
+    // Portão 4 como se fosse medição. "Não medido" precisa ser dizível.
+    const report = buildReport({ ...input(), indexing: null })
+
+    assert.equal(report.indexing, null)
+    assert.match(renderMarkdown(report), /n[ãa]o medid/i)
+  })
+
+  it('RECUSA custo de indexação não finito, como já recusa os outros', () => {
+    // `JSON.stringify` transforma NaN e Infinity em `null`, e um campo numérico
+    // valendo `null` passa por medição em vez de denunciar que ela não
+    // aconteceu.
+    assert.throws(
+      () => buildReport({ ...input(), indexing: { directories: 1, files: 1, scanMs: Number.NaN } }),
+      /não foi medid/i,
+    )
+    assert.throws(
+      () => buildReport({ ...input(), indexing: { directories: 1, files: 1, scanMs: Infinity } }),
+      /não foi medid/i,
+    )
+  })
+
+  it('o relatório humano mostra a indexação em seção própria', () => {
+    const markdown = renderMarkdown(buildReport(input()))
+
+    assert.match(markdown, /Indexa[çc][ãa]o/i)
+    assert.match(markdown, /1840\.50/)
+    assert.match(markdown, /35103|35\.103/)
+  })
+
+  it('a indexação NÃO vaza caminho do corpus para o relatório', () => {
+    // Contagem e tempo, nunca caminho. É a mesma porta que o resto do relatório
+    // já fecha — e a indexação é justamente o campo mais tentador de anotar
+    // "qual diretório demorou".
+    const report = buildReport(input())
+
+    assert.equal(findCorpusLeak(report), null)
   })
 })

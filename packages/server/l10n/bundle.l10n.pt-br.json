@@ -1,4 +1,14 @@
 {
   "rule.CA3001.message": "A diretiva de inclusão deve estar em caixa baixa. Use \"#include\".",
-  "encoding.wrongEncoding": "Este fonte ADVPL/TLPP não está sendo lido como Windows-1252 (CP1252). Os diagnósticos podem aparecer na coluna errada."
+  "encoding.wrongEncoding": "Este fonte ADVPL/TLPP não está sendo lido como Windows-1252 (CP1252). Os diagnósticos podem aparecer na coluna errada.",
+  "action.CA3001.title": "CA3001: trocar a diretiva por \"#include\", em caixa baixa",
+  "action.fixAll.title": "ADVPL Lint: corrigir tudo o que é corrigível neste arquivo",
+  "includeSources.inUse": "ADVPL Lint — diretórios de include em uso\n\nFonte: {source}\nDiretórios ({count}):\n{directories}",
+  "includeSources.none": "ADVPL Lint — nenhuma fonte utilizável de diretórios de include foi encontrada. PJ0001 fica calada. Aponte a árvore de includes em \"advplLint.includePaths\".",
+  "includeSources.command.title": "ADVPL Lint: mostrar os diretórios de include em uso",
+  "includes.unreadable": "O ADVPL Lint não conseguiu ler {count} diretório(s) de include: {directories}. PJ0001 fica calada sobre o que está lá. Este aviso aparece uma vez por sessão.",
+  "rule.PJ0001.message": "A referência de include \"{referenced}\" difere na caixa do arquivo real no disco: \"{real}\". Compila no Windows e falha no AppServer Linux.",
+  "action.PJ0001.title": "PJ0001: usar o nome real do arquivo no disco",
+  "includes.progress.title": "ADVPL Lint: indexando os arquivos de include",
+  "includes.progress.scanned": "{lidos} diretório(s) lido(s)"
 }

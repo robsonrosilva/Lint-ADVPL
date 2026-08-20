@@ -1,4 +1,14 @@
 {
   "rule.CA3001.message": "Директива включения должна быть в нижнем регистре. Используйте \"#include\".",
-  "encoding.wrongEncoding": "Этот исходный файл ADVPL/TLPP читается не в кодировке Windows-1252 (CP1252). Диагностика может указывать на неверный столбец."
+  "encoding.wrongEncoding": "Этот исходный файл ADVPL/TLPP читается не в кодировке Windows-1252 (CP1252). Диагностика может указывать на неверный столбец.",
+  "action.CA3001.title": "CA3001: заменить директиву на «#include» в нижнем регистре",
+  "action.fixAll.title": "ADVPL Lint: исправить всё исправимое в этом файле",
+  "includeSources.inUse": "ADVPL Lint — используемые каталоги include\n\nИсточник: {source}\nКаталоги ({count}):\n{directories}",
+  "includeSources.none": "ADVPL Lint — не найдено ни одного пригодного источника каталогов include. PJ0001 молчит. Укажите дерево include в «advplLint.includePaths».",
+  "includeSources.command.title": "ADVPL Lint: показать используемые каталоги include",
+  "includes.unreadable": "ADVPL Lint не смог прочитать {count} каталог(ов) include: {directories}. PJ0001 молчит о том, что там находится. Это предупреждение появляется один раз за сеанс.",
+  "rule.PJ0001.message": "Ссылка на include «{referenced}» отличается регистром от реального файла на диске: «{real}». Компилируется в Windows и падает на AppServer под Linux.",
+  "action.PJ0001.title": "PJ0001: использовать реальное имя файла с диска",
+  "includes.progress.title": "ADVPL Lint: индексация файлов include",
+  "includes.progress.scanned": "прочитано каталогов: {lidos}"
 }

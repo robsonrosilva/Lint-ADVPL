@@ -37,6 +37,25 @@ conserta isso. Duas formulações do mesmo teste caíram, cada uma por um motivo
 **O que funciona é uma RAZÃO auto-referente**: `maxGap < total * 0.6` — nenhum bloco contínuo domina
 a análise. Máquina lenta sobe os dois lados e a razão se mantém.
 
+**Mas razão auto-referente com PISO no denominador não é auto-referente.** Aconteceu em 2026-08-20,
+na spec 002: o teste de linearidade da varredura media 500 unidades contra 4.000 e protegia o lado
+pequeno com `Math.max(t, 0.05)`. Em máquina rápida o lado pequeno CAÍA no piso — deixava de ser
+medição e virava constante —, enquanto o lado grande absorvia a contenção da suíte. Quando a suíte
+cresceu de 355 para 613 testes em processos paralelos, a razão acusou **32x** sobre código que não
+mudou, e reprovou em 2 de 3 execuções.
+
+A correção foi no MÉTODO: **os dois lados grandes o bastante para dispensar piso** (4.000 contra
+32.000 unidades), e **cada lado é a mediana de cinco passagens**. Quatro execuções seguidas verdes
+depois disso. A regra prática: se um lado da razão precisa de piso, ele é pequeno demais para servir
+de referência — aumente o tamanho, não ponha piso.
+
+**A suíte de integração reprova quando roda logo depois de trabalho pesado.** Também em 2026-08-20:
+`npm run verify` encadeia `test:unit` (613 testes em processos paralelos) e `test:integration` na
+sequência, e a primeira execução acusou ativação de 2.779 ms, primeiro diagnóstico em 557 ms e
+**26 teclas em 10 s** onde o normal são mais de 200. Rodando a integração isolada, minutos depois:
+34 testes verdes, ativação em 410 ms. **Não era regressão — era a máquina ainda se recuperando.**
+Antes de investigar um "engasgo" reprovado pela integração, rode-a sozinha.
+
 Medido em máquina ociosa, para referência: análise de 25.000 linhas com 60 regras leva 88,8 ms, cede
 5 vezes, e o maior bloqueio é **29,8 ms** — dentro dos 50 ms do Princípio I. Esse número absoluto só
 é aferível FORA da suíte; dentro dela, não tente.
@@ -107,3 +126,18 @@ ficam desligadas nela. Isso é ótimo para isolar o comportamento — e é o tes
 que janela se está: se um diagnóstico de outra extensão aparece no painel, **não** é a janela de
 desenvolvimento, e portanto a extensão nova não está rodando ali. Ela não está instalada no VS Code
 normal; só existe sob F5 ou empacotada em `.vsix`.
+
+## Git — o `.gitignore` é por branch, e isso morde
+
+**Commitar numa branch antiga sem rodar o portão deixa passar o que o portão pegaria.** Aconteceu em
+2026-08-19: dois arquivos de fixture GERADOS entraram no repositório num commit feito na branch da
+spec 002, porque ali o `.gitignore` ainda era o antigo — o padrão corrigido
+(`packages/*/test/fixtures/**/generated/`) só existia na branch da 001. O `git add -A` os pegou, e
+como não rodei `npm run verify` naquele commit, ninguém avisou.
+
+Quem encontrou foi o `check:corpus`, na primeira vez que o portão rodou naquela branch — depois de a
+master ser mergeada para dentro dela.
+
+**Regra prática: rodar `npm run verify` antes de commitar, em QUALQUER branch.** O hábito de confiar
+no portão só na branch principal é o que deixa a brecha; o `.gitignore` viaja com a branch, e uma
+branch antiga tem regras antigas.

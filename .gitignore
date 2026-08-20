@@ -3,7 +3,6 @@ out
 .vscode-test/
 *.vsix
 *.tgz
-package-lock.json
 .tmp
 lib/*
 

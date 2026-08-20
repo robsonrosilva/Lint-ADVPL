@@ -5,8 +5,14 @@ metadata:
   type: project
 ---
 
-Decidido pelo dono em 2026-08-19, **antes** de a spec ser aberta. A spec 002 ainda **não existe**;
-este arquivo guarda o escopo para que ele não se perca entre sessões.
+Decidido pelo dono em 2026-08-19, **antes** de a spec ser aberta.
+
+> **A spec 002 foi aberta em 2026-08-19**, na branch `002-correcao-e-portabilidade-include`, e o
+> escopo abaixo entrou nela sem alteração. Duas decisões novas surgiram na especificação: **D8** — a
+> cadeia de onde vêm os diretórios de include (ver [[fontes-de-diretorios-de-include]]) — e **D9** —
+> a correção de `PJ0001` fica fora da correção em massa por padrão. Este arquivo continua valendo
+> como o registro do que foi decidido antes; o detalhe atual vive em
+> `specs/002-correcao-e-portabilidade-include/spec.md`.
 
 ## O que entra
 

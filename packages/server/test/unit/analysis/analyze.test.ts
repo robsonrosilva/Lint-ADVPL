@@ -103,6 +103,7 @@ describe('Análise — cancelamento', () => {
       catalogSeverity: null,
       projectRationale: 'regra de teste',
       defaultSeverity: DiagnosticSeverity.Information,
+      enabledByDefault: true,
       run: () => {
         if (source.token.isCancellationRequested) ranAfterCancel += 1
         if (index === 1) source.cancel()

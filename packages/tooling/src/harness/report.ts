@@ -15,7 +15,16 @@ import { MINIMUM_SAMPLE } from './sample'
  * — a conferência roda na construção E na gravação.
  */
 
-export const SCHEMA_VERSION = 1
+/**
+ * A versão do formato do relatório.
+ *
+ * **2** desde a spec 002, que acrescentou o custo da INDEXAÇÃO em campo próprio.
+ * O número existe exatamente para isto: uma mudança de formato não pode ser
+ * lida como regressão de desempenho na comparação do Portão 4. Comparar campos
+ * que mudaram de significado produz alarme falso, e alarme falso é como um
+ * portão deixa de ser levado a sério.
+ */
+export const SCHEMA_VERSION = 2
 
 const CORPUS_NOTE = 'corpus externo, local, NÃO versionado'
 
@@ -50,6 +59,26 @@ export interface RuleCost {
   readonly incrementalMs: { readonly p50: number; readonly p95: number; readonly max: number }
 }
 
+/**
+ * O custo de construir o índice de includes.
+ *
+ * Medido **em separado** do custo por documento, e a razão é de orçamento: a
+ * indexação acontece uma vez por sessão; a análise, por documento. Somar os
+ * dois esconderia o caro dentro do barato — que é exatamente o erro que o
+ * `activationMs` da spec 001 quase cometeu ao misturar carregamento de módulo
+ * com trabalho próprio.
+ *
+ * As contagens vão junto porque um tempo sozinho não é comparável entre duas
+ * medições: a árvore pode ter crescido. `directories` e `files` são o que torna
+ * o número interpretável na comparação seguinte — e são CONTAGEM, nunca
+ * caminho.
+ */
+export interface IndexMeasurement {
+  readonly directories: number
+  readonly files: number
+  readonly scanMs: number
+}
+
 export interface FalsePositiveAggregate {
   readonly ruleId: string
   readonly hits: number
@@ -67,6 +96,12 @@ export interface BaselineReportInput {
   readonly falsePositives: readonly FalsePositiveAggregate[]
   readonly activationMs: number
   readonly cancellationStopMs: number
+  /**
+   * `null` quando a indexação não foi medida — e `null` é dizível de propósito.
+   * Zero seria um número que ninguém mediu, e entraria na comparação do Portão
+   * 4 como se fosse medição.
+   */
+  readonly indexing: IndexMeasurement | null
 }
 
 export interface BaselineReport extends Omit<BaselineReportInput, 'corpus'> {
@@ -137,6 +172,9 @@ export function buildReport(input: BaselineReportInput): BaselineReport {
   for (const [name, value] of [
     ['activationMs', input.activationMs],
     ['cancellationStopMs', input.cancellationStopMs],
+    ...(input.indexing === null
+      ? []
+      : ([['indexing.scanMs', input.indexing.scanMs]] as const)),
   ] as const) {
     if (!Number.isFinite(value)) {
       throw new Error(`${name} não foi medido: valor não finito. Um relatório não publica o que não mediu.`)
@@ -162,6 +200,7 @@ export function buildReport(input: BaselineReportInput): BaselineReport {
     falsePositives: input.falsePositives,
     activationMs: input.activationMs,
     cancellationStopMs: input.cancellationStopMs,
+    indexing: input.indexing,
   }
 
   assertNoLeak(report)
@@ -245,6 +284,26 @@ export function renderMarkdown(report: BaselineReport): string {
     '  20.000 linhas. O legado gastava o tempo inteiro e descartava o resultado no',
     '  fim — que é o oposto de parar.',
     '',
+    '## Indexação de includes',
+    '',
+    'Orçamento SEPARADO do custo por documento: a indexação acontece uma vez por',
+    'sessão, a análise acontece por documento. Somar os dois esconderia o caro',
+    'dentro do barato.',
+    '',
+    ...(report.indexing === null
+      ? ['**Não medido** nesta execução — nenhum diretório de include utilizável.', '']
+      : [
+          '| Item | Valor |',
+          '| ---- | ----- |',
+          `| Diretórios varridos | ${report.indexing.directories} |`,
+          `| Arquivos de include encontrados | ${report.indexing.files} |`,
+          `| Tempo da varredura | ${ms(report.indexing.scanMs)} ms |`,
+          '',
+          'A varredura é **sob demanda** — nunca na ativação — e cancelável. O número',
+          'acima é o custo da PRIMEIRA construção; depois dela a atualização é',
+          'incremental, por diretório.',
+          '',
+        ]),
   ]
 
   return linhas.join('\n')

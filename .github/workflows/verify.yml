@@ -1,0 +1,159 @@
+# O portão de merge, agora também fora desta máquina.
+#
+# Até 2026-08-20 a verificação era só local, e a CLAUDE.md registrava isso como
+# decisão em aberto. O que este arquivo muda: `npm run verify` passa a rodar em
+# máquina limpa, a cada push e a cada pull request.
+#
+# ## As três coisas que este pipeline sabe sobre este projeto
+#
+# 1. **O corpus NÃO existe aqui.** Ele é externo, local e nunca versionado
+#    (constituição, "Corpus de Medição"). `npm run baseline` é feito para isso:
+#    avisa, explica como configurar e encerra com SUCESSO. Por isso a medição não
+#    entra no `verify` e não roda aqui — um portão que fica vermelho por ausência
+#    de material que ele mesmo proíbe versionar deixa de ser levado a sério.
+#
+# 2. **A integração precisa de display.** `@vscode/test-cli` sobe um VS Code de
+#    verdade; em runner Linux sem servidor gráfico ele morre na abertura da
+#    janela. `xvfb-run` resolve, e é a receita que a própria documentação do
+#    `vscode-test` recomenda.
+#
+# 3. **Teste de relógio reprova sob carga.** Está em
+#    `memoria/armadilhas-do-ambiente.md`, medido duas vezes neste repositório: o
+#    orçamento de ativação e a latência por tecla reprovam quando a integração
+#    roda logo depois de 617 testes unitários em processos paralelos — sem que
+#    nada tenha regredido. Por isso as duas suítes rodam em **jobs separados**,
+#    cada uma numa máquina descansada, em vez de encadeadas pelo `verify`.
+#
+#    ⚠️ O `verify` local continua sendo o portão completo. Este pipeline o
+#    executa em pedaços pela razão acima, e o job `portao` só fica verde se todos
+#    os pedaços ficarem.
+
+name: verify
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+# Push seguido cancela a execução anterior do mesmo ramo: o que interessa é o
+# estado atual, não a fila.
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # A extensão exige Node 24 (`engines` na raiz). Fixar aqui evita que uma
+  # mudança do runner troque a versão sem ninguém decidir.
+  NODE_VERSION: '24'
+
+jobs:
+  estatico:
+    name: Tipos, lint e as três verificações
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # `npm ci` e não `npm install`: ele exige o lock e falha se o
+      # `package.json` divergir dele. O lock passou a ser versionado em
+      # 2026-08-20 justamente para que isto seja possível.
+      - run: npm ci
+
+      - name: Tipagem
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # O `check:nls` e o `check:docs` leem o registro de regras COMPILADO, então
+      # dependem do typecheck acima.
+      - name: Os quatro idiomas e o manifesto
+        run: npm run check:nls
+
+      - name: Nenhum fonte do corpus versionado
+        run: npm run check:corpus
+
+      - name: Toda regra com página e no README
+        run: npm run check:docs
+
+  unitario:
+    name: Suíte unitária com o portão de cobertura
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      - name: Tipagem
+        run: npm run typecheck
+
+      # O limiar de 98% em linhas, funções e ramos vive no runner e reprova por
+      # conta própria. As exclusões saem de `coverage-exclusions.json`, versionado
+      # e com a razão de cada item.
+      - name: Testes unitários
+        run: npm run test:unit
+
+  integracao:
+    name: Integração em VS Code real
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+
+      # Sem servidor gráfico o VS Code não abre. `xvfb-run` dá um display
+      # virtual; é a receita da documentação do `vscode-test`.
+      - name: Display virtual
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      # O script já reconstrói o bundle antes de rodar (`npm run build &&`), que é
+      # o que impede a armadilha de testar contra um `dist/` de duas edições
+      # atrás — registrada em memoria/armadilhas-do-ambiente.md.
+      - name: Testes de integração
+        run: xvfb-run -a npm run test:integration
+
+      # Quando reprovar, o que se quer ver é a saída do editor, não só a asserção.
+      - name: Registro do editor, quando reprovar
+        if: failure()
+        run: |
+          echo "::group::Instalação do VS Code baixada"
+          ls -la .vscode-test 2>/dev/null || echo "sem .vscode-test"
+          echo "::endgroup::"
+
+  portao:
+    name: Portão de merge
+    runs-on: ubuntu-latest
+    needs: [estatico, unitario, integracao]
+    # Roda mesmo quando um dos anteriores falha, para dar UM resultado só.
+    if: always()
+    steps:
+      - name: Conferir os três jobs
+        run: |
+          echo "estatico:   ${{ needs.estatico.result }}"
+          echo "unitario:   ${{ needs.unitario.result }}"
+          echo "integracao: ${{ needs.integracao.result }}"
+          if [ "${{ needs.estatico.result }}" != "success" ] \
+            || [ "${{ needs.unitario.result }}" != "success" ] \
+            || [ "${{ needs.integracao.result }}" != "success" ]; then
+            echo "::error::o portão de merge reprovou"
+            exit 1
+          fi
+          echo "portão verde — os três jobs passaram"

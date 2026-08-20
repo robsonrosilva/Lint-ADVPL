@@ -52,9 +52,37 @@ export function toDiagnosticSeverity(choice: unknown): DiagnosticSeverity | null
   return SEVERITY_BY_CHOICE[choice] ?? null
 }
 
+/**
+ * Quem participa da correção em massa quando o usuário não disse nada.
+ *
+ * É uma LISTA, e não "todas as regras ligadas", por decisão registrada (D9):
+ * corrigir em massa é mais invasivo que apontar. `CA3001` está aqui porque
+ * trocar a diretiva é inerte por medição — 71,9% dos fontes do corpus usam
+ * caixa alta e compilam, logo o pré-processador não distingue. `PJ0001` fica
+ * de fora porque trocar o NOME do arquivo muda o que o compilador vai procurar
+ * (FR-040).
+ *
+ * Regra nova nasce fora até alguém decidir o contrário por escrito, e o custo
+ * dessa decisão é uma linha aqui.
+ */
+export const DEFAULT_FIX_ALL_RULES: readonly string[] = ['CA3001']
+
 interface RuleSettings {
   readonly enabled?: boolean
   readonly severity?: DiagnosticSeverity | null
+}
+
+/**
+ * Lê `advplLint.fixAll.includeRules`.
+ *
+ * `undefined` significa "o usuário não configurou"; um conjunto vazio significa
+ * "configurou e não quer nenhuma". Valor de tipo errado cai no primeiro caso —
+ * configuração é entrada externa e não pode derrubar o cálculo da lâmpada.
+ */
+function readFixAllRules(root: Record<string, unknown> | undefined): ReadonlySet<string> | undefined {
+  const raw = asRecord(root?.['fixAll'])?.['includeRules']
+  if (!Array.isArray(raw)) return undefined
+  return new Set(raw.filter((item): item is string => typeof item === 'string'))
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -65,6 +93,13 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 
 export class Settings {
   private byRuleId = new Map<string, RuleSettings>()
+  /**
+   * `undefined` quando o usuário não configurou nada — que é DIFERENTE de uma
+   * lista vazia. Sem essa distinção, "nenhuma regra na correção em massa" seria
+   * indistinguível de "não mexi nisso", e quem pedisse para desligar tudo veria
+   * a correção acontecer mesmo assim.
+   */
+  private fixAllRules: ReadonlySet<string> | undefined
 
   /**
    * Recebe o bloco `advplLint` inteiro, como o cliente o envia.
@@ -91,10 +126,24 @@ export class Settings {
     }
 
     this.byRuleId = next
+    this.fixAllRules = readFixAllRules(asRecord(raw))
+  }
+
+  /**
+   * A regra entra na correção em massa e na correção ao salvar? (FR-018)
+   *
+   * É uma pergunta SEPARADA de "a regra está ligada", de propósito: apontar e
+   * corrigir sem o usuário olhar são atos de invasividade diferente.
+   */
+  participatesInFixAll(ruleId: string): boolean {
+    return (this.fixAllRules ?? new Set(DEFAULT_FIX_ALL_RULES)).has(ruleId)
   }
 
   isEnabled(rule: RegisteredRule): boolean {
-    return this.byRuleId.get(rule.id)?.enabled ?? true
+    // Sem escolha do usuário, quem manda é o REGISTRO. Assumir `true` aqui
+    // desfaria em silêncio a decisão do Princípio VI de fazer regra sem
+    // medição nascer desligada.
+    return this.byRuleId.get(rule.id)?.enabled ?? rule.enabledByDefault
   }
 
   severityOf(rule: RegisteredRule): DiagnosticSeverity {
