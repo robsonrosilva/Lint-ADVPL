@@ -8,8 +8,19 @@ nunca omissão**.
 Este documento é o instrumento dessa exigência. Sem ele, "está no backlog" é uma frase; com ele, é
 uma lista conferível.
 
-**Estado em 2026-08-19**: das 28 críticas do legado, **zero** estão implementadas. A spec 001
-entregou uma única regra, `CA3001`, que é do catálogo e **não** faz parte deste piso.
+**Estado em 2026-08-20**: das 28 críticas do legado, **zero** estão implementadas.
+
+O produto entrega duas regras, e **nenhuma das duas é deste piso**:
+
+| Regra | Origem | Vem do legado? |
+| ----- | ------ | -------------- |
+| `CA3001` — diretiva de inclusão em caixa baixa | catálogo, G3 | **não** — o legado tinha cinco regras de include, e esta não era uma delas |
+| `PJ0001` — caixa da referência × nome real no disco | `projeto` | **não** — descoberta na medição de 2026-08-19; é acréscimo ao piso, não recuperação dele |
+
+O que a spec 002 mudou a favor do piso é outra coisa, e é grande: ela construiu o **índice de
+includes do projeto** — sob demanda, cancelável, incremental por diretório. Ele é a peça que faltava
+para `includeFalta`, `includeDesnecessario`, `functionDuplicate` e `fileDuplicate`, que são
+justamente as quatro que o legado fazia mal por não ter índice.
 
 Fontes: `analise-advpl/src/models/params.ts` (as 28 chaves) e `analise-advpl/src/locales/pt-br.json`
 (as 33 mensagens), lidos em 2026-08-19.
@@ -51,9 +62,16 @@ delas está no catálogo.
 | `includeFalta` | falta importar um include que o fonte usa | exige saber o que cada include define |
 | `includeDesnecessario` | include não usado, ou já contido em outro | exige o grafo de inclusão do projeto |
 
-⚠️ **Somar a estas a regra de portabilidade descoberta em 2026-08-19**: referência de include cuja
-caixa não bate com o nome real do arquivo no disco. Já falha no AppServer Linux, em silêncio. Ver
-`memoria/medicao-includes-corpus.md`.
+✅ **A regra de portabilidade já foi entregue**: `PJ0001`, na spec 002 — referência de include cuja
+caixa não bate com o nome real do arquivo no disco, que já falha no AppServer Linux em silêncio. Ela
+**soma** a este bloco; não risca nenhuma das cinco linhas acima. Ver `docs/regras/PJ0001.md` e
+`memoria/pj0001-medicao-e-decisao.md`.
+
+**As cinco continuam abertas — e agora são baratas.** Todas as cinco precisavam de conhecimento que a
+spec 002 passou a ter: `includeFalta` e `includeDesnecessario` exigem o índice, que existe;
+`includeObsoleto` exige uma tabela que o legado já tem em `src/include.ts`; `faltaTOTVS` e
+`includeDuplicidade` exigem só a análise do arquivo inteiro. É o bloco de melhor relação entre valor
+e custo do inventário.
 
 ### Documentação — ProtheusDOC
 
@@ -132,9 +150,23 @@ A taxonomia atual só tem dois valores: `totvs` — que exige citar id e grupo d
 `projeto`, que significa "regra nossa que o padrão não cobre". Uma regra de ProtheusDOC não é nem
 uma nem outra: é norma da TOTVS sem id de catálogo.
 
-**Decisão em aberto.** Ou se acrescenta uma terceira origem (`totvs-guideline`), ou essas regras
-entram como `projeto` com a justificativa citando a diretriz. A segunda opção funciona mas embaralha
-o significado de `projeto`. Precisa de decisão do dono antes da spec que implementar ProtheusDOC.
+✅ **RESOLVIDO em 2026-08-20** — constituição **v2.5.0**. O dono decidiu pela terceira origem, e ela
+se chama **`diretriz`**: norma escrita da TOTVS sem entrada no catálogo. Ela cita o **documento** e a
+**data da consulta** no lugar do identificador — e é essa citação que a separa de uma regra `projeto`
+disfarçada.
+
+A alternativa (entrar como `projeto` citando a diretriz) foi descartada pela razão registrada acima:
+embaralharia o significado de `projeto`, que quer dizer "regra nossa, que o padrão não cobre". Uma
+regra de ProtheusDOC não é nossa — o padrão MANDA fazer, ele só não oferece um id.
+
+`diretriz` herda de `projeto` tudo o mais: identificador na faixa reservada, severidade declarada com
+razão escrita, chave própria de desligamento, e medição de falso positivo antes de ser ligada.
+
+⚠️ `TODO(DIRETRIZ_REGISTRY)`: o registro de regras **ainda não implementa** esta origem. Ela vem com
+a primeira regra que a use, junto das invariantes que só aquela spec tem como fixar — implementá-la
+sem consumidor seria fixar invariante no escuro.
+
+**A spec de ProtheusDOC está desbloqueada.**
 
 ---
 
